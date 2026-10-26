@@ -203,7 +203,7 @@ ht14-data/                    ← privat, bare Workeren skriver
 <ul>
   <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → (admin-unntak) → under 7 dager? da OK → sommer og fre/lør/søn? → kvote per ukedag → én dag per helg.</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
-  <li>Kvoten teller <b>dager</b>, ikke perioder. Testene ligger i <code>tools/tests/</code> og kjøres med <code>node --test tools/tests/</code>.</li>
+  <li>Kvoten teller <b>dager</b>, ikke perioder. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
 
 <h3 id="statusmaskin">Statuser</h3>
