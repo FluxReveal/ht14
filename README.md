@@ -46,7 +46,7 @@ tools/
 
 1. Rett teksten i `tools/src/*.html` (eller «Hva er nytt»/årshjulet i `tools/gen_start.py`).
 2. `python3 tools/build.py` – lager sidene i `public/` på nytt.
-3. `python3 tools/checklinks.py` og `node --test tools/tests/` – skal gi 0 problemer og 18 grønne tester.
+3. `python3 tools/checklinks.py` og `npm test` – skal gi 0 problemer og 18 grønne tester.
 4. Prøv lokalt: `npx wrangler dev` og åpne http://localhost:8787/. Vil du sjekke i nettleser automatisk: `node tools/e2e-sjekk.js` (krever Playwright).
 
 Endrer du Badehusappen: bytt navnet på `CACHE` i `public/badehusappen/sw.js` og `?v=` i `public/badehusappen/index.html`,
