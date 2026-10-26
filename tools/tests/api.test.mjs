@@ -75,6 +75,10 @@ test("admin lager én innlogging for Hus A og Hus B (uten hasher i svar)", async
   assert.ok(!JSON.stringify(list.data).match(/pw_|hash|salt/i));
   for (const u of list.data.filter(u => u.role === "house" && u.active))       // rydd fra forrige kjøring
     assert.equal((await call("POST", `/api/admin/users/${u.id}/deactivate`, { cookie: admin })).status, 200);
+  // Rydd bookinger fra forrige kjøring i testmånedene, så testene kan kjøres flere ganger
+  const old = await call("GET", "/api/bookings?from=2027-05-20&to=2027-07-10", { cookie: admin });
+  for (const b of old.data.filter(b => b.displayStatus === "BOOKED"))
+    assert.equal((await call("POST", `/api/bookings/${b.id}/cancel`, { cookie: admin })).status, 200);
   emailA = `hus-a-${RUN}@example.no`; emailB = `hus-b-${RUN}@example.no`;
   assert.equal((await call("POST", "/api/admin/users", { cookie: admin, body: { house: "A", email: emailA, password: PW_A } })).status, 201);
   assert.equal((await call("POST", "/api/admin/users", { cookie: admin, body: { house: "B", email: emailB, password: PW_B } })).status, 201);
