@@ -1,18 +1,19 @@
 /*
- * Badehusappen – brukergrensesnitt (prøveversjon)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.5)
  * ---------------------------------------------------------------
- * Viser kalender, booking, innsjekk, Mine bookinger og statistikk.
- * All data hentes og lagres via Store (js/store.js). Reglene sjekkes
- * med RulesEngine (js/rules-engine.js) for rask tilbakemelding, og
- * Store sjekker dem på nytt før noe lagres – slik Workeren skal gjøre.
+ * Om oss (første side), innlogging, kalender, booking, innsjekk,
+ * Mine bookinger, statistikk, bytte passord og administrasjon.
+ * All data hentes og lagres via Store (js/store.js) → /api/… på ht14.no.
+ * Reglene sjekkes med RulesEngine for rask tilbakemelding; Workeren
+ * sjekker dem på nytt før noe lagres.
  */
 (function () {
   "use strict";
   const R = window.RulesEngine, S = window.Store;
   const $ = s => document.querySelector(s);
-  const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const HOUSES = ["A", "B", "C", "D"];
-  const HOUSE_KEY = "ht14-badehusappen-hus", MODE_KEY = "ht14-badehusappen-visning", HINT_KEY = "ht14-badehusappen-har-booket";
+  const MODE_KEY = "ht14-badehusappen-visning", HINT_KEY = "ht14-badehusappen-hint-v05";
   // Fylles fra rules.json i init(): AM = formiddag 10–14, MID = ettermiddag 14–17, PM = kveld 17–24
   let PLABEL = {}, PTIME = {}, PKEYS = [], FULLDAY = [];
   const hh = t => t === "24:00" ? "24" : t.slice(0, 2).replace(/^0/, "");
@@ -20,20 +21,19 @@
   const periodsText = ps => FULLDAY.every(p => ps.includes(p)) ? "heldag"
     : (a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " og " + a[a.length - 1])(ps.map(p => PLABEL[p].toLowerCase()));
   const periodsTime = ps => `${hh(rules.periods[ps[0]].start)}–${hh(rules.periods[ps[ps.length - 1]].end)}`;
-  const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke bekreftet",
-    CANCELLED: "Avbestilt", CANCELLED_LATE: "Avbestilt" };   // CANCELLED_LATE: bare i gamle prøvedata
+  const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke bekreftet", CANCELLED: "Avbestilt" };
   const WD_SHORT = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
   const MON_SHORT = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 
-  let rules, mode = localStorage.getItem(MODE_KEY) || "week", anchor, view = "kalender", statAnchor;
-  let myHouse = localStorage.getItem(HOUSE_KEY) || null;
+  let rules, mode = localStorage.getItem(MODE_KEY) || "week", anchor, view = "om", statAnchor;
+  let myHouse = null, mineHouse = "A";
+  const isAdmin = () => !!(S.user() && S.user().admin);
 
-  /* ---------- Testklokke: ?tid=2027-07-05T10:00 (kun for prøving) ---------- */
+  /* ---------- Testklokke: ?tid=2027-07-05T10:00 – bare lokalt (localhost) ---------- */
   const tidParam = new URLSearchParams(location.search).get("tid");
-  if (tidParam && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(tidParam)) {
-    const [d, t] = tidParam.split("T"), [h, m] = t.split(":").map(Number);
-    S.setClock(() => ({ date: d, minutes: h * 60 + m }));
-    $("#clockNote").textContent = `(Testklokke: ${R.dateLabel(d)} ${d.slice(0, 4)} kl. ${t})`;
+  if (tidParam && /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(tidParam)) {
+    const [d, t] = tidParam.split("T"), [h, m] = t.split(":").map(Number), mo = +d.slice(5, 7);
+    S.setClock(() => ({ date: d, minutes: h * 60 + m }), `${tidParam}:00${mo >= 4 && mo <= 10 ? "+02:00" : "+01:00"}`);
   }
 
   /* ---------- Små hjelpere ---------- */
@@ -51,13 +51,21 @@
     clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 3200);
   }
   const houseChip = h => `<span class="chip h${h}">Hus ${h}</span>`;
-  function setMyHouse(h) {
-    myHouse = h; localStorage.setItem(HOUSE_KEY, h);
-    $("#myHouseLabel").textContent = "Hus " + h;
-  }
-  async function allBookings() { return S.history({}); }
+  /** Hus-velger: bare administrator velger hus. Et hus booker alltid for seg selv. */
+  const housePicker = label => isAdmin()
+    ? `<h3 class="label">${esc(label)}</h3><div class="pick" role="group" aria-label="Velg hus">${HOUSES.map(h => `<button type="button" class="h${h}" data-house="${h}" aria-pressed="false">Hus ${h}</button>`).join("")}</div>`
+    : `<p class="for">Gjelder ${houseChip(myHouse)}</p>`;
+  let cache = null;
+  async function allBookings() { if (!cache) cache = S.history(); try { return await cache; } catch (e) { cache = null; throw e; } }
   function activeOn(list, date) { return list.filter(b => b.date === date && R.isActive(b.displayStatus)); }
   const lastBookable = () => R.addMonths(now().date, rules.bookingWindow.months);
+  const randomPassword = () => {          // lett å lese opp: fire ord-lignende biter og tall
+    const a = "abcdefghjkmnpqrstuvwxyz", d = "23456789", v = new Uint32Array(14); crypto.getRandomValues(v);
+    const pick = (s, i) => s[v[i] % s.length];
+    let out = ""; for (let i = 0; i < 12; i++) out += (i && i % 4 === 0 ? "-" : "") + pick(i % 4 === 3 ? d : a, i);
+    return out;
+  }
+  const field = (label, name, value, attrs = "") => `<label class="cell field"><span>${label}</span><input name="${name}" value="${esc(value)}" ${attrs}></label>`;
 
   /* ---------- Kalender ---------- */
   async function renderCalendar() {
@@ -105,7 +113,7 @@
     $("#modeMonth").setAttribute("aria-pressed", mode === "month");
     $("#calendar").querySelectorAll("[data-date]").forEach(b => b.addEventListener("click", e => {
       const slot = e.target.closest("[data-period]");
-      openDay(b.dataset.date, slot ? slot.dataset.period : null);
+      openDay(b.dataset.date, slot ? slot.dataset.period : null).catch(e => toast(e.message));
     }));
     $("#hint").hidden = mode !== "week" || !!localStorage.getItem(HINT_KEY);
   }
@@ -139,10 +147,10 @@
   sheet.addEventListener("close", () => document.documentElement.classList.remove("sheet-open"));
 
   function bookingItem(b, n) {
-    const mine = b.household === myHouse;
+    const mine = isAdmin() || b.household === myHouse;
     let acts = "";
     if (mine) {
-      if (R.validateCheckin(b, myHouse, rules, n).ok) acts += `<button type="button" class="primary" data-act="checkin" data-id="${b.id}">Sjekk inn</button>`;
+      if (R.validateCheckin(b, b.household, rules, n).ok) acts += `<button type="button" class="primary" data-act="checkin" data-id="${b.id}">Sjekk inn</button>`;
       if (b.displayStatus === "BOOKED") acts += `<button type="button" class="secondary" data-act="cancel" data-id="${b.id}">Avbestill</button>`;
       if (b.displayStatus === "NOT_CONFIRMED") acts += `<button type="button" class="primary" data-act="confirm" data-id="${b.id}">Vi brukte badehuset</button>`;
     }
@@ -166,16 +174,15 @@
     if (dayOver) html += `<p class="lead">Denne dagen er over, så den kan ikke bookes. Trykk › i kalenderen for å se kommende uker.</p>`;
     else if (date > lastBookable()) html += `<div class="msg no">Denne datoen kan ikke bookes ennå. Du kan booke maks ${rules.bookingWindow.months} måneder frem – den åpner ${R.dateLabel(R.addMonths(date, -rules.bookingWindow.months))}.</div>`;
     else if (!can.length) html += `<p class="lead">${ongoingFree ? `Det er ingen flere perioder å booke i dag, men ${PLABEL[ongoingFree.p].toLowerCase()} er ledig nå – bruk «Sjekk inn nå».` : "Hele dagen er booket."}</p>`;
-    else if (fullOk) html += `<p class="lead">Ledig hele dagen – velg hus og tid under.</p>`;
-    else html += `<p class="lead">${cap(periodsText(can.map(t => t.p)))} er ledig – velg hus og tid under.</p>`;
+    else if (fullOk) html += `<p class="lead">Ledig hele dagen – velg tid under.</p>`;
+    else html += `<p class="lead">${cap(periodsText(can.map(t => t.p)))} er ledig – velg tid under.</p>`;
     // 2) Bookingskjema: hus først, så perioder (kryss av én eller flere); «Book» står fast nederst
     if (!dayOver && date <= lastBookable() && can.length) {
       // Forhåndsvalg: perioden man trykket på, ellers kvelden (vanlig booking) hvis den er ledig
       const def = (rules.defaultPeriods || []).filter(p => can.some(t => t.p === p));
       const sel = (wanted && can.some(t => t.p === wanted)) ? [wanted] : def;
       const fdTime = periodsTime(FULLDAY);
-      html += `<h3 class="label">Hvilket hus?</h3><div class="pick" role="group" aria-label="Velg hus">${HOUSES.map(h =>
-        `<button type="button" class="h${h}" data-house="${h}" aria-pressed="${h === myHouse}">Hus ${h}</button>`).join("")}</div>
+      html += `${housePicker("Hvilket hus booker du for?")}
         <h3 class="label" id="whenLbl">Når? <span class="muted">Velg én eller flere</span></h3>
         <div class="types" role="group" aria-labelledby="whenLbl">
         <button type="button" class="fullday" data-full aria-pressed="${fullOk && sel.length === PKEYS.length}" ${fullOk ? "" : "disabled"}><span>Heldag</span><span class="t">${fdTime}${fullOk ? "" : R.canBookFullDay(rules, date, n) ? " · noe er opptatt" : ` · bare før kl. ${hh(rules.periods[FULLDAY[0]].start)}`}</span></button>
@@ -232,7 +239,7 @@
       try {
         bookBtn.disabled = true;
         const r = await S.createBooking({ date, periods: chosen(), household: house });
-        setMyHouse(house); localStorage.setItem(HINT_KEY, "1");
+        localStorage.setItem(HINT_KEY, "1");
         closeSheet(); await refresh();
         const contiguous = r.periods.every((p, k) => !k || rules.periods[r.periods[k - 1]].end === rules.periods[p].start);
         toast(`Booket! Hus ${house} · ${periodsText(r.periods)}${contiguous ? ` ${periodsTime(r.periods)}` : ""} ${R.dateLabel(date)} 🎉`);
@@ -247,18 +254,18 @@
     scope.querySelectorAll("[data-act]").forEach(btn => btn.addEventListener("click", async () => {
       const id = btn.dataset.id, act = btn.dataset.act;
       try {
-        if (act === "checkin") { const r = await S.checkIn(id, { household: myHouse }); toast(`Sjekket inn til kl. ${hh(r.until)} – kos dere! ♨️`); }
-        if (act === "confirm") { await S.confirmUsage(id, { household: myHouse }); toast("Takk! Registrert som brukt."); }
+        if (act === "checkin") { const r = await S.checkIn(id); toast(`Sjekket inn til kl. ${hh(r.until)} – kos dere! ♨️`); }
+        if (act === "confirm") { await S.confirmUsage(id); toast("Takk! Registrert som brukt."); }
         if (act === "cancel") {
           const { booking } = await S.getBooking(id);
-          const pre = R.validateCancel(booking, myHouse, rules, now());
+          const pre = R.validateCancel(booking, isAdmin() ? booking.household : myHouse, rules, now());
           const box = btn.closest(".acts");
           box.innerHTML = `<div class="msg ${pre.ok ? "ok" : "no"}" style="width:100%">${esc(pre.message)}</div>
             ${pre.ok ? `<button type="button" class="danger" data-yes>Ja, avbestill</button>` : ""}<button type="button" class="ghost" data-no>Behold bookingen</button>`;
           box.querySelector("[data-no]").addEventListener("click", after);
           const yes = box.querySelector("[data-yes]");
           if (yes) yes.addEventListener("click", async () => {
-            try { const r = await S.cancelBooking(id, { household: myHouse }); await refresh(); await after(); toast("Avbestilt."); }
+            try { await S.cancelBooking(id); await refresh(); await after(); toast("Avbestilt."); }
             catch (e) { toast(e.message); }
           });
           return;
@@ -271,14 +278,14 @@
   /* ---------- Sjekk inn nå ---------- */
   async function openCheckin() {
     const n = now(), all = await allBookings();
-    const mineToday = all.filter(b => b.date === n.date && b.household === myHouse && R.validateCheckin(b, myHouse, rules, n).ok);
+    const mineToday = all.filter(b => b.date === n.date && (isAdmin() || b.household === myHouse) && R.validateCheckin(b, b.household, rules, n).ok);
     const plans = R.spontaneousPlans(all, rules, n);       // f.eks. kl. 15: til 17, eller til 24
     const opens = rules.periods[PKEYS[0]].start;
     let html = "";
     if (mineToday.length) html += `<p>Dere har booket nå:</p><ul class="plist">${mineToday.sort(byPeriod).map(b => bookingItem(b, n)).join("")}</ul>`;
     if (plans.length) {
       html += `<p>${mineToday.length ? "Eller sjekk inn" : "Er badehuset ledig og dere vil bruke det nå? Sjekk inn"} uten booking:</p>
-        <h3 class="label">Hvem er dere?</h3><div class="pick" role="group" aria-label="Velg hus">${HOUSES.map(h => `<button type="button" class="h${h}" data-house="${h}" aria-pressed="${h === myHouse}">Hus ${h}</button>`).join("")}</div>
+        ${housePicker("Hvilket hus?")}
         <h3 class="label">Hvor lenge?</h3><div class="types" role="group" aria-label="Hvor lenge">${plans.map((ps, i) => `<button type="button" data-plan="${i}" aria-pressed="${i === 0}"><span>Til kl. ${hh(rules.periods[ps[ps.length - 1]].end)}</span><span class="t">${cap(periodsText(ps))}</span></button>`).join("")}</div>
         <p class="muted">Spontan innsjekk teller i statistikken, men ikke i sommerkvoten. Dere sjekkes ut automatisk når tiden er ute (kl. 14, 17 eller 24).</p>`;
     } else if (!mineToday.length) {
@@ -293,7 +300,7 @@
     const sb = $("#spontBtn");
     if (sb) sb.addEventListener("click", async () => {
       if (!house) { toast("Velg hvilket hus dere er."); return; }
-      try { const r = await S.spontaneousCheckIn({ periods: plan, household: house }); setMyHouse(house); closeSheet(); await refresh(); toast(`Sjekket inn til kl. ${hh(r.until)} – kos dere! ♨️`); }
+      try { const r = await S.spontaneousCheckIn({ periods: plan, household: house }); closeSheet(); await refresh(); toast(`Sjekket inn til kl. ${hh(r.until)} – kos dere! ♨️`); }
       catch (e) { toast(e.message); }
     });
     wireActions(body, () => { closeSheet(); });
@@ -302,20 +309,21 @@
   /* ---------- Mine bookinger ---------- */
   async function renderMine() {
     const box = $("#mine");
-    if (!myHouse) { box.innerHTML = `<p>Velg hvilket hus du hører til, så ser du husets bookinger her.</p><div class="pick">${HOUSES.map(h => `<button type="button" class="h${h}" data-house="${h}">Hus ${h}</button>`).join("")}</div>`;
-      box.querySelectorAll("[data-house]").forEach(b => b.addEventListener("click", () => { setMyHouse(b.dataset.house); renderMine(); })); return; }
-    const n = now(), all = (await allBookings()).filter(b => b.household === myHouse);
+    const h = myHouse || mineHouse;
+    const n = now(), all = (await allBookings()).filter(b => b.household === h);
     const need = all.filter(b => b.displayStatus === "NOT_CONFIRMED");
     const coming = all.filter(b => b.displayStatus === "BOOKED" || b.displayStatus === "CHECKED_IN");
     const past = all.filter(b => ["COMPLETED", "CANCELLED", "CANCELLED_LATE"].includes(b.displayStatus)).reverse().slice(0, 30);
     const li = b => `<li class="pitem"><div class="row"><b>${esc(R.dateLabel(b.date).replace(/^./, c => c.toUpperCase()))}</b><span class="stat">${STATUS[b.displayStatus]}</span></div>
       <div class="row muted">${PLABEL[b.period]} ${PTIME[b.period]}${b.source === "CHECKIN" ? " · spontan" : ""}${b.quota ? " · i sommerkvoten" : ""}</div>${bookingItemActs(b, n)}</li>`;
-    let html = `<p class="muted">Viser ${houseChip(myHouse)}. Alle i huset ser og kan endre de samme bookingene. Husk å sjekke inn når dere er i badehuset – for alle perioder.</p>`;
+    let html = isAdmin() ? `<div class="seg" role="group" aria-label="Hus">${HOUSES.map(x => `<button type="button" data-mine="${x}" aria-pressed="${x === h}">Hus ${x}</button>`).join("")}</div>` : "";
+    html += `<p class="foot">${isAdmin() ? "Du ser" : "Her er"} bookingene til ${houseChip(h)}. Husk å sjekke inn når dere er i badehuset.</p>`;
     html += quotaSummary(all, n);
-    if (need.length) html += `<h2>Ble badehuset brukt?</h2><ul class="list">${need.map(li).join("")}</ul>`;
-    html += `<h2>Kommende</h2>` + (coming.length ? `<ul class="list">${coming.map(li).join("")}</ul>` : `<p class="muted">Ingen kommende bookinger. Trykk på en dag i kalenderen for å booke.</p>`);
-    if (past.length) html += `<h2>Tidligere</h2><ul class="list">${past.map(li).join("")}</ul>`;
+    if (need.length) html += `<h2 class="ghead">Ble badehuset brukt?</h2><ul class="list">${need.map(li).join("")}</ul>`;
+    html += `<h2 class="ghead">Kommende</h2>` + (coming.length ? `<ul class="list">${coming.map(li).join("")}</ul>` : `<p class="muted">Ingen kommende bookinger. Trykk på en dag i kalenderen for å booke.</p>`);
+    if (past.length) html += `<h2 class="ghead">Tidligere</h2><ul class="list">${past.map(li).join("")}</ul>`;
     box.innerHTML = html;
+    box.querySelectorAll("[data-mine]").forEach(b => b.addEventListener("click", () => { mineHouse = b.dataset.mine; renderMine(); }));
     wireActions(box, renderMine);
   }
   function bookingItemActs(b, n) {
@@ -334,7 +342,7 @@
       });
       out.push(`<li class="card"><b>${R.MONTHS[m - 1].replace(/^./, c => c.toUpperCase())} ${y}</b><br><span class="muted">${parts.join(" · ")}</span></li>`);
     }
-    return out.length ? `<h2>Sommerkvote</h2><ul class="list">${out.join("")}</ul>` : "";
+    return out.length ? `<h2 class="ghead">Sommerkvote</h2><ul class="list">${out.join("")}</ul>` : "";
   }
 
   /* ---------- Statistikk ---------- */
@@ -352,61 +360,228 @@
     $("#stats").innerHTML = `<div class="statgrid">${card(`${R.MONTHS[m - 1].replace(/^./, c => c.toUpperCase())}`, s.month)}${card(`Sesongen ${y} (juni–august)`, s.season)}${card(`Hele ${y}`, s.year)}</div>`;
   }
 
+  /* ---------- Om oss ---------- */
+  async function renderOm() {
+    const box = $("#om");
+    if (!S.user()) {        // før innlogging: bare de fire husene
+      box.innerHTML = `<ul class="group houses">${HOUSES.map(h => `<li class="cell"><span class="dot big h${h}" aria-hidden="true"></span><span>Hus ${h}</span></li>`).join("")}</ul>`;
+      return;
+    }
+    let list;
+    try { list = await S.contacts(); } catch (e) { box.innerHTML = `<p class="msg no">${esc(e.message)}</p>`; return; }
+    box.innerHTML = `<p class="intro">Hvem bor hvor, og hvem dere kan kontakte. Bare de som er logget inn ser dette.</p>` + list.map(h => {
+      const people = h.contacts.filter(c => c.name || c.email || c.phone);
+      return `<h2 class="ghead"><span class="dot h${h.house}" aria-hidden="true"></span>Hus ${h.house}${h.household ? " – " + esc(h.household) : ""}</h2>
+      <ul class="group">${people.length ? people.map(c => `<li class="cell contact"><b>${esc(c.name || "Kontakt")}</b>
+          ${c.phone ? `<a href="tel:${esc(c.phone.replace(/[^0-9+]/g, ""))}">${esc(c.phone)}</a>` : ""}
+          ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}</li>`).join("")
+        : `<li class="cell muted">Ingen kontaktpersoner lagt inn ennå.</li>`}
+        ${h.note ? `<li class="cell note">${esc(h.note).replace(/\n/g, "<br>")}</li>` : ""}
+        ${h.canEdit ? `<li><button type="button" class="cell nav tint" data-edit="${h.house}">Endre ${h.house === myHouse ? "vårt hus" : "Hus " + h.house}</button></li>` : ""}
+      </ul>`;
+    }).join("");
+    box.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => editContacts(list.find(x => x.house === b.dataset.edit))));
+  }
+
+  function editContacts(h) {
+    const c = h.contacts;
+    const html = `<form id="contactForm" autocomplete="off">
+      <h3 class="ghead">Husstanden</h3>
+      <div class="group form">${field("Navn", "household", h.household, 'maxlength="200" placeholder="F.eks. Ola og Kari Nordmann"')}</div>
+      ${[0, 1].map(i => `<h3 class="ghead">Kontaktperson ${i + 1}</h3><div class="group form">
+        ${field("Navn", `n${i}`, c[i].name, 'maxlength="80"')}
+        ${field("E-post", `e${i}`, c[i].email, 'type="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="120"')}
+        ${field("Mobil", `p${i}`, c[i].phone, 'type="tel" inputmode="tel" maxlength="30"')}</div>`).join("")}
+      <h3 class="ghead">Til naboene</h3>
+      <div class="group form"><label class="cell field area"><span class="sr">Fritekst</span><textarea name="note" rows="4" maxlength="1000" placeholder="F.eks. «Ring gjerne etter kl. 17»">${esc(h.note)}</textarea></label></div>
+      <p id="contactMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet(`Hus ${h.house}`, html, `<button type="submit" form="contactForm" class="btn filled wide">Lagre</button>`);
+    $("#contactForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.target.elements;
+      try {
+        await S.saveContacts(h.house, { household: f.household.value, note: f.note.value,
+          contacts: [0, 1].map(i => ({ name: f["n" + i].value, email: f["e" + i].value, phone: f["p" + i].value })) });
+        closeSheet(); toast("Lagret."); renderOm();
+      } catch (err) { $("#contactMsg").textContent = err.message; }
+    });
+  }
+
+  /* ---------- Innlogging ---------- */
+  function wireLogin() {
+    $("#loginForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const btn = $("#loginBtn"), msg = $("#loginMsg");
+      const email = $("#loginEmail").value.trim(), pw = $("#loginPassword").value;
+      if (!email || !pw) { msg.textContent = "Skriv e-post og passord."; return; }
+      btn.disabled = true; btn.textContent = "Logger inn …"; msg.textContent = "";
+      try {
+        await S.login(email, pw);
+        $("#loginPassword").value = "";
+        await loggedIn(true);
+      } catch (err) { msg.textContent = err.message; }
+      finally { btn.disabled = false; btn.textContent = "Logg inn"; }
+    });
+  }
+  async function loggedIn(goCalendar) {
+    const u = S.user();
+    myHouse = u.house || null;
+    document.body.classList.toggle("admin", !!u.admin);
+    $("#login").hidden = true;
+    document.querySelector(".tabs").hidden = false;
+    $("#whoami").innerHTML = u.admin ? `<b>${esc(u.name)}</b> <span class="muted">· administrator</span>` : `${houseChip(u.house)} <span class="muted">${esc(u.email)}</span>`;
+    $("#adminLink").hidden = !u.admin;
+    cache = null;
+    show(goCalendar ? "kalender" : view === "om" ? "om" : view);
+  }
+  function loggedOut() {
+    myHouse = null; cache = null;
+    closeSheet();
+    document.body.classList.remove("admin");
+    document.querySelector(".tabs").hidden = true;
+    $("#login").hidden = false;
+    show("om");
+  }
+
+  function openPassword() {
+    const u = S.user();
+    const html = `<form id="pwForm">
+      <input type="email" name="username" autocomplete="username" value="${esc(u.email)}" hidden>
+      <div class="group form">
+        ${field("Nåværende", "current", "", 'type="password" autocomplete="current-password" required')}
+        ${field("Nytt", "next", "", 'type="password" autocomplete="new-password" minlength="8" required')}
+        ${field("Gjenta nytt", "again", "", 'type="password" autocomplete="new-password" minlength="8" required')}
+      </div>
+      <p class="foot">Minst 8 tegn. ${u.admin ? "" : "Alle i huset bruker samme passord, så si fra til de andre. "}Andre telefoner blir logget ut.</p>
+      <p id="pwMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet("Bytt passord", html, `<button type="submit" form="pwForm" class="btn filled wide">Lagre nytt passord</button>`);
+    $("#pwForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const f = e.target.elements;
+      if (f.next.value !== f.again.value) { $("#pwMsg").textContent = "De to nye passordene er ikke like."; return; }
+      try { const r = await S.changePassword(f.current.value, f.next.value); closeSheet(); toast(r.message); }
+      catch (err) { $("#pwMsg").textContent = err.message; }
+    });
+  }
+
+  /* ---------- Administrasjon (bare admin) ---------- */
+  async function renderAdmin() {
+    const box = $("#admin");
+    if (!isAdmin()) { box.innerHTML = ""; return; }
+    let users, events;
+    try { [users, events] = await Promise.all([S.users(), S.events()]); } catch (e) { box.innerHTML = `<p class="msg no">${esc(e.message)}</p>`; return; }
+    const fmt = iso => iso ? new Date(iso).toLocaleString("nb-NO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "aldri";
+    let html = `<p class="intro">Én innlogging per hus. Du lager den her og gir e-post og passord til huset.</p><h2 class="ghead">Innlogginger</h2><ul class="group">`;
+    for (const h of HOUSES) {
+      const u = users.find(x => x.role === "house" && x.house === h && x.active);
+      html += u ? `<li class="cell user"><div><span class="dot h${h}" aria-hidden="true"></span><b>Hus ${h}</b><br><span class="muted">${esc(u.email)} · sist innlogget ${fmt(u.lastLoginAt)}</span></div>
+          <div class="acts"><button type="button" class="btn tinted small" data-reset="${u.id}" data-h="${h}">Nytt passord</button><button type="button" class="btn plain small red" data-off="${u.id}" data-h="${h}">Deaktiver</button></div></li>`
+        : `<li><button type="button" class="cell nav tint" data-new="${h}"><span><span class="dot h${h}" aria-hidden="true"></span>Lag innlogging for Hus ${h}</span></button></li>`;
+    }
+    html += `</ul>`;
+    const admins = users.filter(u => u.role === "admin");
+    html += `<h2 class="ghead">Administrator</h2><ul class="group">${admins.map(u => `<li class="cell"><span>${esc(u.name)}<br><span class="muted">${esc(u.email)}</span></span></li>`).join("")}</ul>`;
+    html += `<h2 class="ghead">Om oss</h2><ul class="group"><li><button type="button" class="cell nav" data-goto="om">Endre kontakter for et hus</button></li></ul>`;
+    html += `<h2 class="ghead">Siste hendelser</h2><ul class="group small">${events.map(e => `<li class="cell"><span>${esc(EVENT[e.action] || e.action)}${e.house ? " · Hus " + esc(e.house) : ""}<br><span class="muted">${fmt(e.ts)}${e.who ? " · " + esc(e.who) : ""}</span></span></li>`).join("") || `<li class="cell muted">Ingen ennå.</li>`}</ul>`;
+    box.innerHTML = html;
+    box.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => newLogin(b.dataset.new)));
+    box.querySelectorAll("[data-reset]").forEach(b => b.addEventListener("click", () => resetLogin(b.dataset.reset, b.dataset.h)));
+    box.querySelectorAll("[data-off]").forEach(b => b.addEventListener("click", async () => {
+      if (!confirm(`Deaktivere innloggingen for Hus ${b.dataset.h}? Huset blir logget ut. Bookingene blir liggende.`)) return;
+      try { const r = await S.deactivate(b.dataset.off); toast(r.message); renderAdmin(); } catch (e) { toast(e.message); }
+    }));
+    wireGoto(box);
+  }
+  const EVENT = { BOOK: "Booking", CANCEL: "Avbestilling", CHECKIN: "Innsjekk", CONFIRM: "Bekreftet bruk", LOGIN: "Innlogging", LOGOUT: "Utlogging",
+    PASSWORD_CHANGE: "Byttet passord", PASSWORD_RESET: "Nytt passord fra admin", USER_CREATE: "Ny innlogging", USER_DEACTIVATE: "Deaktivert innlogging", CONTACTS_UPDATE: "Endret Om oss" };
+
+  function passwordSheet(title, intro, withEmail, submit) {
+    const pw = randomPassword();
+    const html = `<form id="userForm" autocomplete="off"><p>${intro}</p><div class="group form">
+      ${withEmail ? field("E-post", "email", "", 'type="email" inputmode="email" autocapitalize="none" spellcheck="false" autocomplete="off" required placeholder="husets e-post"') : ""}
+      ${field("Passord", "password", pw, 'type="text" autocomplete="new-password" autocapitalize="none" spellcheck="false" minlength="8" required')}
+      </div><p class="foot">Forslaget er laget tilfeldig her på telefonen. Skriv det ned eller kopier det før du lagrer – det vises ikke igjen. Huset kan bytte det selv under Mer.</p>
+      <div class="pad row"><button type="button" class="btn tinted small" id="copyPw">Kopier passord</button><button type="button" class="btn plain small" id="newPw">Lag nytt forslag</button></div>
+      <p id="userMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet(title, html, `<button type="submit" form="userForm" class="btn filled wide">Lagre</button>`);
+    const f = $("#userForm");
+    $("#newPw").addEventListener("click", () => { f.elements.password.value = randomPassword(); });
+    $("#copyPw").addEventListener("click", async () => { try { await navigator.clipboard.writeText(f.elements.password.value); toast("Kopiert."); } catch (e) { f.elements.password.select(); } });
+    f.addEventListener("submit", async e => {
+      e.preventDefault();
+      try { const r = await submit(f.elements); closeSheet(); toast(r.message); renderAdmin(); }
+      catch (err) { $("#userMsg").textContent = err.message; }
+    });
+  }
+  const newLogin = h => passwordSheet(`Ny innlogging · Hus ${h}`, `Alle i Hus ${h} bruker denne innloggingen.`, true,
+    el => S.createUser({ house: h, email: el.email.value.trim(), password: el.password.value }));
+  const resetLogin = (id, h) => passwordSheet(`Nytt passord · Hus ${h}`, `Huset blir logget ut på alle telefoner og må logge inn med det nye passordet.`, false,
+    el => S.resetPassword(id, el.password.value));
+
   /* ---------- Navigasjon ---------- */
   async function refresh() {
-    if (view === "kalender") await renderCalendar();
-    if (view === "mine") await renderMine();
-    if (view === "statistikk") await renderStats();
+    cache = null;
+    try {
+      if (view === "om") await renderOm();
+      if (!S.user()) return;
+      if (view === "kalender") await renderCalendar();
+      if (view === "mine") await renderMine();
+      if (view === "statistikk") await renderStats();
+      if (view === "admin") await renderAdmin();
+    } catch (e) { if (e.status !== 401) toast(e.message); }
   }
   function show(v) {
+    if (!S.user()) v = "om";
+    if (v === "admin" && !isAdmin()) v = "mer";
     view = v;
     document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
-    document.querySelectorAll(".tabs button").forEach(b => b.toggleAttribute("aria-current", b.dataset.view === v));
-    document.querySelectorAll(".tabs button[aria-current]").forEach(b => b.setAttribute("aria-current", "page"));
-    window.scrollTo(0, 0);
+    const tab = v === "admin" ? "mer" : v;
+    document.querySelectorAll(".tabs button").forEach(b => b.dataset.view === tab ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
+    window.scrollTo({ top: 0, behavior: "instant" in window ? "instant" : "auto" });
     refresh();
   }
+  function wireGoto(scope) { scope.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => show(b.dataset.goto))); }
   function step(dir) {
     anchor = mode === "week" ? R.addDays(anchor, 7 * dir) : R.addMonths(anchor.slice(0, 8) + "01", dir);
-    renderCalendar();
+    renderCalendar().catch(e => toast(e.message));
   }
 
   async function init() {
     try { rules = await S.getRules(); }
-    catch (e) { $("#calendar").innerHTML = `<p class="msg no">${esc(e.message)}</p>`; return; }
+    catch (e) { $("#om").innerHTML = `<p class="msg no">${esc(e.message)}</p>`; document.body.classList.remove("booting"); return; }
     for (const h of HOUSES) document.documentElement.style.setProperty("--" + h, rules.households[h].color);
     PKEYS = R.periodKeys(rules); FULLDAY = R.fullDayPeriods(rules);
     for (const p of PKEYS) { PLABEL[p] = rules.periods[p].label; PTIME[p] = `${hh(rules.periods[p].start)}–${hh(rules.periods[p].end)}`; }
     $("#legend").innerHTML = HOUSES.map(h => `<span><span class="dot h${h}"></span>Hus ${h}</span>`).join("") + `<span>Stripete = ikke bekreftet</span>`;
     anchor = now().date;
     const p = d2(anchor); statAnchor = { y: p.y, m: p.m };
-    if (myHouse) $("#myHouseLabel").textContent = "Hus " + myHouse;
     $("#prevBtn").addEventListener("click", () => step(-1));
     $("#nextBtn").addEventListener("click", () => step(1));
     $("#todayBtn").addEventListener("click", () => { anchor = now().date; renderCalendar(); });
     $("#modeWeek").addEventListener("click", () => { mode = "week"; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
     $("#modeMonth").addEventListener("click", () => { mode = "month"; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
-    $("#checkinNowBtn").addEventListener("click", openCheckin);
+    $("#checkinNowBtn").addEventListener("click", () => openCheckin().catch(e => toast(e.message)));
     $("#sheetClose").addEventListener("click", closeSheet);
     sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
     $("#statPrev").addEventListener("click", () => { statAnchor = statAnchor.m === 1 ? { y: statAnchor.y - 1, m: 12 } : { y: statAnchor.y, m: statAnchor.m - 1 }; renderStats(); });
     $("#statNext").addEventListener("click", () => { statAnchor = statAnchor.m === 12 ? { y: statAnchor.y + 1, m: 1 } : { y: statAnchor.y, m: statAnchor.m + 1 }; renderStats(); });
     document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
-    $("#myHouseBtn").addEventListener("click", () => {
-      openSheet("Hvilket hus hører du til?", `<p class="muted">Huset du velger, huskes på denne enheten. Du kan alltid velge et annet hus når du booker.</p><div class="pick">${HOUSES.map(h => `<button type="button" class="h${h}" data-house="${h}" aria-pressed="${h === myHouse}">Hus ${h}</button>`).join("")}</div>`);
-      $("#sheetBody").querySelectorAll("[data-house]").forEach(b => b.addEventListener("click", () => { setMyHouse(b.dataset.house); closeSheet(); refresh(); }));
-    });
-    $("#resetBtn").addEventListener("click", async () => {
-      if (!confirm("Vil du slette alle prøvebookingene på denne enheten?")) return;
-      await S.reset(); toast("Prøvedata er nullstilt."); show("kalender");
-    });
-    // Oppdater visningen jevnlig, så status (pågår/ferdig) følger klokka.
-    setInterval(() => { if (!sheet.open) refresh(); }, 60000);
-    await renderCalendar();
+    wireGoto(document);
+    $("#pwBtn").addEventListener("click", openPassword);
+    $("#logoutBtn").addEventListener("click", async () => { await S.logout().catch(() => {}); loggedOut(); toast("Du er logget ut."); });
+    wireLogin();
+    S.onLoggedOut(() => { if (document.querySelector(".tabs").hidden === false) { loggedOut(); toast("Du må logge inn på nytt."); } });
+    // Oppdater visningen jevnlig, så status (pågår/ferdig) og andres bookinger følger med.
+    setInterval(() => { if (!sheet.open && S.user() && !document.hidden) refresh(); }, 60000);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && S.user() && !sheet.open) refresh(); });
+    let u = null;
+    try { u = await S.me(); } catch (e) { toast(e.message); }
+    document.body.classList.remove("booting");
+    if (u) await loggedIn(true); else loggedOut();
   }
   init();
 
-  // Enkel service worker (nett først), så appen åpner også uten nett.
+  // Enkel service worker (nett først), så appen åpner også uten nett. /api/ lagres aldri.
   if ("serviceWorker" in navigator && location.protocol === "https:") {
     navigator.serviceWorker.register("/badehusappen/sw.js", { scope: "/badehusappen/" }).catch(() => {});
   }
