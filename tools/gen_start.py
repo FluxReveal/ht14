@@ -31,9 +31,10 @@ EV = [
 ]
 # ---------------------------------------------------------------
 # «Hva er nytt» – legg nye linjer ØVERST. Dato (ÅÅÅÅ-MM-DD), overskrift, kort tekst, lenke (eller None).
-# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.5», bestemt av Thomas).
+# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.6», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-27", "HT14 versjon 0.6: Om oss på forsiden og nye logoer", "«Om oss» ligger nå på forsiden ht14.no: alle ser Hus A–D, og når dere logger inn med husets innlogging ser dere navn og kontaktinfo og kan endre deres eget hus. Kalenderen i Badehusappen starter i dag og viser de neste 30 dagene, Statistikk viser bare sesongen og hele året, og en avbestilt booking teller aldri i noen kvote. HT14 og Badehusappen har også fått egne logoer og app-ikon.", "/#om-oss"),
  ("2026-10-26", "HT14 versjon 0.5: felles booking med innlogging", "Badehusappen er nå felles for alle fire husene: hvert hus logger inn med sin egen innlogging, og alle ser den samme kalenderen. Nytt er også «Om oss» med kontaktinfo (bare for innloggede), kortadressen badehusappen.ht14.no og et enklere utseende som ligner en iPhone-app. Prøvebookinger som bare lå på telefonen, er fjernet.", "/dokumentasjon/regler.html#badehusappen"),
  ("2026-10-26", "Avbestilling frigjør kvoten, og innsjekk gjelder alle perioder", "Avbestiller dere, teller ikke bookingen i kvoten, så dere kan booke en annen dag. Sjekk inn hver gang dere er i badehuset – også formiddag og ettermiddag.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-26", "Nye sommerregler og enklere regler", "Sommerregelen gjelder nå torsdag, fredag og lørdag – maks én av hver per måned, og ikke to i samme uke. Vanlig booking er én kveld; formiddag og ettermiddag bare når dere har gjester. Reglene og vedtektsforslaget er kortere og enklere.", "/dokumentasjon/regler.html#hvor-mye"),
@@ -207,10 +208,13 @@ def write_start(LOGO, out_path):
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sameiet HT14</title>
-<meta name="description" content="Startside for Sameiet Halden Terrasse 14: Badehusappen, regler, vedtektsforslag, årshjul og hva er nytt.">
+<meta name="description" content="Startside for Sameiet Halden Terrasse 14 på Snarøya: Badehusappen, Om oss, regler, vedtektsforslag, årshjul og hva er nytt.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/dokumentasjon/style.css?v=20261026a">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<meta name="theme-color" content="#0b2a4a">
+<link rel="stylesheet" href="/dokumentasjon/style.css?v=20261027v06">
 <script>(function(){{var h=location.hash;if(h==="#arshjul")location.replace("/dokumentasjon/arshjul.html");else if(h==="#hva-er-nytt")location.replace("/dokumentasjon/hva-er-nytt.html");}})();</script>
 <style>
   body{{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro",system-ui,"Segoe UI",Roboto,Arial,sans-serif;display:block;background:radial-gradient(1100px 480px at 0% 0%,#cffafe,transparent 60%),radial-gradient(900px 420px at 100% 0%,#fef3c7,transparent 55%),var(--bg);margin:0}}
@@ -218,7 +222,36 @@ def write_start(LOGO, out_path):
   .sitebar{{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}}
   .sitebar-in{{max-width:1080px;margin:0 auto;padding:6px max(20px,env(safe-area-inset-right)) 6px max(20px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}}
   .site-brand{{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--ink);text-decoration:none;min-height:44px;font-size:1.05rem}}
-  .site-brand svg{{width:30px;height:30px}}
+  .site-brand svg{{width:30px;height:30px;border-radius:8px}}
+  .cards a.hoved .ico img{{width:64px;height:64px;border-radius:15px;display:block;box-shadow:0 4px 14px rgba(0,0,0,.18)}}
+  .cards a.hoved .ico.app{{background:none}}
+  .om{{margin:30px 0 0;scroll-margin-top:140px}}
+  .om h2{{font-size:1.6rem;margin:0 0 .3rem;letter-spacing:-.01em}}
+  .om .ingress{{color:var(--ink-2);margin:0 0 14px;max-width:62ch}}
+  .omtekst{{color:var(--ink-2);margin:12px 4px}}
+  .omliste{{list-style:none;margin:0 0 6px;padding:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}}
+  .omcelle{{display:flex;align-items:center;gap:.3rem .9rem;flex-wrap:wrap;min-height:48px;padding:10px 16px;border-bottom:1px solid var(--line)}}
+  .omliste>li:last-child,.omliste>li:last-child .omcelle{{border-bottom:0}}
+  .omcelle.kontakt b{{flex:1 0 100%;font-weight:600}}
+  .omcelle a{{min-height:32px;display:inline-flex;align-items:center}}
+  .omcelle.dempet{{color:var(--muted)}}
+  .omhus{{margin:0 0 18px;scroll-margin-top:70px}}
+  .omhus h3{{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:1.05rem;margin:18px 4px 8px}}
+  .omnavn{{font-weight:600;color:var(--ink)}}
+  .omendre{{width:100%;background:none;border:0;font:inherit;color:#007aff;text-align:left;cursor:pointer}}
+  .omskjema h4{{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 16px 6px;font-weight:600}}
+  .omgruppe{{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}}
+  .omfelt{{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;border-bottom:1px solid var(--line)}}
+  .omfelt:last-child{{border-bottom:0}}
+  .omfelt span{{flex:0 0 5.5em;font-weight:500}}
+  .omfelt input,.omfelt textarea{{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;padding:12px 0;color:var(--ink)}}
+  .omtekstfelt{{align-items:flex-start}} .omtekstfelt span{{padding-top:12px}}
+  .ommelding{{color:#d70015;min-height:1.2em;margin:8px 4px}}
+  .ombtn{{display:block;width:100%;min-height:50px;border:0;border-radius:14px;background:#007aff;color:#fff;font:inherit;font-weight:600;font-size:1.05rem;cursor:pointer}}
+  .ombtn:disabled{{opacity:.6}}
+  .omknapper{{display:grid;gap:8px}}
+  .omlenke{{background:none;border:0;font:inherit;color:#007aff;cursor:pointer;min-height:44px;padding:0 4px}}
+  @media (min-width:760px){{ .omskjema{{max-width:520px}} }}
   .sitenav{{display:flex;gap:4px;flex-wrap:wrap}}
   .sitenav a{{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;font-weight:600;text-decoration:none;color:var(--ink-2)}}
   .sitenav a:hover{{background:var(--brand-bg)}}
@@ -256,23 +289,30 @@ def write_start(LOGO, out_path):
   <header class="hero2">
     <div class="eyebrow">Hei, nabo! 👋</div>
     <h1>Velkommen til HT14</h1>
-    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. I <b>Badehusappen</b> booker vi badehuset selv. Hvert hus logger inn, og alle ser den samme kalenderen.</p>
+    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. I <b>Badehusappen</b> booker vi badehuset selv. Hvert hus logger inn, og alle ser den samme kalenderen. Lenger ned på siden finner du <a href="#om-oss">Om oss</a>.</p>
     <div class="husrad"><span class="hus a">Hus A</span><span class="hus b">Hus B</span><span class="hus c">Hus C</span><span class="hus d">Hus D</span></div>
     <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
   </header>
   <nav class="cards" aria-label="Snarveier">
-    <a class="hoved" href="/badehusappen/"><div class="ico">🛁</div><div class="txt"><b>Badehusappen</b><span>Book badehuset – logg inn med husets innlogging.</span></div><div class="pil" aria-hidden="true">›</div></a>
+    <a class="hoved" href="/badehusappen/"><div class="ico app"><img src="/badehusappen/ikoner/ikon.svg" width="64" height="64" alt=""></div><div class="txt"><b>Badehusappen</b><span>Book badehuset – logg inn med husets innlogging.</span></div><div class="pil" aria-hidden="true">›</div></a>
+    <a href="#om-oss"><div class="ico">🏡</div><b>Om oss</b><span>Hus A–D: hvem bor hvor, og hvordan dere når hverandre.</span></a>
     <a href="/dokumentasjon/regler.html"><div class="ico">⚖️</div><b>Regler for bruk av badehuset</b><span>Booking, sommerregler og hvordan du bruker Badehusappen.</span></a>
     <a href="/dokumentasjon/vedtekter.html"><div class="ico">📜</div><b>Forslag til tillegg i vedtektene</b><span>§ 10 og reglene for badehuset – til sameiemøtet.</span></a>
     <a href="/dokumentasjon/arshjul.html"><div class="ico">🗓️</div><b>Årshjul</b><span>Hva skjer når i løpet av året?</span></a>
     <a href="/dokumentasjon/hva-er-nytt.html"><div class="ico">✨</div><b>Hva er nytt</b><span>Det siste som er lagt til eller endret.</span></a>
     <a href="/dokumentasjon/teknisk.html"><div class="ico">🛠️</div><b>Teknisk dokumentasjon</b><span>Hvordan Badehusappen er bygget og driftes.</span></a>
   </nav>
+  <section class="om" id="om-oss" aria-labelledby="omTittel">
+    <h2 id="omTittel">Om oss</h2>
+    <p class="ingress">Fire hus i Halden Terrasse 14 på Snarøya, med fjorden rett nedenfor og et felles badehus ved sjøen.</p>
+    <div id="omInnhold" aria-live="polite"><ul class="omliste"><li class="omcelle"><span class="hus a">Hus A</span></li><li class="omcelle"><span class="hus b">Hus B</span></li><li class="omcelle"><span class="hus c">Hus C</span></li><li class="omcelle"><span class="hus d">Hus D</span></li></ul></div>
+  </section>
   <footer class="fot">
     <p>Laget av Thomas Gude Svensrud for oss i HT14. Rettelser eller ideer? Si fra til Thomas.</p>
-    <p class="ver">HT14 versjon 0.5</p>
+    <p class="ver">HT14 versjon 0.6</p>
   </footer>
 </div>
+<script src="/om-oss.js?v=06" defer></script>
 </body>
 </html>
 '''

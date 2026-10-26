@@ -38,8 +38,11 @@ ALIASES = {
                   "booke": "badehusappen", "avbestille-i-appen": "badehusappen", "sjekke-inn": "badehusappen", "hjem-skjerm": "badehusappen", "sporsmal": "badehusappen"},
 }
 
-LOGO = '''<svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg>'''
-FAVICON = "data:image/svg+xml," + LOGO.replace('"', "'").replace("#", "%23").replace("\n", "")
+# HT14-logoen: fire terrassehus som trapper seg ned mot fjorden en sommerkveld (samme som /favicon.svg).
+LOGO_INNER = '''<defs><linearGradient id="ht14-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2a4a"/><stop offset=".62" stop-color="#155e75"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#ht14-bg)"/><circle cx="50" cy="14" r="5.5" fill="#fdba74"/><path d="M0 25 L9 25 L56 50 L0 50 Z" fill="#0f3d3a" opacity=".8"/><g><rect x="6" y="13" width="15" height="10" rx="1.5" fill="#fff"/><rect x="8.5" y="16.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="17" y="21" width="15" height="10" rx="1.5" fill="#fff"/><rect x="19.5" y="24.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="28" y="29" width="15" height="10" rx="1.5" fill="#fff"/><rect x="30.5" y="32.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="39" y="37" width="15" height="10" rx="1.5" fill="#fff"/><rect x="41.5" y="40.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/></g><path d="M5 53c4.5-3 9-3 13.5 0s9 3 13.5 0 9-3 13.5 0 9 3 13.5 0" fill="none" stroke="#67e8f9" stroke-width="3.2" stroke-linecap="round"/><path d="M12 59c3.3-2 6.7-2 10 0s6.7 2 10 0 6.7-2 10 0 6.7 2 10 0" fill="none" stroke="#a5f3fc" stroke-width="2" stroke-linecap="round" opacity=".7"/>'''
+LOGO = f'<svg width="38" height="38" viewBox="0 0 64 64" aria-hidden="true">{LOGO_INNER}</svg>'
+LOGO_SMALL = f'<svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true">{LOGO_INNER}</svg>'
+ICON_LINKS = '<link rel="icon" href="/favicon.svg" type="image/svg+xml">\n<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">\n<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">'
 SEARCH_ICO = '<svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9cc3d1" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>'
 BURGER = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>'
 
@@ -125,7 +128,7 @@ def nav_html(current):
     # Felles meny for hele HT14: Sameiet HT14 → Hjem / Badehusappen, og dokumentasjonssidene under.
     items = ['<li class="nav-label">Sameiet HT14</li>',
         '<li><a href="/"><span class="num">⌂</span>Hjem</a></li>',
-        '<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen <small>utkast</small></a></li>',
+        '<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen</a></li>',
         '<li class="nav-label">Dokumentasjon</li>']
     for i, (f, t, g) in enumerate(PAGES, 1):
         cur = ' aria-current="page"' if f == current else ""
@@ -170,16 +173,16 @@ def layout(fname, title, body, needs_mermaid, desc, extra_head="", extra_foot=""
 <title>{title} – Dokumentasjon – Sameiet HT14</title>
 <meta name="description" content="{html.escape(desc)}">
 <meta name="robots" content="noindex">
-<link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=20261026v05">
-<script src="app.js?v=20261026v05" defer></script>{mm}{extra_head}
+{ICON_LINKS}
+<link rel="stylesheet" href="style.css?v=20261027v06">
+<script src="app.js?v=20261027v06" defer></script>{mm}{extra_head}
 </head>
 <body>
 <a href="#innhold" class="chip" style="position:absolute;left:-9999px" onfocus="this.style.left='8px'">Hopp til innhold</a>
 <header class="topbar">
   <button class="hamburger" aria-label="Åpne meny" aria-expanded="false" aria-controls="sidemeny">{BURGER}</button>
-  <a class="topbar-home" href="/"><b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
-  <a class="topbar-app" href="/badehusappen/">Badehusappen</a>
+  <a class="topbar-home" href="/">{LOGO_SMALL}<b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
+  <a class="topbar-app" href="/badehusappen/"><img src="/badehusappen/ikoner/ikon.svg" width="18" height="18" alt="">Badehusappen</a>
 </header>
 <div class="scrim"></div>
 <nav class="sidebar" id="sidemeny" aria-label="Hovedmeny">
@@ -201,7 +204,7 @@ def layout(fname, title, body, needs_mermaid, desc, extra_head="", extra_foot=""
     <article>
 {body}
 {pn}
-      <p class="footer">Sameiet HT14 · HT14 versjon 0.5. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.6. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
@@ -256,7 +259,7 @@ def main():
     rmap = json.load(open(ROOT / "redirects.json", encoding="utf-8"))
     for old, target in REDIRECTS.items():
         (OUT / old).write_text(redirect_page(target, rmap.get(old, {})), encoding="utf-8")
-    n = gen_start.write_start(LOGO, PUBLIC / "index.html")
+    n = gen_start.write_start(LOGO_SMALL.replace('width="24" height="24"', 'width="30" height="30"'), PUBLIC / "index.html")
     print("ok", len(PAGES), "sider,", len(search), "søkeoppføringer,", len(REDIRECTS), "omdirigeringer, startside", n)
 
 if __name__ == "__main__":

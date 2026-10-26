@@ -2,6 +2,8 @@
 pluss målene i omdirigeringssidene. Kjør fra repo-roten:  python3 tools/checklinks.py"""
 import re, pathlib, json, sys
 root = (pathlib.Path(__file__).resolve().parent.parent / "public")
+# PNG/ICO-ikonene serveres av Workeren fra src/ikoner.js, ikke fra public/
+ikoner = set(re.findall(r'^  "(/[^"]+)":', (root.parent / "src" / "ikoner.js").read_text(), re.M))
 bad = 0
 def ids_of(t):
     return set(re.findall(r'\sid="([^"]+)"', t.read_text())) if t.suffix == ".html" else set()
@@ -13,6 +15,7 @@ def check(f, href):
         return
     path, _, frag = href.partition("#")
     path = path.split("?")[0]
+    if path in ikoner: return
     if path.startswith("/"): target = root / path.lstrip("/")
     else: target = (f.parent / path).resolve() if path else f
     if target.is_dir() or path.endswith("/"): target = target / "index.html"
