@@ -31,9 +31,10 @@ EV = [
 ]
 # ---------------------------------------------------------------
 # «Hva er nytt» – legg nye linjer ØVERST. Dato (ÅÅÅÅ-MM-DD), overskrift, kort tekst, lenke (eller None).
-# Ingen versjonsnumre – bare dato og hva som er nytt.
+# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.5», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-26", "HT14 versjon 0.5: felles booking med innlogging", "Badehusappen er nå felles for alle fire husene: hvert hus logger inn med sin egen innlogging, og alle ser den samme kalenderen. Nytt er også «Om oss» med kontaktinfo (bare for innloggede), kortadressen badehusappen.ht14.no og et enklere utseende som ligner en iPhone-app. Prøvebookinger som bare lå på telefonen, er fjernet.", "/dokumentasjon/regler.html#badehusappen"),
  ("2026-10-26", "Avbestilling frigjør kvoten, og innsjekk gjelder alle perioder", "Avbestiller dere, teller ikke bookingen i kvoten, så dere kan booke en annen dag. Sjekk inn hver gang dere er i badehuset – også formiddag og ettermiddag.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-26", "Nye sommerregler og enklere regler", "Sommerregelen gjelder nå torsdag, fredag og lørdag – maks én av hver per måned, og ikke to i samme uke. Vanlig booking er én kveld; formiddag og ettermiddag bare når dere har gjester. Reglene og vedtektsforslaget er kortere og enklere.", "/dokumentasjon/regler.html#hvor-mye"),
  ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/vedtekter.html#punkt-2"),
@@ -212,7 +213,7 @@ def write_start(LOGO, out_path):
 <link rel="stylesheet" href="/dokumentasjon/style.css?v=20261026a">
 <script>(function(){{var h=location.hash;if(h==="#arshjul")location.replace("/dokumentasjon/arshjul.html");else if(h==="#hva-er-nytt")location.replace("/dokumentasjon/hva-er-nytt.html");}})();</script>
 <style>
-  body{{display:block;background:radial-gradient(1100px 480px at 0% 0%,#cffafe,transparent 60%),radial-gradient(900px 420px at 100% 0%,#fef3c7,transparent 55%),var(--bg);margin:0}}
+  body{{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro",system-ui,"Segoe UI",Roboto,Arial,sans-serif;display:block;background:radial-gradient(1100px 480px at 0% 0%,#cffafe,transparent 60%),radial-gradient(900px 420px at 100% 0%,#fef3c7,transparent 55%),var(--bg);margin:0}}
   .wrap{{max-width:1080px;margin:0 auto;padding:28px max(20px,env(safe-area-inset-right)) 60px max(20px,env(safe-area-inset-left))}}
   .sitebar{{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}}
   .sitebar-in{{max-width:1080px;margin:0 auto;padding:6px max(20px,env(safe-area-inset-right)) 6px max(20px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}}
@@ -229,7 +230,14 @@ def write_start(LOGO, out_path):
   .cards{{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;margin:22px 0}}
   .cards a{{display:block;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px 18px;text-decoration:none;color:var(--ink);box-shadow:var(--shadow);transition:transform .15s;min-width:0;overflow-wrap:anywhere}}
   .cards a:hover{{transform:translateY(-2px);border-color:var(--brand-2)}}
-  .cards a.hoved{{border:2px solid var(--brand-2)}}
+  .cards a.hoved{{grid-column:1/-1;display:flex;align-items:center;gap:16px;background:linear-gradient(135deg,#0a84ff,#0e7490);color:#fff;border:0;border-radius:20px;padding:20px 22px;min-height:96px;box-shadow:0 10px 30px rgba(10,132,255,.28)}}
+  .cards a.hoved .ico{{font-size:2.4rem;width:64px;height:64px;display:grid;place-items:center;background:rgba(255,255,255,.18);border-radius:16px;flex:none}}
+  .cards a.hoved b{{font-size:1.45rem;margin:0 0 .15rem;color:#fff}}
+  .cards a.hoved span{{color:rgba(255,255,255,.9);font-size:1rem}}
+  .cards a.hoved .txt{{flex:1;min-width:0}}
+  .cards a.hoved .pil{{font-size:2.2rem;line-height:1;opacity:.85}}
+  .cards a.hoved:active{{transform:scale(.98)}}
+  .ver{{font-size:.85rem}}
   .cards a .ico{{font-size:1.5rem}}
   .cards a b{{display:block;margin:.3rem 0 .2rem}}
   .cards a span{{color:var(--muted);font-size:.92rem}}
@@ -248,12 +256,12 @@ def write_start(LOGO, out_path):
   <header class="hero2">
     <div class="eyebrow">Hei, nabo! 👋</div>
     <h1>Velkommen til HT14</h1>
-    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. Nå er det laget et <b>utkast til Badehusappen</b>, så vi kan booke badehuset selv – prøv det gjerne! Bookingene lagres foreløpig bare på din egen telefon.</p>
+    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. I <b>Badehusappen</b> booker vi badehuset selv. Hvert hus logger inn, og alle ser den samme kalenderen.</p>
     <div class="husrad"><span class="hus a">Hus A</span><span class="hus b">Hus B</span><span class="hus c">Hus C</span><span class="hus d">Hus D</span></div>
     <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
   </header>
   <nav class="cards" aria-label="Snarveier">
-    <a class="hoved" href="/badehusappen/"><div class="ico">🛁</div><b>Badehusappen</b><span>Prøv å booke badehuset.</span></a>
+    <a class="hoved" href="/badehusappen/"><div class="ico">🛁</div><div class="txt"><b>Badehusappen</b><span>Book badehuset – logg inn med husets innlogging.</span></div><div class="pil" aria-hidden="true">›</div></a>
     <a href="/dokumentasjon/regler.html"><div class="ico">⚖️</div><b>Regler for bruk av badehuset</b><span>Booking, sommerregler og hvordan du bruker Badehusappen.</span></a>
     <a href="/dokumentasjon/vedtekter.html"><div class="ico">📜</div><b>Forslag til tillegg i vedtektene</b><span>§ 10 og reglene for badehuset – til sameiemøtet.</span></a>
     <a href="/dokumentasjon/arshjul.html"><div class="ico">🗓️</div><b>Årshjul</b><span>Hva skjer når i løpet av året?</span></a>
@@ -262,6 +270,7 @@ def write_start(LOGO, out_path):
   </nav>
   <footer class="fot">
     <p>Laget av Thomas Gude Svensrud for oss i HT14. Rettelser eller ideer? Si fra til Thomas.</p>
+    <p class="ver">HT14 versjon 0.5</p>
   </footer>
 </div>
 </body>

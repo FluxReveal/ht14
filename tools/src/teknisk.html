@@ -6,11 +6,11 @@
   <div class="meta"></div>
 </section>
 
-<p>Det er laget et <b>utkast til Badehusappen</b> som du kan prøve på <a href="/badehusappen/">ht14.no/badehusappen/</a>. Foreløpig lagres bookingene bare på din egen telefon. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.5</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
-<div class="card"><h3 class="toc-part"><a href="#kort-for-alle">1 Kort for alle</a></h3><ol><li><a href="#hva-er-det">Hva er det?</a></li><li><a href="#hvem-kan-gjore-hva">Hvem kan gjøre hva</a></li><li><a href="#trygghet-og-personvern">Trygghet og personvern</a></li></ol></div>
+<div class="card"><h3 class="toc-part"><a href="#kort-for-alle">1 Kort for alle</a></h3><ol><li><a href="#hva-er-det">Hva er det?</a></li><li><a href="#hvem-kan-gjore-hva">Hvem kan gjøre hva</a></li><li><a href="#om-oss">Om oss</a></li><li><a href="#trygghet-og-personvern">Trygghet og personvern</a></li></ol></div>
 <div class="card"><h3 class="toc-part"><a href="#hld">2 Overordnet (HLD)</a></h3><ol><li><a href="#komponenter">Komponenter</a></li><li><a href="#dataflyt">Dataflyt</a></li><li><a href="#innlogging-og-okter">Innlogging og økter</a></li><li><a href="#sikkerhet">Sikkerhet</a></li><li><a href="#tekniske-valg">Tekniske valg</a></li></ol></div>
 <div class="card"><h3 class="toc-part"><a href="#lld">3 Detaljert (LLD)</a></h3><ol><li><a href="#filstruktur">Filer</a></li><li><a href="#datamodell">Datamodell</a></li><li><a href="#regelmotor">Regelmotor</a></li><li><a href="#statusmaskin">Statuser</a></li><li><a href="#worker-api">API</a></li><li><a href="#feilhandtering">Feilkoder</a></li></ol></div>
 <div class="card"><h3 class="toc-part"><a href="#drift">4 Drift og oppsett</a></h3><ol><li><a href="#oppsett">Oppsett i Cloudflare</a></li><li><a href="#brukere">Innlogginger</a></li><li><a href="#endre-regler">Endre regler</a></li><li><a href="#backup">Sikkerhetskopi</a></li><li><a href="#nar-noe-feiler">Når noe feiler</a></li></ol></div>
@@ -47,12 +47,16 @@ flowchart LR
 <p>Målet er at alle fire husene skal ha mulighet til å bruke badehuset like mye. Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24, og vanlig booking er én kveld. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
-<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille, sjekke inn, bekrefte bruk og se historikk og statistikk. En <b>administrator</b> kan i tillegg bytte passord for et hus, logge ut en mistet mobil, legge inn regelendringer, gjøre unntak og rette feil. Alt administratorene gjør, logges.</p>
+<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, bekrefte bruk, se statistikk, endre husets del av «Om oss» og bytte passord.</p>
+<p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus og avbestille alle bookinger. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
+
+<h3 id="om-oss">Om oss</h3>
+<p>«Om oss» er første side i appen. Før innlogging viser den bare Hus A–D og innloggingen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
 
 <h3 id="trygghet-og-personvern">Trygghet og personvern</h3>
 <ul>
   <li>Ingen registrerer seg selv – administratoren gir hvert hus e-post og passord. Mobilen kan huske passordet, og dere holder dere innlogget i omtrent ett år.</li>
-  <li>Bookingene lagres i en database hos Cloudflare, aldri på de offentlige sidene. Passord lagres aldri i klartekst.</li>
+  <li>Bookinger og kontaktinfo lagres i en database hos Cloudflare, aldri på de offentlige sidene. Passord lagres aldri i klartekst.</li>
   <li>Hver natt tas det en kopi til et privat lager. Ingen bookinger slettes, og alle endringer kan spores.</li>
   <li>Ikke med i starten: varsler på e-post/SMS og Face ID uten passord (passkeys). Det kan komme senere.</li>
 </ul>
@@ -65,8 +69,9 @@ flowchart LR
 <thead><tr><th>Del</th><th>Hva den gjør</th></tr></thead>
 <tbody>
 <tr><td><b>ht14.no</b></td><td>Sameiets adresse. Kjøpt hos Domeneshop, DNS hos Cloudflare.</td></tr>
-<tr><td><b>Cloudflare Worker</b> «ht14» med statiske filer</td><td>Serverer startsiden (<code>/</code>), dokumentasjonen (<code>/dokumentasjon/</code>) og Badehusappen (<code>/badehusappen/</code>). Senere også innlogging og booking på <code>/api/</code>.</td></tr>
-<tr><td><b>Cloudflare D1</b> «ht14»</td><td>Databasen: hus, innlogginger, bookinger, økter, feilede innlogginger og en hendelseslogg.</td></tr>
+<tr><td><b>Cloudflare Worker</b> «ht14» med statiske filer</td><td>Serverer startsiden (<code>/</code>), dokumentasjonen (<code>/dokumentasjon/</code>) og Badehusappen (<code>/badehusappen/</code>), og API-et på <code>/api/</code>: innlogging, booking, Om oss og administrasjon.</td></tr>
+<tr><td><b>Cloudflare D1</b> «ht14»</td><td>Databasen: hus, innlogginger, bookinger, Om oss, økter, feilede innlogginger og en hendelseslogg. Forhåndsvisninger av grener bruker en egen test-database, «ht14-test».</td></tr>
+<tr><td><b>badehusappen.ht14.no</b></td><td>Kortadresse. En Redirect Rule sender den videre (301) til <code>ht14.no/badehusappen/</code>. Samme sted sender <code>www.ht14.no</code> til <code>ht14.no</code>.</td></tr>
 <tr><td><b>Nattlig kopi</b> (Cron Trigger)</td><td>Hver natt skriver Workeren bookinger og brukere som CSV og JSON til det private repoet <code>FluxReveal/ht14-data</code> – aldri passord-hasher. Git gir full historikk, og CSV-filene åpnes i Excel.</td></tr>
 <tr><td><b>GitHub</b></td><td><code>FluxReveal/ht14</code> (offentlig: sidene og koden, ingen hemmeligheter) og <code>FluxReveal/ht14-data</code> (privat: nattlig kopi).</td></tr>
 <tr><td><b>Workers Builds</b></td><td>Publiserer automatisk når <code>main</code> endres. Andre grener får en egen forhåndsvisningslenke.</td></tr>
@@ -93,15 +98,17 @@ flowchart LR
 <p>Status («pågår», «ferdig») regnes ut fra klokka i norsk tid når noe vises. Hver periode lagres som en egen booking; en heldag er tre bookinger med felles <code>group_id</code>.</p>
 
 <h3 id="innlogging-og-okter">Innlogging og økter</h3>
-<p>Én innlogging per hus (A–D) med e-post og passord, sjekket i Workeren. Passord lagres bare som PBKDF2-hash med salt og en hemmelig «pepper». Antall runder justeres slik at en innlogging holder seg innenfor gratisplanens 10 ms CPU per forespørsel. Skjemaet bruker riktige <code>autocomplete</code>-verdier, så iPhone og Android kan lagre passordet.</p>
-<p>Etter innlogging får mobilen cookien <code>__Host-ht14_okt</code> (HttpOnly, Secure, SameSite=Lax) som varer i ca. ett år. Øktene og telleren for feil passord ligger i D1. Sidene og API-et ligger på samme adresse, så cookien er en vanlig førsteparts-cookie som også Safari på iPhone godtar.</p>
+<p>Én innlogging per hus (A–D) med e-post og passord, sjekket i Workeren. Passord lagres bare som hash: <code>PBKDF2-SHA256(HMAC-SHA256(SESSION_PEPPER, passord), salt, 30 000 runder, 256 bit)</code>, med eget tilfeldig salt (16 byte) per bruker. Salt og antall runder lagres per bruker, så tallet kan økes senere – gamle hasher oppgraderes da ved neste innlogging. 30 000 runder bruker ca. 4 ms CPU, godt innenfor gratisplanens 10 ms per forespørsel. Skjemaet bruker riktige <code>autocomplete</code>-verdier, så iPhone og Android kan lagre passordet.</p>
+<p>Etter innlogging får mobilen cookien <code>__Host-ht14_okt</code> (HttpOnly, Secure, SameSite=Lax) som varer i ca. ett år. Cookien er 32 tilfeldige byte; i D1 lagres bare SHA-256 av den. Utlogging, nytt passord og deaktivering stopper øktene med en gang. Fem feil passord for samme e-post innen 15 minutter gir 15 minutters pause (20 per IP-adresse), og svaret er det samme enten e-posten finnes eller ikke. Sidene og API-et ligger på samme adresse, så cookien er en vanlig førsteparts-cookie som også Safari på iPhone godtar.</p>
 
 <h3 id="sikkerhet">Sikkerhet</h3>
 <ul>
   <li><b>Hemmeligheter:</b> <code>SESSION_PEPPER</code> og <code>GH_DATA_TOKEN</code> ligger bare som Worker-secrets – aldri i koden. Derfor kan repoet <code>ht14</code> være offentlig.</li>
   <li><b>Token:</b> <code>GH_DATA_TOKEN</code> er et fine-grained GitHub-token som bare kan skrive til <code>ht14-data</code>.</li>
   <li><b>Regler:</b> sjekkes alltid i Workeren, så det hjelper ikke å fikle med JavaScript i nettleseren.</li>
-  <li><b>Andre nettsider:</b> Workeren godtar bare endringer fra ht14.no (Origin-sjekk), sender ingen CORS-headere og krever gyldig økt.</li>
+  <li><b>Andre nettsider:</b> Workeren godtar bare endringer fra ht14.no (Origin-sjekk på alle POST/PUT/DELETE), sender ingen CORS-headere og krever gyldig økt.</li>
+  <li><b>Nettleseren:</b> strenge sikkerhetshoder i <code>public/_headers</code> – Content-Security-Policy (appen får bare kjøre egne skript), HSTS, <code>X-Frame-Options: DENY</code> og <code>nosniff</code>. API-svar lagres aldri i hurtigbufferen.</li>
+  <li><b>Passord:</b> hasher, salt, økter og innloggingsforsøk forlater aldri databasen – ikke i API-svar, logger eller den nattlige kopien.</li>
   <li><b>Dobbeltbooking:</b> hindres i databasen – samme dato og periode kan bare ha én aktiv booking.</li>
   <li><b>Sporbarhet:</b> hendelsesloggen i D1 viser hvem, når, fra, til og kommentar, og Git-historikken i <code>ht14-data</code> viser alle tidligere versjoner.</li>
 </ul>
@@ -121,24 +128,26 @@ flowchart LR
 │       ├── index.html, css/, ikoner/, manifest.webmanifest, sw.js
 │       ├── rules.json        reglene
 │       └── js/               rules-engine.js, store.js, app.js
-├── src/index.js              Workeren (i dag bare /api/helse)
-├── wrangler.jsonc            navn, D1, ht14.no
-├── schema.sql                utkast til databasen
+├── src/index.js              Workeren: API-et (/api/…) og regler
+├── src/auth.js               passord-hash og økter
+├── src/export.js             nattlig kopi til ht14-data
+├── wrangler.jsonc            navn, D1 (ht14 og ht14-test), ht14.no
+├── schema.sql                databasen
 └── tools/                    generator, lenkesjekk og tester
 
 ht14-data/                    ← privat, bare Workeren skriver
-├── bookings.csv, bookings.json
-└── users.csv, users.json     uten passord-hasher</code></pre>
-<p><b>Utkastet nå:</b> Badehusappen har ingen innlogging, og <code>store.js</code> lagrer bookingene i nettleseren (localStorage). <code>store.js</code> har de samme funksjonene som API-et skal ha, så når innlogging og booking kommer, byttes bare den fila ut.</p>
+└── data/                     bookings, users (uten passord), contacts, events – CSV og JSON</code></pre>
+<p><code>store.js</code> henter og lagrer alt via <code>/api/…</code>. Prøvebookinger fra før versjon 0.5 (som bare lå i nettleseren) slettes automatisk og flyttes ikke over.</p>
 
 <h3 id="datamodell">Datamodell</h3>
-<p>Utkast i <code>schema.sql</code>. Det legges inn i D1 først når sameiet har godkjent reglene.</p>
+<p>Skjemaet står i <code>schema.sql</code> og er lagt inn i både «ht14» og «ht14-test». En unik indeks på dato + periode (for alle som ikke er avbestilt) gjør dobbeltbooking umulig, også hvis to hus trykker samtidig.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Tabell</th><th>Innhold</th></tr></thead>
 <tbody>
 <tr><td><code>houses</code></td><td>A–D med navn og farge</td></tr>
 <tr><td><code>users</code></td><td>Én innlogging per hus, pluss administratorer: e-post, rolle, passord-hash</td></tr>
 <tr><td><code>bookings</code></td><td>Dato, periode (<code>AM</code> 10–14, <code>MID</code> 14–17, <code>PM</code> 17–24), hus, status, <code>group_id</code></td></tr>
+<tr><td><code>house_info</code></td><td>Om oss: husstanden, inntil to kontaktpersoner og fritekst per hus</td></tr>
 <tr><td><code>sessions</code></td><td>Innloggede mobiler (bare hash av cookien lagres)</td></tr>
 <tr><td><code>login_attempts</code></td><td>Feil passord, for en kort pause etter flere forsøk</td></tr>
 <tr><td><code>events</code></td><td>Hendelseslogg: hvem, når, hva, fra, til, kommentar</td></tr>
@@ -158,7 +167,7 @@ ht14-data/                    ← privat, bare Workeren skriver
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
-  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → (admin-unntak) → under 7 dager? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
+  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → under 7 dager? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
   <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
@@ -178,53 +187,58 @@ stateDiagram-v2
   COMPLETED --> [*]
   CANCELLED --> [*]
 </pre>
-<figcaption>Admin kan i tillegg rette en status. Det lagres i hendelsesloggen og som et merke (<code>corrected</code>), ikke som en egen status.</figcaption>
+<figcaption>«Pågår», «ikke bekreftet» og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
 </figure>
 <p>CANCELLED frigjør perioden og teller aldri i sommerkvoten. Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
 <h3 id="worker-api">API</h3>
-<p>Alle kall går til <code>/api/</code> på ht14.no, med JSON og økt-cookie (unntatt innlogging). I dag finnes bare <code>/api/helse</code>.</p>
+<p>Alle kall går til <code>/api/</code> på ht14.no med JSON og økt-cookie. Uten innlogging svarer alt unntatt <code>/api/helse</code> og <code>/api/login</code> med 401.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td>Svarer <code>{"ok":true}</code> – virker nå</td></tr>
-<tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte passord, hvem er jeg</td></tr>
-<tr><td><code>GET /api/calendar</code>, <code>/history</code>, <code>/stats</code>, <code>/rules</code></td><td>Kalender, historikk, statistikk, regler</td></tr>
-<tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder</td></tr>
-<tr><td><code>POST /api/bookings/{id}/cancel | checkin | confirm</code></td><td>Avbestill, sjekk inn, «Vi brukte badehuset»</td></tr>
-<tr><td><code>/api/admin/…</code></td><td>Innlogginger, økter, regler, unntak og retting</td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.5"}</code></td></tr>
+<tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
+<tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
+<tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
+<tr><td><code>POST /api/bookings/{id}/cancel | checkin | confirm</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, «Vi brukte badehuset», spontan innsjekk</td></tr>
+<tr><td><code>GET /api/contacts</code>, <code>PUT /api/contacts/{A–D}</code></td><td>Om oss (bare innlogget; endre eget hus, admin alle)</td></tr>
+<tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger, nytt passord, deaktiver, hendelseslogg</td></tr>
 </tbody></table></div>
 
 <h3 id="feilhandtering">Feilkoder</h3>
-<p>Feil returneres som <code>{ "error": KODE, "message": tekst }</code>, og brukeren ser alltid en forståelig norsk melding. De vanligste: <code>SLOT_TAKEN</code> (perioden er tatt), <code>STARTED</code> (har startet – bruk «Sjekk inn nå»), <code>FULLDAY_STARTED</code> (heldag etter kl. 10), <code>OUTSIDE_WINDOW</code> (over 3 måneder), <code>QUOTA_WEEKDAY</code> og <code>WEEK_LIMIT</code> (sommerregelen), <code>RATE_LIMITED</code> (for mange feil passord) og <code>RULES_INVALID</code> (feil i rules.json).</p>
+<p>Feil returneres som <code>{ "error": KODE, "message": tekst }</code>, og brukeren ser alltid en forståelig norsk melding. De vanligste: <code>SLOT_TAKEN</code> (perioden er tatt), <code>STARTED</code> (har startet – bruk «Sjekk inn nå»), <code>FULLDAY_STARTED</code> (heldag etter kl. 10), <code>OUTSIDE_WINDOW</code> (over 3 måneder), <code>QUOTA_WEEKDAY</code> og <code>WEEK_LIMIT</code> (sommerregelen), <code>BAD_LOGIN</code> (feil e-post eller passord), <code>LOCKED</code> (for mange forsøk – vent 15 minutter), <code>LOGIN_REQUIRED</code> (401), <code>FORBIDDEN</code> (ikke lov), <code>BAD_ORIGIN</code> (forespørsel fra en annen nettside) og <code>RULES_INVALID</code> (feil i rules.json).</p>
 
 <h2 id="drift" class="part-title"><span class="part-num">4</span> Drift og oppsett</h2>
 <p class="part-lead">For Thomas, steg for steg i Cloudflare-dashbordet. Alt er på gratisplanene.</p>
 
 <h3 id="oppsett">Oppsett i Cloudflare</h3>
-<p><b>Allerede gjort:</b> ht14.no er lagt til som sone på Cloudflare-kontoen, databasen D1 «ht14» er laget og står i <code>wrangler.jsonc</code>, og repoene <code>FluxReveal/ht14</code> og <code>FluxReveal/ht14-data</code> finnes.</p>
+<p><b>Allerede gjort (26. oktober 2026):</b> ht14.no er aktiv på Cloudflare og koblet til Workeren med Workers Builds. D1 «ht14» og «ht14-test» er laget, og skjemaet er lagt inn. Hemmeligheten <code>SESSION_PEPPER</code> er lagt inn, administratoren er laget, og <code>badehusappen.ht14.no</code> sender videre til appen. Repoene <code>FluxReveal/ht14</code> og <code>FluxReveal/ht14-data</code> finnes. <b>Gjenstår:</b> <code>GH_DATA_TOKEN</code> og å slå på den nattlige kopien (steg 5–6).</p>
 <ol class="steps">
   <li><b>Vent til ht14.no er aktiv</b>Velg ht14.no i dashbordet og sjekk at statusen er <i>Active</i> (Cloudflare sender også e-post). Først da kan domenet kobles til Workeren.</li>
   <li><b>Koble repoet (Workers Builds)</b><b>Workers &amp; Pages</b> → <b>Create application</b> → <b>GitHub</b>. Godkjenn Cloudflare-appen for FluxReveal (gjerne bare repoet <code>ht14</code>), velg <code>FluxReveal/ht14</code>, la byggkommandoen stå tom og velg <b>Save and Deploy</b>. Workeren må hete <code>ht14</code>, som i <code>wrangler.jsonc</code>.</li>
   <li><b>Forhåndsvisning av grener</b>Workeren → <b>Settings</b> → <b>Builds</b>: sjekk at produksjonsgrenen er <code>main</code> og at bygg for andre grener (preview builds) er slått på. Lenken for hver gren står under <b>Previews</b> og som kommentar i GitHub.</li>
   <li><b>ht14.no som eget domene</b>Står allerede i <code>wrangler.jsonc</code> og kobles på ved første publisering. Sjekk under <b>Settings</b> → <b>Domains &amp; Routes</b> (i nyere dashbord fanen <b>Domains</b>). Mangler det: <b>Add</b> → <b>Custom Domain</b> → <code>ht14.no</code>.</li>
-  <li><b>Hemmeligheter</b>Når innloggingen kommer: <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>: <code>SESSION_PEPPER</code> (lang tilfeldig tekst) og <code>GH_DATA_TOKEN</code> (fine-grained token, bare <code>ht14-data</code>, Contents: Read and write, utløp om ca. ett år). Velg <b>Deploy</b>.</li>
-  <li><b>Nattlig kopi</b>Senere: fjern kommentaren rundt <code>triggers</code> i <code>wrangler.jsonc</code> og flett inn i <code>main</code>. Cron Triggers styres fra den fila; sjekk under <b>Settings</b> → <b>Triggers</b>.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no, Badehusappen og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true}</code>), og legg appen på Hjem-skjermen.</li>
+  <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
+  <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
+  <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.5"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
-<ul>
-  <li><b>Nytt hus-passord:</b> administratoren setter det og gir det muntlig eller på lapp. Alle økter for huset avsluttes.</li>
-  <li><b>Mistet mobil:</b> «Logg ut alle» for huset, og bytt passord.</li>
-  <li><b>Flytter noen:</b> bytt e-post og passord for huset. Historikken beholdes.</li>
-</ul>
+<p>Alt gjøres i appen, også på mobilen. Bare administrator ser «Administrasjon».</p>
+<ol>
+  <li><b>Lage innlogging for et hus:</b> logg inn som admin → <b>Mer</b> → <b>Administrasjon</b> → «Lag innlogging for Hus A». Skriv husets e-post. Appen foreslår et tilfeldig passord – trykk «Kopier passord» eller skriv det ned – og trykk <b>Lagre</b>. Gi e-post og passord til huset (muntlig, på lapp eller SMS). Gjenta for B, C og D. Hvert hus kan bare ha én aktiv innlogging.</li>
+  <li><b>Glemt passord eller mistet mobil:</b> Administrasjon → «Nytt passord» ved huset → Lagre. Huset logges ut på alle telefoner og logger inn med det nye.</li>
+  <li><b>Flytter noen:</b> «Deaktiver» den gamle innloggingen og lag en ny med ny e-post. Bookingene og historikken beholdes.</li>
+  <li><b>Bytte eget passord:</b> alle kan gjøre det selv under <b>Mer</b> → <b>Bytt passord</b>. Andre telefoner logges ut.</li>
+</ol>
 
 <h3 id="endre-regler">Endre regler og gjøre unntak</h3>
 <p>Når sameiet har bestemt en endring, legges den inn i <code>rules.json</code> som en vanlig endring (se <a href="#slik-endrer-vi">Slik gjøres endringer</a>). Unntak og retting av historikk krever alltid en kommentar og vises i historikken.</p>
 
 <h3 id="backup">Sikkerhetskopi</h3>
-<p>Hver natt skrives bookinger og brukere til <code>ht14-data</code> som CSV (semikolon, UTF-8, åpnes i Excel) og JSON – aldri passord-hasher. Git-historikken viser alle tidligere versjoner. D1 kan i tillegg spoles tilbake inntil 7 dager (Time Travel).</p>
+<p>Når den nattlige kopien er slått på, skriver Workeren bookinger, innlogginger (uten passord-hash og salt), Om oss og hendelsesloggen til <code>ht14-data/data/</code> som CSV (UTF-8, åpnes i Excel) og JSON. Økter og innloggingsforsøk tas aldri med. Git-historikken viser alle tidligere versjoner.</p>
+<p>D1 har i tillegg <b>Time Travel</b>: databasen kan spoles tilbake til et hvilket som helst minutt de siste 7 dagene (gratisplanen). Finn et tidspunkt med <code>npx wrangler d1 time-travel info ht14 --timestamp=2026-10-26T20:00:00Z</code> og gjenopprett med <code>npx wrangler d1 time-travel restore ht14 --timestamp=…</code>. Gjenoppretting overskriver dagens data, så ta en eksport først: <code>npx wrangler d1 export ht14 --remote --output=ht14.sql</code>.</p>
 
 <h3 id="nar-noe-feiler">Når noe feiler</h3>
 <div class="table-wrap"><table>
@@ -234,6 +248,8 @@ stateDiagram-v2
 <tr><td>Endringen kom aldri ut</td><td>Se byggeloggen under <b>Deployments</b> → <b>View build history</b>.</td></tr>
 <tr><td>Kopien i ht14-data oppdateres ikke</td><td>Sjekk at <code>GH_DATA_TOKEN</code> ikke er utløpt. Beboerne merker ingenting.</td></tr>
 <tr><td>Alle bookinger avvises (RULES_INVALID)</td><td>Rull tilbake, eller rett <code>rules.json</code>.</td></tr>
+<tr><td>Et hus får «For mange forsøk»</td><td>Vent 15 minutter, eller gi huset nytt passord i Administrasjon.</td></tr>
+<tr><td>Ingen kommer inn («Innlogging er ikke satt opp»)</td><td>Hemmeligheten <code>SESSION_PEPPER</code> mangler. Den må aldri slettes eller byttes.</td></tr>
 </tbody></table></div>
 
 <h2 id="overlevering" class="part-title"><span class="part-num">5</span> Drift og overlevering</h2>
@@ -261,6 +277,6 @@ stateDiagram-v2
 <ol>
   <li>Overfør de to repoene (<code>ht14</code> og <code>ht14-data</code>) til sameiets GitHub-konto (repoets Settings → Transfer ownership).</li>
   <li>Lag sameiets egen Cloudflare-konto (gratis), lag en ny D1-database, legg inn siste kopi fra <code>ht14-data</code> og koble repoet med Workers Builds.</li>
-  <li>Legg inn hemmelighetene på nytt (ny pepper og nytt token). Da logger alle husene inn én gang til.</li>
+  <li>Legg inn hemmelighetene på nytt (ny <code>SESSION_PEPPER</code> og nytt token). Kopien inneholder ingen passord, så lag administratoren på nytt med <code>tools/lag-admin-sql.mjs</code> og gi husene nye passord i appen.</li>
   <li>Flytt domenet: eierskifte for ht14.no hos Domeneshop til sameiet, og legg ht14.no til i sameiets Cloudflare-konto.</li>
 </ol>

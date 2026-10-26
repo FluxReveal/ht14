@@ -171,8 +171,8 @@ def layout(fname, title, body, needs_mermaid, desc, extra_head="", extra_foot=""
 <meta name="description" content="{html.escape(desc)}">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=20261026a">
-<script src="app.js?v=20261026a" defer></script>{mm}{extra_head}
+<link rel="stylesheet" href="style.css?v=20261026v05">
+<script src="app.js?v=20261026v05" defer></script>{mm}{extra_head}
 </head>
 <body>
 <a href="#innhold" class="chip" style="position:absolute;left:-9999px" onfocus="this.style.left='8px'">Hopp til innhold</a>
@@ -201,7 +201,7 @@ def layout(fname, title, body, needs_mermaid, desc, extra_head="", extra_foot=""
     <article>
 {body}
 {pn}
-      <p class="footer">Sameiet HT14. Et utkast til Badehusappen kan prøves på <a href="/badehusappen/">ht14.no/badehusappen/</a> – bookingene lagres foreløpig bare på din egen telefon. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.5. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
