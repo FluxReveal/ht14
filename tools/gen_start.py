@@ -19,7 +19,7 @@ EV = [
  (5,'regning',4.0,5.0,'Oppgjør av utlegg etter dugnaden','mai',False,
   'Forslag – avklares. Den som har lagt ut for noe til dugnaden, får pengene tilbake og utgiftene deles.'),
  (6,'badehus',5.0,8.0,'Sommerregler for booking','juni–august',False,
-  'Forslag: maks én fredag, én lørdag og én søndag per hus per måned, og bare én av dagene i samme helg (vedlegg 1 punkt 6–7).'),
+  'Forslag: maks én torsdag, én fredag og én lørdag per hus per måned, og ikke to av dem i samme uke (vedlegg 1 punkt 6).'),
  (7,'badehus',8.0,9.0,'Badehuset stenges for vinteren','september',False,
   'Forslag – avklares. Badesesongen har vart fra mai til ut i september. Ingen fast stengedato er avtalt.'),
  (8,'dugnad',8.5,10.0,'Høstdugnad med nabofest','september–oktober',False,
@@ -34,12 +34,13 @@ EV = [
 # Ingen versjonsnumre – bare dato og hva som er nytt.
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-26", "Nye sommerregler og enklere regler", "Sommerregelen gjelder nå torsdag, fredag og lørdag – maks én av hver per måned, og ikke to i samme uke. Vanlig booking er én kveld; formiddag og ettermiddag bare når dere har gjester. Reglene og vedtektsforslaget er kortere og enklere.", "/dokumentasjon/regler.html#hvor-mye"),
  ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/vedtekter.html#punkt-2"),
  ("2026-10-26", "HT14 får egen adresse: ht14.no", "Startsiden, dokumentasjonen og Badehusappen flytter til Cloudflare på ht14.no. Bookingene skal lagres i en database med en kopi hver natt, og hvert hus får én felles innlogging.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Kortere og ryddigere dokumentasjon", "Dokumentasjonen er omtrent halvert og samlet i fem sider: Teknisk dokumentasjon, Regler for bruk av badehuset, Forslag til tillegg i vedtektene, Årshjul og Hva er nytt. Gamle lenker virker fortsatt.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Felles meny for hele HT14", "Hjem, Badehusappen og Dokumentasjon henger sammen, med «Sameiet HT14» øverst – så det er lett å finne fram og tilbake.", None),
  ("2026-10-25", "Samlet teknisk dokumentasjon", "Overordnet beskrivelse, HLD og LLD er slått sammen til ett dokument.", "/dokumentasjon/teknisk.html"),
- ("2026-10-25", "Ny inndeling av dagen", "Formiddag 10–14, ettermiddag 14–17 og kveld 17–24. Du kan booke én eller flere perioder – heldag er alle tre og er fortsatt standard. Dette er en del av forslaget til sameiemøtet.", "/dokumentasjon/regler.html#regel-1"),
+ ("2026-10-25", "Ny inndeling av dagen", "Formiddag 10–14, ettermiddag 14–17 og kveld 17–24. Dette er en del av forslaget til sameiemøtet.", "/dokumentasjon/regler.html#perioder"),
  ("2026-10-25", "Badehusappen på alle skjermer", "Fungerer fint på iPhone, Android, nettbrett og PC – også med stor tekst og mørk modus.", "/badehusappen/"),
  ("2026-10-25", "Enklere booking", "Velg hus og tid rett under datoen, trykk rett på en ledig tid i uka, og «Book»-knappen er alltid synlig nederst.", "/badehusappen/"),
  ("2026-10-25", "Utkast til Badehusappen", "Prøv å booke badehuset på mobilen. Ingen innlogging ennå – du velger bare huset ditt, og bookingene lagres på din egen telefon.", "/badehusappen/"),

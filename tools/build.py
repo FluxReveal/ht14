@@ -30,10 +30,12 @@ REDIRECTS = {
 }
 # Gamle avsnitt på sider som beholder adressen
 ALIASES = {
-  "regler.html": {"reglene-pa-n-side": "reglene-kort", "kan-jeg-booke-denne-dagen": "reglene-kort",
-                  "dager-telles-ikke-perioder": "regel-3", "innsjekk-utsjekk-og-bekreftelse": "innsjekk",
-                  "helg-over-to-maneder": "regel-4", "utenfor-sommer-september-mai": "regel-2",
-                  "administrator-overstyrer": "innsjekk", "statistikk-hvordan-bruk-telles": "statistikk"},
+  "regler.html": {"reglene-pa-n-side": "maal", "kan-jeg-booke-denne-dagen": "hvor-mye", "reglene-kort": "maal",
+                  "regel-1": "perioder", "regel-2": "hvor-mye", "regel-3": "hvor-mye", "regel-4": "hvor-mye", "regel-5": "hvor-mye",
+                  "dager-telles-ikke-perioder": "hvor-mye", "helg-over-to-maneder": "hvor-mye", "utenfor-sommer-september-mai": "hvor-mye",
+                  "regel-6": "avbestille", "innsjekk": "avbestille", "innsjekk-utsjekk-og-bekreftelse": "avbestille",
+                  "administrator-overstyrer": "avbestille", "statistikk": "maal", "statistikk-hvordan-bruk-telles": "maal",
+                  "booke": "badehusappen", "avbestille-i-appen": "badehusappen", "sjekke-inn": "badehusappen", "hjem-skjerm": "badehusappen", "sporsmal": "badehusappen"},
 }
 
 LOGO = '''<svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg>'''
@@ -69,7 +71,7 @@ def cal(year, month, events=None, blocked=(), today=None, caption=""):
             if d == 0:
                 tds.append('<td class="out"></td>'); continue
             cls = []
-            if i >= 4: cls.append("wk")
+            if i in (3, 4, 5): cls.append("wk")          # torsdag–lørdag: begrenset om sommeren
             if d in blocked: cls.append("blocked")
             if d == today: cls.append("today")
             inner = f'<span class="d">{d}</span>'
@@ -83,43 +85,11 @@ def cal(year, month, events=None, blocked=(), today=None, caption=""):
             f'<table class="cal" aria-label="Kalender {MONTHS[month-1]} {year}"><thead><tr>{head}</tr></thead><tbody>{"".join(rows)}</tbody></table>{cap}</figure>')
 
 CALS = {
- # Oversikt / beskrivelse: en typisk juli
- "juli-typisk": cal(2027, 7, {
-     2: [("a","Hus A")], 3: [("b","Hus B")], 4: [("c","Hus C")],
-     9: [("d","Hus D")], 10: [("a half","10–17 A"),("c half","17–24 C")], 11: [("b","Hus B")],
-     14: [("c half","10–14 C")], 16: [("b","Hus B")], 17: [("d","Hus D")], 18: [("a","Hus A")],
-     21: [("d half","17–24 D")], 23: [("c","Hus C")], 25: [("d","Hus D")],
-     27: [("b","Hus B")]},
-     caption="Eksempel (fiktive data): fargen viser hvilken husstand som har dagen. Har flere hus samme dag, vises hver del som et eget felt."),
- # Regel: maks 1 fredag/lørdag/søndag per måned
+ # Sommerregelen: maks én torsdag, én fredag og én lørdag per måned – og bare én av dem per uke
  "regel-kvote": cal(2027, 7, {
-     2: [("a","Hus A ✓")], 10: [("a","Hus A ✓")], 18: [("a","Hus A ✓")],
-     9: [("x","A: 2. fredag ✗")], 24: [("x","A: 2. lørdag ✗")]},
-     caption="Hus A har allerede én fredag (2.), én lørdag (10.) og én søndag (18.) i juli. Nye forsøk (gjort mer enn 7 dager i forveien) på fredag 9. og lørdag 24. avvises."),
- # Regel: helgebegrensning
- "regel-helg": cal(2027, 8, {
-     6: [("b","Hus B ✓")], 7: [("x","B: lør ✗")], 8: [("x","B: søn ✗")],
-     14: [("ok","B: lør ✓ (ny helg)")]},
-     caption="Hus B har fredag 6. august. Lørdag 7. og søndag 8. samme helg avvises. Lørdag 14. er en ny helg og er greit (B har ingen lørdag i august ennå)."),
- # Regel: 7-dagersregel
- "regel-7dager": cal(2027, 7, {
-     2: [("a","Hus A")], 3: [("a","Hus A")], 4: [("a","Hus A")]},
-     blocked=(), today=1,
-     caption="I dag er 1. juli (markert). Fredag 2. – søndag 4. er under 7 dager unna: sommerbegrensningene gjelder ikke, førstemann til mølla."),
- # Regel: sen avbestilling
- "regel-avbestill": cal(2027, 7, {
-     16: [("x","B: avbestilt sent")], 23: [("x","B: fre ✗ kvote brukt")]},
-     today=12,
-     caption="I dag er 12. juli. Hus B avbestiller fredag 16. (4 dager før) → CANCELLED_LATE: dagen blir ledig for andre, men teller fortsatt som Hus Bs fredag i juli. Et nytt forsøk på fredag 23. (11 dager frem) avvises derfor."),
- # Regel: helg over to måneder
- "regel-maanedsskifte": cal(2027, 7, {
-     30: [("c","Hus C fre")], 31: [("x","C: lør ✗")]},
-     caption="Fredag 30. juli – søndag 1. august er én helg. Forslaget: kvoten telles i datoens måned, men helgeregelen følger helgen (fre–søn)."),
- # Brukermanual: kalendervisning
- "manual-kalender": cal(2027, 7, {
-     2: [("a","Hus A")], 3: [("b","Hus B")], 10: [("a half","10–14 A")],
-     12: [("b half","14–24 B")], 17: [("d","Hus D")], 18: [("c","Hus C")], 24: [("c","Hus C")]},
-     today=8, caption="Månedskalenderen: hver husstand har sin faste farge. Trykk på en dato for detaljer."),
+     1: [("a","A tor ✓")], 9: [("a","A fre ✓")], 11: [("a","A søn ✓")], 17: [("a","A lør ✓")],
+     10: [("x","A lør ✗")], 15: [("x","A tor ✗")]},
+     caption="Hus A har torsdag 1., fredag 9. og lørdag 17. – i hver sin uke. Lørdag 10. går ikke (samme uke som fredag 9.), og torsdag 15. går ikke (andre torsdag i juli). Søndag 11. går fint."),
 }
 
 
