@@ -1,0 +1,15 @@
+{
+  "name": "ht14",
+  "private": true,
+  "description": "ht14.no – startside, dokumentasjon og Badehusappen for Sameiet Halden Terrasse 14",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "build": "python3 tools/build.py",
+    "sjekk": "python3 tools/checklinks.py",
+    "test": "node --test tools/tests/"
+  },
+  "devDependencies": {
+    "wrangler": "^4.152.0"
+  }
+}

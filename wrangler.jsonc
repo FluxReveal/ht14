@@ -1,0 +1,53 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  // HT14 – ht14.no. Én Worker serverer startsiden (/), dokumentasjonen (/dokumentasjon/)
+  // og Badehusappen (/badehusappen/). Workers Builds publiserer automatisk fra main.
+  // NB: Navnet må være det samme som Workeren i Cloudflare-dashbordet.
+  "name": "ht14",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-19",
+
+  // Statiske filer. /api/* går alltid til Workeren (src/index.js).
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Databasen (D1). Opprettet 26.10.2026. Skjemaet (schema.sql) er bare et utkast og er ikke lagt inn ennå.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ht14",
+      "database_id": "9dd27f7a-1b3e-45a3-a5ae-9e2f9e251868"
+    }
+  ],
+
+  // ht14.no som eget domene (Custom Domain). Krever at sonen ht14.no er «Active» i Cloudflare.
+  "routes": [
+    { "pattern": "ht14.no", "custom_domain": true }
+  ],
+
+  // Ingen produksjonsadresse på workers.dev – bare ht14.no.
+  // Forhåndsvisninger av grener (Previews) får likevel egne workers.dev-lenker.
+  "workers_dev": false,
+  "preview_urls": true,
+
+  // Innstillinger for forhåndsvisninger. Tomt nå, fordi Workeren ikke bruker databasen ennå.
+  // Før innlogging og booking bygges: lag en egen test-database (f.eks. «ht14-test») og legg den inn her
+  // som "d1_databases" med binding "DB", så forhåndsvisninger aldri rører de ekte bookingene.
+  "previews": {},
+
+  "observability": { "enabled": true }
+
+  // Nattlig kopi til FluxReveal/ht14-data (CSV + JSON, aldri passord-hasher).
+  // Slås på senere, når eksporten er skrevet (scheduled() i src/index.js) og hemmeligheten
+  // GH_DATA_TOKEN er lagt inn. Cron kjører i UTC: «15 2 * * *» = 03.15 (vinter) / 04.15 (sommer) norsk tid.
+  // Fjern // foran linjen under (og legg til komma etter observability-linjen over):
+  // "triggers": { "crons": ["15 2 * * *"] }
+
+  // Hemmeligheter (legges inn i dashbordet eller med «npx wrangler secret put», aldri her):
+  //   SESSION_PEPPER – hemmelig tillegg til passord-hashene
+  //   GH_DATA_TOKEN  – fine-grained GitHub-token, Contents: Read and write bare på FluxReveal/ht14-data
+}
