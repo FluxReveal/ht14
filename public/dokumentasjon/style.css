@@ -1,0 +1,320 @@
+/* ==========================================================
+   Badehusappen – dokumentasjon
+   Felles stilark for alle sider. Ingen byggesteg nødvendig.
+   ========================================================== */
+:root{
+  /* Husstandsfarger – brukes konsekvent overalt */
+  --hus-a:#2563eb; --hus-a-bg:#dbeafe;   /* A = blå    */
+  --hus-b:#16a34a; --hus-b-bg:#dcfce7;   /* B = grønn  */
+  --hus-c:#ea580c; --hus-c-bg:#ffedd5;   /* C = oransje*/
+  --hus-d:#7c3aed; --hus-d-bg:#ede9fe;   /* D = lilla  */
+
+  --ink:#0f172a; --ink-2:#334155; --muted:#64748b;
+  --line:#e2e8f0; --bg:#f8fafc; --card:#ffffff;
+  --brand:#0e7490; --brand-2:#0891b2; --brand-bg:#ecfeff;
+  --side:#0b2533; --side-2:#123a4d; --side-ink:#cfe8ef;
+  --warn:#b45309; --warn-bg:#fffbeb; --warn-line:#fcd34d;
+  --ok:#15803d; --ok-bg:#f0fdf4;
+  --danger:#b91c1c; --danger-bg:#fef2f2;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.06),0 4px 16px rgba(15,23,42,.06);
+  --sidebar-w:280px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  color:var(--ink);background:var(--bg);line-height:1.62;font-size:16px;-webkit-font-smoothing:antialiased}
+a{color:var(--brand);text-decoration-thickness:1px;text-underline-offset:2px}
+a:hover{color:var(--brand-2)}
+img,svg{max-width:100%}
+code,pre,kbd{font-family:var(--mono);font-size:.88em}
+code{background:#eef2f7;padding:.1em .38em;border-radius:6px}
+pre{background:#0f172a;color:#e2e8f0;padding:16px 18px;border-radius:12px;overflow:auto;line-height:1.5;box-shadow:var(--shadow)}
+pre code{background:none;padding:0;color:inherit;font-size:.86em}
+kbd{background:#fff;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;padding:.05em .4em}
+hr{border:0;border-top:1px solid var(--line);margin:2.5rem 0}
+
+/* ---------- Sidemeny ---------- */
+.sidebar{position:fixed;inset:0 auto 0 0;width:var(--sidebar-w);background:linear-gradient(180deg,var(--side),#071a24);
+  color:var(--side-ink);display:flex;flex-direction:column;z-index:40;overflow-y:auto;transition:transform .25s ease}
+.brand{display:flex;gap:12px;align-items:center;padding:22px 20px 14px;text-decoration:none;color:#fff}
+.brand svg{flex:none}
+.brand b{display:block;font-size:1.02rem;letter-spacing:.2px}
+.brand small{display:block;color:#8fb8c6;font-size:.76rem}
+.search{padding:6px 16px 10px;position:relative}
+.search input{width:100%;padding:9px 12px 9px 34px;border-radius:10px;border:1px solid #23506a;background:#0d3042;color:#fff;font-size:.9rem}
+.search input::placeholder{color:#7fa6b5}
+.search input:focus{outline:2px solid var(--brand-2);border-color:transparent}
+.search .ico{position:absolute;left:28px;top:15px;opacity:.7}
+.search-results{list-style:none;margin:6px 0 0;padding:0;max-height:50vh;overflow:auto;border-radius:10px;background:#fff;color:var(--ink);box-shadow:var(--shadow)}
+.search-results:empty{display:none}
+.search-results a{display:block;padding:8px 12px;text-decoration:none;color:var(--ink);border-bottom:1px solid var(--line);font-size:.86rem}
+.search-results a:hover,.search-results a:focus{background:var(--brand-bg)}
+.search-results small{display:block;color:var(--muted);font-size:.76rem}
+.nav{list-style:none;margin:6px 0;padding:0 10px}
+.nav-label{font-size:.7rem;text-transform:uppercase;letter-spacing:.12em;color:#6f9aab;padding:14px 12px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--side-ink);text-decoration:none;font-size:.93rem}
+.nav a:hover{background:var(--side-2);color:#fff}
+.nav a[aria-current="page"]{background:#e0f7fb;color:var(--side);font-weight:650;box-shadow:inset 3px 0 0 var(--brand-2)}
+.nav .num{flex:none;width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:.72rem;font-weight:700;background:#16465c;color:#bfe3ee}
+.nav a[aria-current="page"] .num{background:var(--brand);color:#fff}
+.side-foot{margin-top:auto;padding:16px 20px 22px;font-size:.78rem;color:#7fa6b5}
+.legend-mini{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.legend-mini span{font-size:.72rem;padding:2px 8px;border-radius:99px;color:#fff;font-weight:600}
+
+/* ---------- Toppstripe mobil ---------- */
+.topbar{display:none;position:sticky;top:0;z-index:30;background:var(--side);color:#fff;padding:10px 14px;align-items:center;gap:12px}
+.topbar b{font-size:.98rem}
+.hamburger{background:none;border:1px solid #2a5870;border-radius:10px;width:42px;height:38px;display:grid;place-items:center;color:#fff;cursor:pointer}
+.scrim{display:none}
+
+/* ---------- Hovedinnhold ---------- */
+.main{margin-left:var(--sidebar-w);min-height:100vh;display:flex;justify-content:center}
+.content-wrap{display:grid;grid-template-columns:minmax(0,900px) 220px;gap:40px;padding:36px 40px 80px;width:100%;max-width:1220px}
+article{min-width:0}
+.toc{position:sticky;top:24px;align-self:start;font-size:.84rem;max-height:calc(100vh - 48px);overflow:auto}
+.toc h4{margin:0 0 8px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+.toc li a{display:block;padding:4px 0 4px 12px;margin-left:-2px;border-left:2px solid transparent;color:var(--ink-2);text-decoration:none}
+.toc li.l3 a{padding-left:24px;font-size:.8rem;color:var(--muted)}
+.toc li a:hover{color:var(--brand)}
+.toc li a.active{border-left-color:var(--brand-2);color:var(--brand);font-weight:600}
+
+.hero{background:radial-gradient(1200px 300px at 0% 0%,#cffafe 0%,transparent 60%),linear-gradient(135deg,#ffffff,#f0fdff);
+  border:1px solid var(--line);border-radius:20px;padding:30px 30px 26px;margin-bottom:28px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.hero .eyebrow{font-size:.76rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--brand)}
+.hero h1{margin:.2rem 0 .5rem;font-size:clamp(1.6rem,3vw,2.3rem);line-height:1.18;letter-spacing:-.01em}
+.hero p{margin:.2rem 0;color:var(--ink-2);max-width:62ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.76rem;font-weight:600;padding:4px 10px;border-radius:99px;background:#f1f5f9;color:var(--ink-2);border:1px solid var(--line)}
+.chip.draft{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-line)}
+h1,h2,h3,h4{line-height:1.25;color:var(--ink)}
+article h2{font-size:1.5rem;margin:2.6rem 0 .8rem;padding-top:.4rem;letter-spacing:-.005em}
+article h2::before{content:"";display:block;width:36px;height:4px;border-radius:4px;background:linear-gradient(90deg,var(--brand),var(--brand-2));margin-bottom:12px}
+article h3{font-size:1.15rem;margin:1.8rem 0 .5rem}
+article h4{font-size:1rem;margin:1.2rem 0 .4rem}
+.anchor{opacity:0;margin-left:6px;text-decoration:none;color:var(--muted);font-weight:400}
+h2:hover .anchor,h3:hover .anchor{opacity:1}
+
+/* ---------- Kort / rutenett ---------- */
+.grid{display:grid;gap:16px}
+.grid.c2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grid.c4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 18px 16px;box-shadow:var(--shadow)}
+.card h3,.card h4{margin-top:0}
+a.card{display:block;text-decoration:none;color:var(--ink);transition:transform .15s,box-shadow .15s,border-color .15s}
+a.card:hover{transform:translateY(-2px);border-color:#a5e4f0;box-shadow:0 8px 30px rgba(14,116,144,.14)}
+a.card .ic{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--brand-bg);margin-bottom:10px}
+a.card p{color:var(--muted);margin:.3rem 0 0;font-size:.92rem}
+a.card .go{display:inline-block;margin-top:10px;color:var(--brand);font-weight:600;font-size:.88rem}
+.stat{font-size:2rem;font-weight:800;letter-spacing:-.02em;color:var(--brand)}
+
+/* ---------- Bokser ---------- */
+.callout{border-radius:12px;padding:14px 16px 14px 48px;margin:1.2rem 0;position:relative;border:1px solid var(--line);background:#fff}
+.callout::before{position:absolute;left:14px;top:13px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:.8rem;color:#fff}
+.callout p:first-child{margin-top:0}.callout p:last-child{margin-bottom:0}
+.callout.info{background:#f0f9ff;border-color:#bae6fd}.callout.info::before{content:"i";background:#0284c7}
+.callout.warn{background:var(--danger-bg);border-color:#fecaca}.callout.warn::before{content:"!";background:var(--danger)}
+.callout.ok{background:var(--ok-bg);border-color:#bbf7d0}.callout.ok::before{content:"✓";background:var(--ok)}
+.callout.forslag{background:var(--warn-bg);border-color:var(--warn-line);border-style:dashed}
+.callout.forslag::before{content:"?";background:var(--warn)}
+.badge-forslag{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:99px;background:#fef3c7;color:#92400e;border:1px dashed #f59e0b;vertical-align:middle;white-space:nowrap}
+.badge{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:99px;background:#f1f5f9;color:var(--ink-2);border:1px solid var(--line);white-space:nowrap}
+
+/* Status-merker */
+.st{display:inline-block;font-family:var(--mono);font-size:.74rem;font-weight:700;padding:2px 8px;border-radius:6px;border:1px solid}
+.st-BOOKED{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+.st-CHECKED_IN{background:#ecfeff;color:#0e7490;border-color:#a5f3fc}
+.st-COMPLETED{background:#f0fdf4;color:#15803d;border-color:#bbf7d0}
+.st-NOT_CONFIRMED{background:#fefce8;color:#a16207;border-color:#fde68a}
+.st-CANCELLED{background:#f8fafc;color:#475569;border-color:#cbd5e1}
+.st-CANCELLED_LATE{background:#fff1f2;color:#be123c;border-color:#fecdd3}
+.st-ADMIN_CORRECTED{background:#faf5ff;color:#7e22ce;border-color:#e9d5ff}
+
+/* Husstands-merker */
+.hus{display:inline-flex;align-items:center;gap:6px;font-weight:650;padding:2px 10px 2px 6px;border-radius:99px;font-size:.84rem;white-space:nowrap}
+.hus::before{content:"";width:10px;height:10px;border-radius:50%;background:currentColor}
+.hus.a{color:var(--hus-a);background:var(--hus-a-bg)}
+.hus.b{color:var(--hus-b);background:var(--hus-b-bg)}
+.hus.c{color:var(--hus-c);background:var(--hus-c-bg)}
+.hus.d{color:var(--hus-d);background:var(--hus-d-bg)}
+
+/* ---------- Tabeller ---------- */
+.table-wrap{overflow-x:auto;margin:1rem 0;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:#f8fafc;font-weight:650;color:var(--ink-2);font-size:.82rem;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:#fafcff}
+
+/* ---------- Figurer / diagrammer ---------- */
+figure{margin:1.4rem 0;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);overflow-x:auto}
+figcaption{font-size:.84rem;color:var(--muted);margin-top:10px;text-align:center}
+.mermaid{display:flex;justify-content:center;min-height:60px}
+.mermaid:not([data-processed]){color:transparent;font-size:0}
+.mermaid:not([data-processed])::after{content:"Laster diagram …";color:var(--muted);font-size:.85rem}
+
+/* Steg-for-steg */
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:1rem 0}
+ol.steps>li{counter-increment:s;position:relative;padding:0 0 18px 50px;border-left:2px solid var(--line);margin-left:16px}
+ol.steps>li:last-child{border-left-color:transparent}
+ol.steps>li::before{content:counter(s);position:absolute;left:-17px;top:-2px;width:32px;height:32px;border-radius:50%;background:var(--brand);color:#fff;font-weight:800;display:grid;place-items:center;box-shadow:0 0 0 4px var(--bg)}
+ol.steps>li>b:first-child{display:block;margin-bottom:2px}
+
+/* Mockup-ramme */
+.device{max-width:380px;margin:0 auto;border:10px solid #0f172a;border-radius:30px;background:#fff;overflow:hidden;box-shadow:0 12px 40px rgba(15,23,42,.25)}
+.device.wide{max-width:640px;border-radius:14px;border-width:8px}
+.mock-bar{background:var(--brand);color:#fff;padding:10px 14px;font-weight:700;font-size:.9rem;display:flex;justify-content:space-between;align-items:center}
+.mock-body{padding:14px;font-size:.86rem}
+.mock-field{border:1px solid #cbd5e1;border-radius:8px;padding:9px 10px;margin:6px 0 12px;color:var(--muted);background:#fff}
+.mock-btn{display:block;text-align:center;background:var(--brand);color:#fff;border-radius:10px;padding:10px;font-weight:700;margin-top:8px}
+.mock-btn.ghost{background:#fff;color:var(--brand);border:1.5px solid var(--brand)}
+.mock-btn.danger{background:var(--danger)}
+.mock-label{font-size:.76rem;font-weight:650;color:var(--ink-2)}
+.slot{border-radius:10px;padding:10px 12px;margin:8px 0;border:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.slot.free{background:#f8fafc;border-style:dashed}
+.slot.a{background:var(--hus-a-bg);border-color:var(--hus-a)}
+.slot.b{background:var(--hus-b-bg);border-color:var(--hus-b)}
+.slot.c{background:var(--hus-c-bg);border-color:var(--hus-c)}
+.slot.d{background:var(--hus-d-bg);border-color:var(--hus-d)}
+.radio{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:10px;padding:9px 10px;margin:6px 0}
+.radio i{width:16px;height:16px;border-radius:50%;border:2px solid #94a3b8;flex:none}
+.radio.on{border-color:var(--brand);background:var(--brand-bg)}
+.radio.on i{border:5px solid var(--brand)}
+
+/* Kalender (HTML-variant) */
+.cal{width:100%;border-collapse:separate;border-spacing:4px;table-layout:fixed;font-size:.8rem}
+.cal th{background:none;text-transform:none;letter-spacing:0;text-align:center;padding:4px;color:var(--muted);font-size:.74rem;border:0}
+.cal td{height:58px;border:1px solid var(--line);border-radius:8px;padding:4px;vertical-align:top;background:#fff;position:relative}
+.cal td.out{background:#f8fafc;color:#cbd5e1}
+.cal td .d{font-weight:700;font-size:.78rem;color:var(--ink-2)}
+.cal td.wk{background:#f8fafc}
+.cal td.today{outline:2px solid var(--brand-2)}
+.cal .p{display:block;border-radius:5px;margin-top:3px;font-size:.66rem;font-weight:700;color:#fff;padding:1px 4px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal .p.a{background:var(--hus-a)}.cal .p.b{background:var(--hus-b)}.cal .p.c{background:var(--hus-c)}.cal .p.d{background:var(--hus-d)}
+.cal .p.x{background:repeating-linear-gradient(45deg,#fecaca,#fecaca 4px,#fee2e2 4px,#fee2e2 8px);color:#991b1b}
+.cal .p.ok{background:#dcfce7;color:#166534}
+.cal .p.half{width:55%}
+.cal td.blocked{background:repeating-linear-gradient(45deg,#fff,#fff 6px,#fef2f2 6px,#fef2f2 12px)}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin:.6rem 0}
+.kv{display:grid;grid-template-columns:max-content 1fr;gap:6px 16px;font-size:.92rem}
+.kv dt{font-weight:650;color:var(--ink-2)}.kv dd{margin:0}
+.pill-yes{color:var(--ok);font-weight:700}.pill-no{color:var(--danger);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pagenav{display:flex;justify-content:space-between;gap:12px;margin-top:3rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+.pagenav a{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px 16px;text-decoration:none;background:#fff;box-shadow:var(--shadow)}
+.pagenav a small{display:block;color:var(--muted);font-size:.75rem}
+.pagenav a.next{text-align:right}
+.footer{margin-top:2.4rem;font-size:.8rem;color:var(--muted)}
+details{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin:10px 0}
+details summary{cursor:pointer;font-weight:650}
+details[open] summary{margin-bottom:8px}
+
+/* ---------- Responsivt ---------- */
+@media (max-width:1180px){
+  .content-wrap{grid-template-columns:minmax(0,1fr);max-width:960px}
+  .toc{display:none}
+}
+@media (max-width:900px){
+  .sidebar{transform:translateX(-100%);box-shadow:none}
+  body.nav-open .sidebar{transform:none;box-shadow:0 0 40px rgba(0,0,0,.4)}
+  body.nav-open .scrim{display:block;position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:35}
+  .topbar{display:flex}
+  .main{margin-left:0}
+  .content-wrap{padding:20px 16px 60px}
+  .grid.c3,.grid.c4{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width:600px){
+  .grid.c2,.grid.c3,.grid.c4,.two{grid-template-columns:1fr}
+  .hero{padding:22px 18px}
+  body{font-size:15.5px}
+  .cal td{height:46px}
+  .pagenav{flex-direction:column}
+}
+@media print{
+  .sidebar,.topbar,.toc,.pagenav{display:none!important}
+  .main{margin:0}.content-wrap{display:block;padding:0}
+  figure,.card{box-shadow:none}
+}
+
+/* Mermaid-diagrammer ligger i <pre>; nullstill kodeblokk-stil */
+pre.mermaid{background:transparent;color:var(--ink);box-shadow:none;padding:0;margin:0;border-radius:0;overflow:visible;font-family:inherit}
+
+/* Eldre merker (brukes ikke lenger) */
+.badge-vedtatt{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:99px;background:#dcfce7;color:#166534;border:1px solid #86efac;vertical-align:middle;white-space:nowrap}
+.callout.vedtatt{background:var(--ok-bg);border-color:#bbf7d0}
+.callout.vedtatt::before{content:"✓";background:var(--ok)}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:#bbf7d0}
+
+/* Juridisk dokumentstil – forslag til vedtekter */
+.draft-banner{margin-top:0;font-size:1rem}
+.legal{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:34px 40px;margin:24px 0;
+  font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:1.04rem;line-height:1.7;color:#1e293b;max-width:780px}
+.legal p,.legal li{max-width:68ch}
+.legal ul{padding-left:1.4em}.legal li{margin:.25em 0}
+.legal h2.legal-title{font-family:inherit;font-size:1.45rem;margin:.4rem 0 1rem;text-align:center;letter-spacing:.01em}
+.legal h2.legal-title::before{display:none}
+.legal .legal-kicker{text-align:center;font-size:.86rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 .2rem;font-family:system-ui,sans-serif;font-weight:700;max-width:none}
+.legal .legal-meta{text-align:center;font-style:italic;color:var(--muted);max-width:none}
+.legal h3{font-family:inherit;font-size:1.12rem;margin:1.8rem 0 .5rem;padding-top:1rem;border-top:1px solid var(--line);display:flex;gap:12px;align-items:baseline}
+.legal .legal-num{flex:none;display:inline-grid;place-items:center;min-width:30px;height:30px;border-radius:8px;background:var(--brand-bg);color:var(--brand);font-family:system-ui,sans-serif;font-weight:800;font-size:.9rem}
+@media (max-width:600px){.legal{padding:20px 18px;font-size:1rem}}
+
+/* ---- Eldre merker (brukes ikke lenger) ---- */
+.badge-teknisk{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:99px;background:#e0f2fe;color:#075985;border:1px solid #7dd3fc;vertical-align:middle;white-space:nowrap}
+.badge-regel{display:inline-block;font-size:.7rem;font-weight:700;letter-spacing:.02em;padding:2px 8px;border-radius:99px;background:#ffedd5;color:#9a3412;border:1px dashed #fb923c;vertical-align:middle;white-space:nowrap}
+.callout.teknisk{background:#f0f9ff;border-color:#bae6fd}
+.callout.teknisk::before{content:"⚙";background:#0284c7}
+.callout.regel{background:#fff7ed;border-color:#fdba74;border-style:dashed}
+.callout.regel::before{content:"?";background:#ea580c}
+.callout.status{background:linear-gradient(90deg,#fff7ed,#fffbeb);border-color:#fdba74}
+.callout.status::before{content:"!";background:#ea580c}
+.chip.regel{background:#ffedd5;color:#9a3412;border-color:#fdba74}
+.chip.teknisk{background:#e0f2fe;color:#075985;border-color:#7dd3fc}
+
+/* Diskrete notater i vanlig tekst (erstatter de gamle merke-/statusboksene) */
+.note{font-size:.92rem;color:var(--ink-2);border-left:3px solid var(--line);padding:2px 0 2px 12px;margin:1rem 0}
+.plain-list{padding-left:1.2rem}
+.plain-list li{margin:.55rem 0}
+.plain-list small{color:var(--muted)}
+
+/* ---------- Felles meny for Sameiet HT14 (Hjem / Badehusappen / Dokumentasjon) ---------- */
+.nav a small{margin-left:auto;font-size:.72rem;color:#8fb9c9;font-weight:400}
+.nav a[aria-current="page"] small{color:var(--muted)}
+.topbar a{color:#fff;text-decoration:none}
+.topbar .topbar-home b{font-size:.98rem}
+.topbar .topbar-sep{opacity:.6}
+.topbar .topbar-app{margin-left:auto;border:1px solid rgba(255,255,255,.4);border-radius:999px;padding:6px 12px;font-size:.88rem;font-weight:600;white-space:nowrap;min-height:36px;display:inline-flex;align-items:center}
+@media (max-width:380px){ .topbar .topbar-sep,.topbar .topbar-sep + span{display:none} }
+
+/* ---------- Samlet dokument: del 1–3 ---------- */
+.part-toc{margin:1.2rem 0 2rem}
+.part-toc .toc-title{margin-top:0}
+.part-toc .card h3{margin:0 0 .4rem;font-size:1rem}
+.part-toc .card h3 a{text-decoration:none}
+.part-toc ol{margin:0;padding-left:1.2rem;font-size:.92rem;line-height:1.6}
+h2.part-title{font-size:1.65rem;margin-top:3rem;padding-top:1.2rem;border-top:3px solid var(--brand-2);display:flex;align-items:center;gap:.6rem}
+h2.part-title:first-of-type{margin-top:2rem}
+.part-num{display:inline-grid;place-items:center;flex:none;width:2.1rem;height:2.1rem;border-radius:10px;background:var(--brand);color:#fff;font-size:1.1rem}
+.part-lead{color:var(--muted);font-size:1.02rem;margin-top:-.2rem}
+article h4[id]{scroll-margin-top:70px}
+
+/* Ingen sidelengs rulling på små skjermer: lange ord og kodelinjer brekkes, kolonner kan krympe */
+article :is(div,section,li,figure,td){min-width:0}
+article :is(p,li,td,th,h2,h3,h4,b,a,.callout) {overflow-wrap:anywhere}
+article :not(pre)>code{overflow-wrap:anywhere;word-break:break-word}
+article pre{max-width:100%;overflow-x:auto}
+
+/* Toppfeltet på mobil: menyknappen skal aldri krympe, og teksten får plass */
+.topbar .hamburger{flex:none;width:44px;height:44px}
+.topbar-home{white-space:nowrap}
+.topbar > span{white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.topbar-app{flex:none}
+@media (max-width:430px){ .topbar-sep, .topbar-sep + span{display:none} }
+/* Tabeller: ord brekkes bare når de ellers ikke får plass */
+article :is(p,li,td,th,h2,h3,h4,b,a,.callout){overflow-wrap:break-word}
+article td :is(a,code){overflow-wrap:anywhere}
+.topbar-home{min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media (max-width:340px){ .topbar{gap:8px;padding-left:10px;padding-right:10px} .topbar .topbar-app{padding:4px 9px;font-size:.8rem} .topbar .topbar-home b{font-size:.9rem} }
