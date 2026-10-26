@@ -1,0 +1,137 @@
+<!-- desc: Regler for bruk av badehuset i Sameiet HT14 – booking, sommerregler, avbestilling og innsjekk – og hvordan du bruker Badehusappen. -->
+<section class="hero">
+  <div class="eyebrow">For alle</div>
+  <h1>Regler for bruk av badehuset</h1>
+  <p>Slik deler vi badehuset – og slik bruker du Badehusappen til å booke, avbestille og sjekke inn.</p>
+  <div class="meta"></div>
+</section>
+
+<p>Det er laget et <b>utkast til Badehusappen</b> som du kan prøve på <a href="/badehusappen/">ht14.no/badehusappen/</a> – bookingene lagres foreløpig bare på din egen telefon. Reglene under er Thomas sitt forslag, laget på oppdrag fra sameiet. Ingenting er bestemt ennå – vi tar det sammen på sameiemøtet. Selve teksten vi skal ta stilling til, står i <a href="vedtekter.html">Forslag til tillegg i vedtektene</a>.</p>
+
+<h2 id="reglene-kort">Reglene kort</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Regel</th><th>Kort fortalt</th></tr></thead>
+<tbody>
+<tr><td><a href="#regel-1">Perioder</a></td><td>Formiddag 10–14, ettermiddag 14–17, kveld 17–24. Book én eller flere – heldag (alle tre) er standard.</td></tr>
+<tr><td><a href="#regel-2">Bookingvindu</a></td><td>Maks 3 måneder frem i tid.</td></tr>
+<tr><td><a href="#regel-3">Sommerkvote</a></td><td>Juni–august: maks 1 fredag, 1 lørdag og 1 søndag per hus per måned.</td></tr>
+<tr><td><a href="#regel-4">Helgeregel</a></td><td>Juni–august: maks én av dagene fredag–søndag i samme helg.</td></tr>
+<tr><td><a href="#regel-5">7-dagersregel</a></td><td>Under 7 dager til datoen: sommerreglene gjelder ikke – førstemann til mølla.</td></tr>
+<tr><td><a href="#regel-6">Avbestilling</a></td><td>Mer enn 7 dager før: ut av kvoten. 7 dager eller mindre: ledig for andre, men teller i kvoten.</td></tr>
+</tbody></table></div>
+<figure>
+<pre class="mermaid">
+flowchart TD
+  Q([Jeg vil booke en dato]) --> A{Er perioden ledig?}
+  A -- Nei --> N1[Ikke mulig – velg en annen periode]
+  A -- Ja --> B{Innenfor 3 måneder frem?}
+  B -- Nei --> N2[Ikke mulig ennå]
+  B -- Ja --> C{Mindre enn 7 dager til datoen?}
+  C -- Ja --> Y1[Ja! Førstemann til mølla]
+  C -- Nei --> D{Juni, juli eller august, og fredag, lørdag eller søndag?}
+  D -- Nei --> Y2[Ja]
+  D -- Ja --> E{Har husstanden allerede denne ukedagen denne måneden?}
+  E -- Ja --> N3[Nei – kvoten er brukt]
+  E -- Nei --> F{Har husstanden en annen dag samme helg?}
+  F -- Ja --> N4[Nei – maks én helgedag per helg]
+  F -- Nei --> Y3[Ja]
+  classDef y fill:#dcfce7,stroke:#16a34a,color:#14532d;
+  classDef n fill:#fee2e2,stroke:#dc2626,color:#7f1d1d;
+  class Y1,Y2,Y3 y; class N1,N2,N3,N4 n;
+</pre>
+<figcaption>Forenklet. Løsningen sjekker dette selv – du får beskjed med en gang hvis en regel stopper deg.</figcaption>
+</figure>
+
+<h2 id="regel-1">Perioder</h2>
+<p>Badehuset åpner kl. 10, og dagen er delt i tre. Du kan booke én, to eller alle tre periodene – heldag er forhåndsvalgt, siden vi oftest bruker badehuset hele dagen. Med tre perioder kan flere hus bruke badehuset samme dag. Denne inndelingen er en del av forslaget.</p>
+<figure>
+<svg viewBox="0 0 820 140" role="img" aria-label="Eksempel: to husstander deler en lørdag – Hus A har formiddag og ettermiddag, Hus C har kvelden">
+  <g font-family="system-ui,Segoe UI,Arial" font-size="13">
+    <text x="0" y="18" font-weight="700" fill="#0f172a">Eksempel: lørdag 10. juli 2027 – detaljvisning</text>
+    <text x="45" y="104" fill="#64748b">10</text><text x="300" y="104" fill="#64748b">14</text><text x="490" y="104" fill="#64748b">17</text><text x="790" y="104" fill="#64748b">24</text>
+    <rect x="45" y="40" width="250" height="44" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="170" y="67" text-anchor="middle" fill="#1d4ed8" font-weight="700">Formiddag · Hus A</text>
+    <rect x="300" y="40" width="185" height="44" rx="10" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/><text x="392" y="67" text-anchor="middle" fill="#1d4ed8" font-weight="700">Ettermiddag · Hus A</text>
+    <rect x="490" y="40" width="315" height="44" rx="10" fill="#ffedd5" stroke="#ea580c" stroke-width="2"/><text x="647" y="67" text-anchor="middle" fill="#c2410c" font-weight="700">Kveld · Hus C</text>
+    <text x="0" y="130" fill="#64748b" font-size="12">Begge er på en lørdag: Hus A og Hus C har hver brukt sin lørdag i juli – uansett hvor mange perioder de har.</text>
+  </g>
+</svg>
+</figure>
+<ul>
+  <li>En periode kan bookes helt til den starter. Har den startet og er ledig, bruker du «Sjekk inn nå».</li>
+  <li>Heldag kan derfor bare bookes før kl. 10 samme dag.</li>
+  <li>Kl. 24 er slutten av dagen. Alle tider er norsk tid.</li>
+</ul>
+
+<h2 id="regel-2">Bookingvindu</h2>
+<p>Du kan booke inntil 3 måneder frem, regnet fra samme dato: 15. april kan du booke til og med 15. juli. Utenfor sommeren (september–mai) er dette den eneste begrensningen.</p>
+
+<h2 id="regel-3">Sommerkvote</h2>
+<p>I juni, juli og august kan hvert hus ha maks én fredag, én lørdag og én søndag per måned. Det er <b>dagene</b> som telles: formiddag, to perioder eller heldag på samme fredag er fortsatt én fredag. En helg over to måneder telles i datoens måned.</p>
+{{CAL:regel-kvote}}
+
+<h2 id="regel-4">Helgeregel</h2>
+<p>Om sommeren kan et hus ikke ha to dager i samme helg (fredag–søndag) – heller ikke når helgen går over et månedsskifte.</p>
+<figure>
+<svg viewBox="0 0 820 230" role="img" aria-label="Tillatte og ikke tillatte helgekombinasjoner">
+  <g font-family="system-ui,Segoe UI,Arial" font-size="13" text-anchor="middle">
+    <g font-weight="700" fill="#64748b"><text x="230" y="20">Fre</text><text x="300" y="20">Lør</text><text x="370" y="20">Søn</text><text x="610" y="20">Resultat</text></g>
+    <!-- rows -->
+    <g transform="translate(0 30)"><text x="90" y="25" fill="#0f172a">Fre + lør</text>
+      <rect x="200" y="5" width="60" height="30" rx="7" fill="#16a34a"/><rect x="270" y="5" width="60" height="30" rx="7" fill="#16a34a"/><rect x="340" y="5" width="60" height="30" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="610" y="26" fill="#b91c1c" font-weight="700">✗ Ikke tillatt</text></g>
+    <g transform="translate(0 72)"><text x="90" y="25" fill="#0f172a">Lør + søn</text>
+      <rect x="200" y="5" width="60" height="30" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><rect x="270" y="5" width="60" height="30" rx="7" fill="#16a34a"/><rect x="340" y="5" width="60" height="30" rx="7" fill="#16a34a"/>
+      <text x="610" y="26" fill="#b91c1c" font-weight="700">✗ Ikke tillatt</text></g>
+    <g transform="translate(0 114)"><text x="90" y="25" fill="#0f172a">Fre + søn</text>
+      <rect x="200" y="5" width="60" height="30" rx="7" fill="#16a34a"/><rect x="270" y="5" width="60" height="30" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><rect x="340" y="5" width="60" height="30" rx="7" fill="#16a34a"/>
+      <text x="610" y="26" fill="#b91c1c" font-weight="700">✗ Ikke tillatt</text></g>
+    <g transform="translate(0 156)"><text x="90" y="25" fill="#0f172a">Kun én dag</text>
+      <rect x="200" y="5" width="60" height="30" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/><rect x="270" y="5" width="60" height="30" rx="7" fill="#16a34a"/><rect x="340" y="5" width="60" height="30" rx="7" fill="#f1f5f9" stroke="#cbd5e1"/>
+      <text x="610" y="26" fill="#15803d" font-weight="700">✓ Tillatt</text></g>
+  </g>
+</svg>
+<figcaption>Eksempel for Hus B (grønn). Gjelder samme helg, juni–august, når det er 7 dager eller mer til datoen.</figcaption>
+</figure>
+
+<h2 id="regel-5">7-dagersregel</h2>
+<p>Er det mindre enn 7 dager til en dato, gjelder ikke sommerkvoten og helgeregelen for den datoen. Da kan alle ta det som er ledig, og bookingen teller ikke i kvoten.</p>
+
+<h2 id="regel-6">Avbestilling</h2>
+<ul>
+  <li><b>Mer enn 7 dager før:</b> perioden blir ledig og teller ikke lenger i kvoten.</li>
+  <li><b>7 dager eller mindre før:</b> perioden blir ledig for andre, men teller fortsatt i husets sommerkvote.</li>
+  <li>Hver periode avbestilles for seg, og alle i huset kan avbestille husets bookinger. Ingenting slettes – avbestillinger synes i historikken.</li>
+</ul>
+
+<h2 id="innsjekk">Innsjekk og bekreftelse</h2>
+<p>Sjekk inn når dere tar i bruk badehuset. Har dere booket flere perioder etter hverandre, gjelder innsjekken alle. Er badehuset ledig uten at noen har booket, kan dere sjekke inn spontant og velge å bli til kl. 14, 17 eller 24 – så lenge periodene er ledige. Spontan bruk teller i statistikken, men ikke i kvoten.</p>
+<p>Dere sjekkes automatisk ut ved slutten av perioden. Glemte dere å sjekke inn, står bookingen som «ikke bekreftet» – trykk «Vi brukte badehuset» etterpå. Administratorene kan gjøre unntak og rette feil, og alt logges med en kommentar.</p>
+
+<h2 id="statistikk">Statistikk</h2>
+<p>Statistikken viser bruk per hus denne måneden, denne sommeren og i år. Hver periode teller 1, så heldag = 3. Husene står alltid i rekkefølgen A–D – det er for åpenhet, ikke konkurranse. Ikke bekreftede bookinger vises for seg, og sent avbestilte teller i kvoten, men ikke som bruk.</p>
+
+<h2 id="badehusappen">Slik bruker du Badehusappen</h2>
+<p>Åpne <a href="/badehusappen/">Badehusappen</a>. I utkastet er det ingen innlogging – du velger bare huset ditt. Senere får hvert hus én felles innlogging med e-post og passord, og mobilen husker dere i omtrent ett år.</p>
+
+<h3 id="booke">Booke</h3>
+<ol class="steps">
+  <li><b>Trykk på en dag</b>– eller rett på en ledig tid i uka. Et ark glir opp.</li>
+  <li><b>Velg hus og tid</b>Heldag er forhåndsvalgt. Trenger dere bare en del av dagen, velg formiddag, ettermiddag og/eller kveld.</li>
+  <li><b>Trykk «Book»</b>Reglene sjekkes med en gang. Sier Badehusappen nei, får du en forklaring – for eksempel at kvoten er brukt, eller at dagen er tatt.</li>
+</ol>
+
+<h3 id="avbestille">Avbestille</h3>
+<p>Trykk på bookingen i kalenderen eller under «Mine», og trykk «Avbestill». Du ser før du bekrefter om det blir en tidlig eller sen avbestilling.</p>
+
+<h3 id="sjekke-inn">Sjekke inn</h3>
+<p>Trykk «Sjekk inn» på bookingen når dere kommer. Uten booking: trykk «Sjekk inn nå» og velg hvor lenge dere blir.</p>
+
+<h3 id="hjem-skjerm">Legg Badehusappen på Hjem-skjermen</h3>
+<ul>
+  <li><b>iPhone (Safari):</b> Del-knappen (firkant med pil) → «Legg til på Hjem-skjerm» → Legg til.</li>
+  <li><b>Android (Chrome):</b> menyen ⋮ → «Legg til på startskjermen» eller «Installer app».</li>
+</ul>
+<p>Da får du et eget ikon, og Badehusappen åpner rett i kalenderen uten adressefelt. Har du lagt den til før, kan det være lurt å fjerne og legge den til på nytt etter større oppdateringer.</p>
+
+<h3 id="sporsmal">Spørsmål?</h3>
+<p>Spør Thomas eller en av administratorene. Varsler på e-post eller SMS er ikke med i starten.</p>
