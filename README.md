@@ -19,7 +19,7 @@ Alt ligger hos Cloudflare, på gratisplanene:
   regelmotoren som appen (`public/badehusappen/js/rules-engine.js`).
 - **D1-database** `ht14` for bookinger, innlogginger (én per hus + admin), Om oss, økter og hendelseslogg (`schema.sql`).
   Forhåndsvisninger av grener bruker `ht14-test`.
-- **Innlogging:** egen e-post + passord. PBKDF2-SHA256 (30 000 runder, eget salt, HMAC-pepper `SESSION_PEPPER`),
+- **Innlogging:** egen e-post + passord. PBKDF2-SHA256 (10 000 runder – målt 4–6 ms CPU per innlogging, eget salt, HMAC-pepper `SESSION_PEPPER`),
   cookie `__Host-ht14_okt` (HttpOnly, Secure, SameSite=Lax, ca. ett år), pause etter 5 feil passord, Origin-sjekk.
 - **Nattlig kopi** (`src/export.js`, Cron Trigger slås på når `GH_DATA_TOKEN` er lagt inn) skriver bookinger, brukere,
   Om oss og hendelser som CSV + JSON til det private repoet
