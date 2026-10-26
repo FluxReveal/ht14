@@ -2,11 +2,11 @@
 
 Nettsiden til **Sameiet Halden Terrasse 14** (fire hus, 14A–14D):
 
-- **Startside** – `/`
+- **Startside** – `/`, med «Om oss» (Hus A–D; navn og kontaktinfo bare etter innlogging)
 - **Dokumentasjon** – `/dokumentasjon/` (teknisk dokumentasjon, regler, forslag til vedtekter, årshjul, hva er nytt)
 - **Badehusappen** – `/badehusappen/`, kortadresse **badehusappen.ht14.no** (felles booking for alle fire husene, én innlogging per hus)
 
-Dette er **HT14 versjon 0.5**.
+Dette er **HT14 versjon 0.6**.
 
 Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.
 
@@ -33,13 +33,15 @@ legges bare inn som Worker-secrets i Cloudflare.
 
 ```
 public/                 alt som vises på ht14.no
-  index.html            startside (lages av tools/build.py)
+  index.html            startside med Om oss (lages av tools/build.py)
+  om-oss.js             Om oss på startsiden (henter fra /api/contacts)
   dokumentasjon/        dokumentasjonen (lages av tools/build.py) + gamle adresser som sender videre
-  badehusappen/         Badehusappen (HTML, CSS, JS, rules.json, manifest, service worker)
-  404.html, _headers, favicon.svg
+  badehusappen/         Badehusappen (HTML, CSS, JS, rules.json, manifest, service worker, ikoner/ med SVG)
+  404.html, _headers, favicon.svg, ht14-logo.svg
 src/index.js            Workeren (API-et)
 src/auth.js             passord-hash og økter
 src/export.js           nattlig kopi til ht14-data
+src/ikoner.js           PNG/ICO-ikonene som base64 (lages av tools/lag-ikoner.mjs fra SVG-ene; Workeren serverer dem)
 wrangler.jsonc          oppsett: navn, statiske filer, D1 (ht14 + ht14-test), ht14.no
 schema.sql              databasen (lagt inn i ht14 og ht14-test)
 tools/

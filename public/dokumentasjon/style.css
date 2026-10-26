@@ -318,3 +318,9 @@ article :is(p,li,td,th,h2,h3,h4,b,a,.callout){overflow-wrap:break-word}
 article td :is(a,code){overflow-wrap:anywhere}
 .topbar-home{min-width:0;overflow:hidden;text-overflow:ellipsis}
 @media (max-width:340px){ .topbar{gap:8px;padding-left:10px;padding-right:10px} .topbar .topbar-app{padding:4px 9px;font-size:.8rem} .topbar .topbar-home b{font-size:.9rem} }
+
+/* v0.6: logoer i toppfeltet */
+.topbar .topbar-home{display:inline-flex;align-items:center;gap:8px}
+.topbar .topbar-home svg{flex:none;border-radius:6px}
+.topbar .topbar-app{display:inline-flex;align-items:center;gap:6px}
+.topbar .topbar-app img{border-radius:5px;flex:none}
