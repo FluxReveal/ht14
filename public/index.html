@@ -4,10 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sameiet HT14</title>
-<meta name="description" content="Startside for Sameiet Halden Terrasse 14: Badehusappen, regler, vedtektsforslag, årshjul og hva er nytt.">
+<meta name="description" content="Startside for Sameiet Halden Terrasse 14 på Snarøya: Badehusappen, Om oss, regler, vedtektsforslag, årshjul og hva er nytt.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/dokumentasjon/style.css?v=20261026a">
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<meta name="theme-color" content="#0b2a4a">
+<link rel="stylesheet" href="/dokumentasjon/style.css?v=20261027v06">
 <script>(function(){var h=location.hash;if(h==="#arshjul")location.replace("/dokumentasjon/arshjul.html");else if(h==="#hva-er-nytt")location.replace("/dokumentasjon/hva-er-nytt.html");})();</script>
 <style>
   body{font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro",system-ui,"Segoe UI",Roboto,Arial,sans-serif;display:block;background:radial-gradient(1100px 480px at 0% 0%,#cffafe,transparent 60%),radial-gradient(900px 420px at 100% 0%,#fef3c7,transparent 55%),var(--bg);margin:0}
@@ -15,7 +18,36 @@
   .sitebar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
   .sitebar-in{max-width:1080px;margin:0 auto;padding:6px max(20px,env(safe-area-inset-right)) 6px max(20px,env(safe-area-inset-left));display:flex;align-items:center;justify-content:space-between;gap:4px 12px;flex-wrap:wrap}
   .site-brand{display:inline-flex;align-items:center;gap:8px;font-weight:800;color:var(--ink);text-decoration:none;min-height:44px;font-size:1.05rem}
-  .site-brand svg{width:30px;height:30px}
+  .site-brand svg{width:30px;height:30px;border-radius:8px}
+  .cards a.hoved .ico img{width:64px;height:64px;border-radius:15px;display:block;box-shadow:0 4px 14px rgba(0,0,0,.18)}
+  .cards a.hoved .ico.app{background:none}
+  .om{margin:30px 0 0;scroll-margin-top:140px}
+  .om h2{font-size:1.6rem;margin:0 0 .3rem;letter-spacing:-.01em}
+  .om .ingress{color:var(--ink-2);margin:0 0 14px;max-width:62ch}
+  .omtekst{color:var(--ink-2);margin:12px 4px}
+  .omliste{list-style:none;margin:0 0 6px;padding:0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .omcelle{display:flex;align-items:center;gap:.3rem .9rem;flex-wrap:wrap;min-height:48px;padding:10px 16px;border-bottom:1px solid var(--line)}
+  .omliste>li:last-child,.omliste>li:last-child .omcelle{border-bottom:0}
+  .omcelle.kontakt b{flex:1 0 100%;font-weight:600}
+  .omcelle a{min-height:32px;display:inline-flex;align-items:center}
+  .omcelle.dempet{color:var(--muted)}
+  .omhus{margin:0 0 18px;scroll-margin-top:70px}
+  .omhus h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:1.05rem;margin:18px 4px 8px}
+  .omnavn{font-weight:600;color:var(--ink)}
+  .omendre{width:100%;background:none;border:0;font:inherit;color:#007aff;text-align:left;cursor:pointer}
+  .omskjema h4{font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:16px 16px 6px;font-weight:600}
+  .omgruppe{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  .omfelt{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 16px;border-bottom:1px solid var(--line)}
+  .omfelt:last-child{border-bottom:0}
+  .omfelt span{flex:0 0 5.5em;font-weight:500}
+  .omfelt input,.omfelt textarea{flex:1;min-width:0;border:0;outline:0;background:none;font:inherit;font-size:16px;padding:12px 0;color:var(--ink)}
+  .omtekstfelt{align-items:flex-start} .omtekstfelt span{padding-top:12px}
+  .ommelding{color:#d70015;min-height:1.2em;margin:8px 4px}
+  .ombtn{display:block;width:100%;min-height:50px;border:0;border-radius:14px;background:#007aff;color:#fff;font:inherit;font-weight:600;font-size:1.05rem;cursor:pointer}
+  .ombtn:disabled{opacity:.6}
+  .omknapper{display:grid;gap:8px}
+  .omlenke{background:none;border:0;font:inherit;color:#007aff;cursor:pointer;min-height:44px;padding:0 4px}
+  @media (min-width:760px){ .omskjema{max-width:520px} }
   .sitenav{display:flex;gap:4px;flex-wrap:wrap}
   .sitenav a{display:inline-flex;align-items:center;min-height:44px;padding:0 12px;border-radius:10px;font-weight:600;text-decoration:none;color:var(--ink-2)}
   .sitenav a:hover{background:var(--brand-bg)}
@@ -45,7 +77,7 @@
 <body>
 <header class="sitebar">
   <div class="sitebar-in">
-    <a class="site-brand" href="/" aria-label="Sameiet HT14 – hjem"><svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg><span>Sameiet HT14</span></a>
+    <a class="site-brand" href="/" aria-label="Sameiet HT14 – hjem"><svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ht14-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2a4a"/><stop offset=".62" stop-color="#155e75"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#ht14-bg)"/><circle cx="50" cy="14" r="5.5" fill="#fdba74"/><path d="M0 25 L9 25 L56 50 L0 50 Z" fill="#0f3d3a" opacity=".8"/><g><rect x="6" y="13" width="15" height="10" rx="1.5" fill="#fff"/><rect x="8.5" y="16.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="17" y="21" width="15" height="10" rx="1.5" fill="#fff"/><rect x="19.5" y="24.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="28" y="29" width="15" height="10" rx="1.5" fill="#fff"/><rect x="30.5" y="32.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="39" y="37" width="15" height="10" rx="1.5" fill="#fff"/><rect x="41.5" y="40.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/></g><path d="M5 53c4.5-3 9-3 13.5 0s9 3 13.5 0 9-3 13.5 0 9 3 13.5 0" fill="none" stroke="#67e8f9" stroke-width="3.2" stroke-linecap="round"/><path d="M12 59c3.3-2 6.7-2 10 0s6.7 2 10 0 6.7-2 10 0 6.7 2 10 0" fill="none" stroke="#a5f3fc" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg><span>Sameiet HT14</span></a>
     <nav class="sitenav" aria-label="Sameiet HT14"><a href="/" aria-current="page">Hjem</a><a href="/badehusappen/">Badehusappen</a><a href="/dokumentasjon/teknisk.html">Dokumentasjon</a></nav>
   </div>
 </header>
@@ -53,22 +85,29 @@
   <header class="hero2">
     <div class="eyebrow">Hei, nabo! 👋</div>
     <h1>Velkommen til HT14</h1>
-    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. I <b>Badehusappen</b> booker vi badehuset selv. Hvert hus logger inn, og alle ser den samme kalenderen.</p>
+    <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. I <b>Badehusappen</b> booker vi badehuset selv. Hvert hus logger inn, og alle ser den samme kalenderen. Lenger ned på siden finner du <a href="#om-oss">Om oss</a>.</p>
     <div class="husrad"><span class="hus a">Hus A</span><span class="hus b">Hus B</span><span class="hus c">Hus C</span><span class="hus d">Hus D</span></div>
     <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
   </header>
   <nav class="cards" aria-label="Snarveier">
-    <a class="hoved" href="/badehusappen/"><div class="ico">🛁</div><div class="txt"><b>Badehusappen</b><span>Book badehuset – logg inn med husets innlogging.</span></div><div class="pil" aria-hidden="true">›</div></a>
+    <a class="hoved" href="/badehusappen/"><div class="ico app"><img src="/badehusappen/ikoner/ikon.svg" width="64" height="64" alt=""></div><div class="txt"><b>Badehusappen</b><span>Book badehuset – logg inn med husets innlogging.</span></div><div class="pil" aria-hidden="true">›</div></a>
+    <a href="#om-oss"><div class="ico">🏡</div><b>Om oss</b><span>Hus A–D: hvem bor hvor, og hvordan dere når hverandre.</span></a>
     <a href="/dokumentasjon/regler.html"><div class="ico">⚖️</div><b>Regler for bruk av badehuset</b><span>Booking, sommerregler og hvordan du bruker Badehusappen.</span></a>
     <a href="/dokumentasjon/vedtekter.html"><div class="ico">📜</div><b>Forslag til tillegg i vedtektene</b><span>§ 10 og reglene for badehuset – til sameiemøtet.</span></a>
     <a href="/dokumentasjon/arshjul.html"><div class="ico">🗓️</div><b>Årshjul</b><span>Hva skjer når i løpet av året?</span></a>
     <a href="/dokumentasjon/hva-er-nytt.html"><div class="ico">✨</div><b>Hva er nytt</b><span>Det siste som er lagt til eller endret.</span></a>
     <a href="/dokumentasjon/teknisk.html"><div class="ico">🛠️</div><b>Teknisk dokumentasjon</b><span>Hvordan Badehusappen er bygget og driftes.</span></a>
   </nav>
+  <section class="om" id="om-oss" aria-labelledby="omTittel">
+    <h2 id="omTittel">Om oss</h2>
+    <p class="ingress">Fire hus i Halden Terrasse 14 på Snarøya, med fjorden rett nedenfor og et felles badehus ved sjøen.</p>
+    <div id="omInnhold" aria-live="polite"><ul class="omliste"><li class="omcelle"><span class="hus a">Hus A</span></li><li class="omcelle"><span class="hus b">Hus B</span></li><li class="omcelle"><span class="hus c">Hus C</span></li><li class="omcelle"><span class="hus d">Hus D</span></li></ul></div>
+  </section>
   <footer class="fot">
     <p>Laget av Thomas Gude Svensrud for oss i HT14. Rettelser eller ideer? Si fra til Thomas.</p>
-    <p class="ver">HT14 versjon 0.5</p>
+    <p class="ver">HT14 versjon 0.6</p>
   </footer>
 </div>
+<script src="/om-oss.js?v=06" defer></script>
 </body>
 </html>
