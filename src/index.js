@@ -1,5 +1,5 @@
 /**
- * HT14 versjon 0.5 – Cloudflare Worker for ht14.no
+ * HT14 versjon 0.6 – Cloudflare Worker for ht14.no
  *
  * Statiske filer (public/) serveres direkte. Bare /api/* går gjennom Workeren
  * (run_worker_first i wrangler.jsonc). Data ligger i D1 (binding DB).
@@ -13,6 +13,7 @@
  * gjentatte feil passord, generelle feilmeldinger og ingen passord-hasher ut.
  */
 import R from "../public/badehusappen/js/rules-engine.js";
+import { ICONS } from "./ikoner.js";
 import RULES from "../public/badehusappen/rules.json";
 import {
   PW_ITERATIONS, SESSION_DAYS, sha256hex, hashPassword, verifyPassword, passwordProblem,
@@ -20,7 +21,7 @@ import {
 } from "./auth.js";
 import { runExport } from "./export.js";
 
-const VERSION = "0.5";
+const VERSION = "0.6";
 const HOUSES = ["A", "B", "C", "D"];
 const LOCK_MIN = 15;            // pause i minutter
 const MAX_FAIL_EMAIL = 5;       // feil passord per e-post innen 15 min
@@ -487,9 +488,21 @@ async function api(request, env, ctx, url) {
   fail(404, "NOT_FOUND", "Fant ikke denne adressen.");
 }
 
+/** PNG/ICO-ikonene (src/ikoner.js) – dekodes én gang per isolat. */
+const iconCache = new Map();
+function iconResponse(icon, method) {
+  let bytes = iconCache.get(icon);
+  if (!bytes) { bytes = Uint8Array.from(atob(icon.b64), c => c.charCodeAt(0)); iconCache.set(icon, bytes); }
+  return new Response(method === "HEAD" ? null : bytes, { headers: {
+    "Content-Type": icon.type, "Content-Length": String(bytes.length), "Cache-Control": "public, max-age=604800",
+    "X-Content-Type-Options": "nosniff", "Cross-Origin-Resource-Policy": "same-origin" } });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    const icon = ICONS[url.pathname];
+    if (icon && (request.method === "GET" || request.method === "HEAD")) return iconResponse(icon, request.method);
     if (!url.pathname.startsWith("/api/")) return env.ASSETS.fetch(request);
     try {
       return await api(request, env, ctx, url);

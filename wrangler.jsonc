@@ -7,12 +7,12 @@
   "main": "src/index.js",
   "compatibility_date": "2026-10-19",
 
-  // Statiske filer. /api/* går alltid til Workeren (src/index.js).
+  // Statiske filer. /api/* og PNG/ICO-ikonene (src/ikoner.js) går alltid til Workeren (src/index.js).
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/favicon.ico", "/apple-touch-icon.png", "/badehusappen/favicon.ico", "/badehusappen/ikoner/*.png"]
   },
 
   // Databasen (D1) med bookinger, innlogginger, økter og Om oss. Skjema: schema.sql.
