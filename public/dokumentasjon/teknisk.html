@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teknisk dokumentasjon – Dokumentasjon – Sameiet HT14</title>
+<meta name="description" content="Teknisk dokumentasjon for HT14 og Badehusappen på ht14.no – kort for alle, overordnet arkitektur (HLD), detaljer (LLD), drift og oppsett, og drift og overlevering.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261026a">
+<script src="app.js?v=20261026a" defer></script>
+<script type="module" src="mermaid-init.js"></script>
+</head>
+<body>
+<a href="#innhold" class="chip" style="position:absolute;left:-9999px" onfocus="this.style.left='8px'">Hopp til innhold</a>
+<header class="topbar">
+  <button class="hamburger" aria-label="Åpne meny" aria-expanded="false" aria-controls="sidemeny"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <a class="topbar-home" href="/"><b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
+  <a class="topbar-app" href="/badehusappen/">Badehusappen</a>
+</header>
+<div class="scrim"></div>
+<nav class="sidebar" id="sidemeny" aria-label="Hovedmeny">
+  <a class="brand" href="/"><svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg><span><b>Sameiet HT14</b><small>Halden Terrasse 14</small></span></a>
+  <div class="search" role="search"><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9cc3d1" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input id="sok" type="search" placeholder="Søk i dokumentasjonen  ( / )" aria-label="Søk i dokumentasjonen" autocomplete="off">
+    <ul id="sok-resultat" class="search-results" aria-live="polite"></ul>
+  </div>
+  <ul class="nav">
+<li class="nav-label">Sameiet HT14</li>
+<li><a href="/"><span class="num">⌂</span>Hjem</a></li>
+<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen <small>utkast</small></a></li>
+<li class="nav-label">Dokumentasjon</li>
+<li><a href="teknisk.html" data-sok aria-current="page"><span class="num">1</span>Teknisk dokumentasjon</a></li>
+<li><a href="regler.html" data-sok><span class="num">2</span>Regler for bruk av badehuset</a></li>
+<li><a href="vedtekter.html" data-sok><span class="num">3</span>Forslag til tillegg i vedtektene</a></li>
+<li><a href="arshjul.html" data-sok><span class="num">4</span>Årshjul</a></li>
+<li><a href="hva-er-nytt.html" data-sok><span class="num">5</span>Hva er nytt</a></li>
+  </ul>
+  <div class="side-foot">
+    <div class="legend-mini"><span style="background:var(--hus-a)">A</span><span style="background:var(--hus-b)">B</span><span style="background:var(--hus-c)">C</span><span style="background:var(--hus-d)">D</span></div>
+    Laget av Thomas for oss i HT14.
+  </div>
+</nav>
+<main class="main" id="innhold">
+  <div class="content-wrap">
+    <article>
+<section class="hero">
+  <div class="eyebrow">Teknisk</div>
+  <h1>Teknisk dokumentasjon</h1>
+  <p>Hvordan ht14.no og Badehusappen er bygget – først kort for alle, så stadig mer detaljert. Les så langt du har lyst.</p>
+  <div class="meta"><span class="chip">⏱ Ca. 10 min lesetid</span></div>
+</section>
+
+<p>Det er laget et <b>utkast til Badehusappen</b> som du kan prøve på <a href="/badehusappen/">ht14.no/badehusappen/</a>. Foreløpig lagres bookingene bare på din egen telefon. Thomas lager dette på oppdrag fra sameiet – ingenting er bestemt ennå, vi tar det sammen på sameiemøtet.</p>
+
+<nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
+<div class="grid c2">
+<div class="card"><h3 id="1-kort-for-alle" class="toc-part"><a href="#kort-for-alle">1 Kort for alle</a></h3><ol><li><a href="#hva-er-det">Hva er det?</a></li><li><a href="#hvem-kan-gjore-hva">Hvem kan gjøre hva</a></li><li><a href="#trygghet-og-personvern">Trygghet og personvern</a></li></ol></div>
+<div class="card"><h3 id="2-overordnet-hld" class="toc-part"><a href="#hld">2 Overordnet (HLD)</a></h3><ol><li><a href="#komponenter">Komponenter</a></li><li><a href="#dataflyt">Dataflyt</a></li><li><a href="#innlogging-og-okter">Innlogging og økter</a></li><li><a href="#sikkerhet">Sikkerhet</a></li><li><a href="#tekniske-valg">Tekniske valg</a></li></ol></div>
+<div class="card"><h3 id="3-detaljert-lld" class="toc-part"><a href="#lld">3 Detaljert (LLD)</a></h3><ol><li><a href="#filstruktur">Filer</a></li><li><a href="#datamodell">Datamodell</a></li><li><a href="#regelmotor">Regelmotor</a></li><li><a href="#statusmaskin">Statuser</a></li><li><a href="#worker-api">API</a></li><li><a href="#feilhandtering">Feilkoder</a></li></ol></div>
+<div class="card"><h3 id="4-drift-og-oppsett" class="toc-part"><a href="#drift">4 Drift og oppsett</a></h3><ol><li><a href="#oppsett">Oppsett i Cloudflare</a></li><li><a href="#brukere">Innlogginger</a></li><li><a href="#endre-regler">Endre regler</a></li><li><a href="#backup">Sikkerhetskopi</a></li><li><a href="#nar-noe-feiler">Når noe feiler</a></li></ol></div>
+<div class="card"><h3 id="5-drift-og-overlevering" class="toc-part"><a href="#overlevering">5 Drift og overlevering</a></h3><ol><li><a href="#hvem-eier-hva">Hvem eier hva</a></li><li><a href="#slik-endrer-vi">Slik gjøres endringer</a></li><li><a href="#sameiet-tar-over">Slik tar sameiet over</a></li></ol></div>
+</div></nav>
+
+<h2 id="kort-for-alle" class="part-title"><span class="part-num">1</span> Kort for alle</h2>
+
+<h3 id="hva-er-det">Hva er det?</h3>
+<p><b>ht14.no</b> er sameiets egen nettside med startsiden, denne dokumentasjonen og <b>Badehusappen</b> – en nettside som oppfører seg som en app. Der ser vi når badehuset er ledig, booker, avbestiller og sjekker inn. Den virker på mobil, nettbrett og PC, og kan legges på Hjem-skjermen.</p>
+<p>I dag sender vi en e-post til en nabo som har oversikten. Det har fungert fint takket være ham, men det blir mye e-post, og alt hviler på én person. Med Badehusappen ser alle den samme kalenderen og booker selv.</p>
+<figure>
+<pre class="mermaid">
+flowchart LR
+  subgraph IDAG["I dag"]
+    direction TB
+    N1["Nabo som vil booke"] -->|e-post: er lørdag ledig?| P["Én nabo med oversikten"]
+    P -->|e-post: oversikt over det han vet om| N1
+  end
+  subgraph NY["Med Badehusappen"]
+    direction TB
+    A["Hus A"] --> K["Felles kalender<br/>på ht14.no"]
+    B["Hus B"] --> K
+    C["Hus C"] --> K
+    D["Hus D"] --> K
+  end
+  IDAG -.->|blir til| NY
+  classDef idag fill:#fff7ed,stroke:#ea580c,color:#7c2d12;
+  classDef ny fill:#ecfeff,stroke:#0891b2,color:#0f172a;
+  class N1,P idag; class A,B,C,D,K ny;
+</pre>
+<figcaption>Fra e-post til én nabo til én felles kalender for alle fire husene.</figcaption>
+</figure>
+<p>Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
+
+<h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
+<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille, sjekke inn, bekrefte bruk og se historikk og statistikk. En <b>administrator</b> kan i tillegg bytte passord for et hus, logge ut en mistet mobil, legge inn regelendringer, gjøre unntak og rette feil. Alt administratorene gjør, logges.</p>
+
+<h3 id="trygghet-og-personvern">Trygghet og personvern</h3>
+<ul>
+  <li>Ingen registrerer seg selv – administratoren gir hvert hus e-post og passord. Mobilen kan huske passordet, og dere holder dere innlogget i omtrent ett år.</li>
+  <li>Bookingene lagres i en database hos Cloudflare, aldri på de offentlige sidene. Passord lagres aldri i klartekst.</li>
+  <li>Hver natt tas det en kopi til et privat lager. Ingen bookinger slettes, og alle endringer kan spores.</li>
+  <li>Ikke med i starten: varsler på e-post/SMS og Face ID uten passord (passkeys). Det kan komme senere.</li>
+</ul>
+
+<h2 id="hld" class="part-title"><span class="part-num">2</span> Overordnet (HLD)</h2>
+<p class="part-lead">Hvilke deler løsningen består av, og hvorfor. Alt kjører på gratisplanene hos Cloudflare og GitHub, så det koster 0 kr i drift.</p>
+
+<h3 id="komponenter">Komponenter</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Del</th><th>Hva den gjør</th></tr></thead>
+<tbody>
+<tr><td><b>ht14.no</b></td><td>Sameiets adresse. Kjøpt hos Domeneshop, DNS hos Cloudflare.</td></tr>
+<tr><td><b>Cloudflare Worker</b> «ht14» med statiske filer</td><td>Serverer startsiden (<code>/</code>), dokumentasjonen (<code>/dokumentasjon/</code>) og Badehusappen (<code>/badehusappen/</code>). Senere også innlogging og booking på <code>/api/</code>.</td></tr>
+<tr><td><b>Cloudflare D1</b> «ht14»</td><td>Databasen: hus, innlogginger, bookinger, økter, feilede innlogginger og en hendelseslogg.</td></tr>
+<tr><td><b>Nattlig kopi</b> (Cron Trigger)</td><td>Hver natt skriver Workeren bookinger og brukere som CSV og JSON til det private repoet <code>FluxReveal/ht14-data</code> – aldri passord-hasher. Git gir full historikk, og CSV-filene åpnes i Excel.</td></tr>
+<tr><td><b>GitHub</b></td><td><code>FluxReveal/ht14</code> (offentlig: sidene og koden, ingen hemmeligheter) og <code>FluxReveal/ht14-data</code> (privat: nattlig kopi).</td></tr>
+<tr><td><b>Workers Builds</b></td><td>Publiserer automatisk når <code>main</code> endres. Andre grener får en egen forhåndsvisningslenke.</td></tr>
+</tbody></table></div>
+<p>Fire hus som booker badehuset, kommer aldri i nærheten av grensene på gratisplanene.</p>
+
+<h3 id="dataflyt">Dataflyt</h3>
+<figure>
+<pre class="mermaid">
+flowchart LR
+  U["Beboer<br/>(nettleser)"] -->|1. åpner ht14.no| W["Cloudflare Worker «ht14»<br/>sider + /api/"]
+  W -->|2. sjekker økt og regler,<br/>leser og skriver| D[("D1-database<br/>ht14")]
+  W -->|3. svar + oppdatert kalender| U
+  C["Cron Trigger<br/>hver natt"] -->|4. starter eksport| W
+  W -->|5. CSV + JSON| G[("FluxReveal/ht14-data<br/>privat repo")]
+  classDef ext fill:#ecfeff,stroke:#0891b2,color:#0f172a;
+  classDef wk fill:#fff7ed,stroke:#ea580c,color:#0f172a;
+  classDef data fill:#f5f3ff,stroke:#7c3aed,color:#0f172a;
+  classDef act fill:#f0fdf4,stroke:#16a34a,color:#0f172a;
+  class U ext; class W wk; class D,G data; class C act;
+</pre>
+<figcaption>Nettleseren snakker bare med Workeren. Bare Workeren kan lese og skrive i databasen.</figcaption>
+</figure>
+<p>Status («pågår», «ferdig») regnes ut fra klokka i norsk tid når noe vises. Hver periode lagres som en egen booking; en heldag er tre bookinger med felles <code>group_id</code>.</p>
+
+<h3 id="innlogging-og-okter">Innlogging og økter</h3>
+<p>Én innlogging per hus (A–D) med e-post og passord, sjekket i Workeren. Passord lagres bare som PBKDF2-hash med salt og en hemmelig «pepper». Antall runder justeres slik at en innlogging holder seg innenfor gratisplanens 10 ms CPU per forespørsel. Skjemaet bruker riktige <code>autocomplete</code>-verdier, så iPhone og Android kan lagre passordet.</p>
+<p>Etter innlogging får mobilen cookien <code>__Host-ht14_okt</code> (HttpOnly, Secure, SameSite=Lax) som varer i ca. ett år. Øktene og telleren for feil passord ligger i D1. Sidene og API-et ligger på samme adresse, så cookien er en vanlig førsteparts-cookie som også Safari på iPhone godtar.</p>
+
+<h3 id="sikkerhet">Sikkerhet</h3>
+<ul>
+  <li><b>Hemmeligheter:</b> <code>SESSION_PEPPER</code> og <code>GH_DATA_TOKEN</code> ligger bare som Worker-secrets – aldri i koden. Derfor kan repoet <code>ht14</code> være offentlig.</li>
+  <li><b>Token:</b> <code>GH_DATA_TOKEN</code> er et fine-grained GitHub-token som bare kan skrive til <code>ht14-data</code>.</li>
+  <li><b>Regler:</b> sjekkes alltid i Workeren, så det hjelper ikke å fikle med JavaScript i nettleseren.</li>
+  <li><b>Andre nettsider:</b> Workeren godtar bare endringer fra ht14.no (Origin-sjekk), sender ingen CORS-headere og krever gyldig økt.</li>
+  <li><b>Dobbeltbooking:</b> hindres i databasen – samme dato og periode kan bare ha én aktiv booking.</li>
+  <li><b>Sporbarhet:</b> hendelsesloggen i D1 viser hvem, når, fra, til og kommentar, og Git-historikken i <code>ht14-data</code> viser alle tidligere versjoner.</li>
+</ul>
+
+<h3 id="tekniske-valg">Tekniske valg</h3>
+<p>Én leverandør for adresse, sider, innlogging og database gjør det enkelt å drifte. Med alt på ht14.no ligger sidene og API-et på samme sted, så innloggingen virker på iPhone. D1 er en ekte database, så to hus kan ikke booke samme periode samtidig. Den nattlige kopien i GitHub gjør oss uavhengige: dataene kan alltid tas med videre. Cloudflare Access ble valgt bort fordi den gir maks 30 dagers innlogging med engangskoder på e-post.</p>
+
+<h2 id="lld" class="part-title"><span class="part-num">3</span> Detaljert (LLD)</h2>
+<p class="part-lead">For den som skal bygge, drifte eller videreutvikle. Navn på filer, felt og endepunkter kan justeres underveis.</p>
+
+<h3 id="filstruktur">Filer</h3>
+<pre><code>ht14/                         ← offentlig (github.com/FluxReveal/ht14)
+├── public/                   statiske filer på ht14.no
+│   ├── index.html            startside  (/)
+│   ├── dokumentasjon/        disse sidene  (/dokumentasjon/)
+│   └── badehusappen/         Badehusappen  (/badehusappen/)
+│       ├── index.html, css/, ikoner/, manifest.webmanifest, sw.js
+│       ├── rules.json        reglene
+│       └── js/               rules-engine.js, store.js, app.js
+├── src/index.js              Workeren (i dag bare /api/helse)
+├── wrangler.jsonc            navn, D1, ht14.no
+├── schema.sql                utkast til databasen
+└── tools/                    generator, lenkesjekk og tester
+
+ht14-data/                    ← privat, bare Workeren skriver
+├── bookings.csv, bookings.json
+└── users.csv, users.json     uten passord-hasher</code></pre>
+<p><b>Utkastet nå:</b> Badehusappen har ingen innlogging, og <code>store.js</code> lagrer bookingene i nettleseren (localStorage). <code>store.js</code> har de samme funksjonene som API-et skal ha, så når innlogging og booking kommer, byttes bare den fila ut.</p>
+
+<h3 id="datamodell">Datamodell</h3>
+<p>Utkast i <code>schema.sql</code>. Det legges inn i D1 først når sameiet har godkjent reglene.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Tabell</th><th>Innhold</th></tr></thead>
+<tbody>
+<tr><td><code>houses</code></td><td>A–D med navn og farge</td></tr>
+<tr><td><code>users</code></td><td>Én innlogging per hus, pluss administratorer: e-post, rolle, passord-hash</td></tr>
+<tr><td><code>bookings</code></td><td>Dato, periode (<code>AM</code> 10–14, <code>MID</code> 14–17, <code>PM</code> 17–24), hus, status, <code>group_id</code></td></tr>
+<tr><td><code>sessions</code></td><td>Innloggede mobiler (bare hash av cookien lagres)</td></tr>
+<tr><td><code>login_attempts</code></td><td>Feil passord, for en kort pause etter flere forsøk</td></tr>
+<tr><td><code>events</code></td><td>Hendelseslogg: hvem, når, hva, fra, til, kommentar</td></tr>
+</tbody></table></div>
+<p>Utdrag av <code>rules.json</code> – alle regler ligger her, så de kan endres uten kodeendring:</p>
+<pre><code>{ "timezone": "Europe/Oslo",
+  "periods": { "AM":  { "label": "Formiddag",   "start": "10:00", "end": "14:00" },
+               "MID": { "label": "Ettermiddag", "start": "14:00", "end": "17:00" },
+               "PM":  { "label": "Kveld",       "start": "17:00", "end": "24:00" } },
+  "bookingWindow": { "months": 3 },
+  "summer": { "months": [6, 7, 8], "maxPerWeekdayPerMonth": { "fri": 1, "sat": 1, "sun": 1 },
+              "maxDaysPerWeekend": 1 },
+  "liftSummerRulesWhenDaysBefore": 7, "lateCancellationDays": 7 }</code></pre>
+
+<h3 id="regelmotor">Regelmotor</h3>
+<p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
+<ul>
+  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → (admin-unntak) → under 7 dager? da OK → sommer og fre/lør/søn? → kvote per ukedag → én dag per helg.</li>
+  <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
+  <li>Kvoten teller <b>dager</b>, ikke perioder. Testene ligger i <code>tools/tests/</code> og kjøres med <code>node --test tools/tests/</code>.</li>
+</ul>
+
+<h3 id="statusmaskin">Statuser</h3>
+<figure>
+<pre class="mermaid">
+stateDiagram-v2
+  direction LR
+  [*] --> BOOKED: booking opprettet
+  [*] --> CHECKED_IN: spontan innsjekk
+  BOOKED --> CHECKED_IN: sjekk inn
+  BOOKED --> CANCELLED: avbestilt mer enn 7 dager før
+  BOOKED --> CANCELLED_LATE: avbestilt 7 dager eller mindre før
+  BOOKED --> NOT_CONFIRMED: perioden slutter uten innsjekk
+  CHECKED_IN --> COMPLETED: automatisk utsjekk ved periodeslutt
+  NOT_CONFIRMED --> COMPLETED: Vi brukte badehuset
+  COMPLETED --> [*]
+  CANCELLED --> [*]
+  CANCELLED_LATE --> [*]
+</pre>
+<figcaption>Admin kan i tillegg rette en status. Det lagres i hendelsesloggen og som et merke (<code>corrected</code>), ikke som en egen status.</figcaption>
+</figure>
+<p>CANCELLED og CANCELLED_LATE frigjør perioden. CANCELLED_LATE teller fortsatt i sommerkvoten. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
+
+<h3 id="worker-api">API</h3>
+<p>Alle kall går til <code>/api/</code> på ht14.no, med JSON og økt-cookie (unntatt innlogging). I dag finnes bare <code>/api/helse</code>.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
+<tbody>
+<tr><td><code>GET /api/helse</code></td><td>Svarer <code>{"ok":true}</code> – virker nå</td></tr>
+<tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte passord, hvem er jeg</td></tr>
+<tr><td><code>GET /api/calendar</code>, <code>/history</code>, <code>/stats</code>, <code>/rules</code></td><td>Kalender, historikk, statistikk, regler</td></tr>
+<tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder</td></tr>
+<tr><td><code>POST /api/bookings/{id}/cancel | checkin | confirm</code></td><td>Avbestill, sjekk inn, «Vi brukte badehuset»</td></tr>
+<tr><td><code>/api/admin/…</code></td><td>Innlogginger, økter, regler, unntak og retting</td></tr>
+</tbody></table></div>
+
+<h3 id="feilhandtering">Feilkoder</h3>
+<p>Feil returneres som <code>{ "error": KODE, "message": tekst }</code>, og brukeren ser alltid en forståelig norsk melding. De vanligste: <code>SLOT_TAKEN</code> (perioden er tatt), <code>STARTED</code> (har startet – bruk «Sjekk inn nå»), <code>FULLDAY_STARTED</code> (heldag etter kl. 10), <code>OUTSIDE_WINDOW</code> (over 3 måneder), <code>QUOTA_WEEKDAY</code> og <code>WEEKEND_LIMIT</code> (sommerreglene), <code>RATE_LIMITED</code> (for mange feil passord) og <code>RULES_INVALID</code> (feil i rules.json).</p>
+
+<h2 id="drift" class="part-title"><span class="part-num">4</span> Drift og oppsett</h2>
+<p class="part-lead">For Thomas, steg for steg i Cloudflare-dashbordet. Alt er på gratisplanene.</p>
+
+<h3 id="oppsett">Oppsett i Cloudflare</h3>
+<p><b>Allerede gjort:</b> ht14.no er lagt til som sone på Cloudflare-kontoen, databasen D1 «ht14» er laget og står i <code>wrangler.jsonc</code>, og repoene <code>FluxReveal/ht14</code> og <code>FluxReveal/ht14-data</code> finnes.</p>
+<ol class="steps">
+  <li><b>Vent til ht14.no er aktiv</b>Velg ht14.no i dashbordet og sjekk at statusen er <i>Active</i> (Cloudflare sender også e-post). Først da kan domenet kobles til Workeren.</li>
+  <li><b>Koble repoet (Workers Builds)</b><b>Workers &amp; Pages</b> → <b>Create application</b> → <b>GitHub</b>. Godkjenn Cloudflare-appen for FluxReveal (gjerne bare repoet <code>ht14</code>), velg <code>FluxReveal/ht14</code>, la byggkommandoen stå tom og velg <b>Save and Deploy</b>. Workeren må hete <code>ht14</code>, som i <code>wrangler.jsonc</code>.</li>
+  <li><b>Forhåndsvisning av grener</b>Workeren → <b>Settings</b> → <b>Builds</b>: sjekk at produksjonsgrenen er <code>main</code> og at bygg for andre grener (preview builds) er slått på. Lenken for hver gren står under <b>Previews</b> og som kommentar i GitHub.</li>
+  <li><b>ht14.no som eget domene</b>Står allerede i <code>wrangler.jsonc</code> og kobles på ved første publisering. Sjekk under <b>Settings</b> → <b>Domains &amp; Routes</b> (i nyere dashbord fanen <b>Domains</b>). Mangler det: <b>Add</b> → <b>Custom Domain</b> → <code>ht14.no</code>.</li>
+  <li><b>Hemmeligheter</b>Når innloggingen kommer: <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>: <code>SESSION_PEPPER</code> (lang tilfeldig tekst) og <code>GH_DATA_TOKEN</code> (fine-grained token, bare <code>ht14-data</code>, Contents: Read and write, utløp om ca. ett år). Velg <b>Deploy</b>.</li>
+  <li><b>Nattlig kopi</b>Senere: fjern kommentaren rundt <code>triggers</code> i <code>wrangler.jsonc</code> og flett inn i <code>main</code>. Cron Triggers styres fra den fila; sjekk under <b>Settings</b> → <b>Triggers</b>.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no, Badehusappen og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true}</code>), og legg appen på Hjem-skjermen.</li>
+</ol>
+
+<h3 id="brukere">Innlogginger</h3>
+<ul>
+  <li><b>Nytt hus-passord:</b> administratoren setter det og gir det muntlig eller på lapp. Alle økter for huset avsluttes.</li>
+  <li><b>Mistet mobil:</b> «Logg ut alle» for huset, og bytt passord.</li>
+  <li><b>Flytter noen:</b> bytt e-post og passord for huset. Historikken beholdes.</li>
+</ul>
+
+<h3 id="endre-regler">Endre regler og gjøre unntak</h3>
+<p>Når sameiet har bestemt en endring, legges den inn i <code>rules.json</code> som en vanlig endring (se <a href="#slik-endrer-vi">Slik gjøres endringer</a>). Unntak og retting av historikk krever alltid en kommentar og vises i historikken.</p>
+
+<h3 id="backup">Sikkerhetskopi</h3>
+<p>Hver natt skrives bookinger og brukere til <code>ht14-data</code> som CSV (semikolon, UTF-8, åpnes i Excel) og JSON – aldri passord-hasher. Git-historikken viser alle tidligere versjoner. D1 kan i tillegg spoles tilbake inntil 7 dager (Time Travel).</p>
+
+<h3 id="nar-noe-feiler">Når noe feiler</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Symptom</th><th>Hva du gjør</th></tr></thead>
+<tbody>
+<tr><td>Siden virker ikke etter en endring</td><td>Rull tilbake: Workeren → <b>Deployments</b> → ⋯ ved forrige versjon → <b>Rollback</b>.</td></tr>
+<tr><td>Endringen kom aldri ut</td><td>Se byggeloggen under <b>Deployments</b> → <b>View build history</b>.</td></tr>
+<tr><td>Kopien i ht14-data oppdateres ikke</td><td>Sjekk at <code>GH_DATA_TOKEN</code> ikke er utløpt. Beboerne merker ingenting.</td></tr>
+<tr><td>Alle bookinger avvises (RULES_INVALID)</td><td>Rull tilbake, eller rett <code>rules.json</code>.</td></tr>
+</tbody></table></div>
+
+<h2 id="overlevering" class="part-title"><span class="part-num">5</span> Drift og overlevering</h2>
+<p class="part-lead">HT14 er en egen pakke som kan overleveres til sameiet. FluxReveal (Thomas) er IT-avdeling og driftsleverandør.</p>
+
+<h3 id="hvem-eier-hva">Hvem eier hva</h3>
+<ul>
+  <li><b>Sameiet eier</b> domenet ht14.no, dataene (bookinger og innlogginger), innholdet og reglene.</li>
+  <li><b>FluxReveal gjør</b> drift (følger med på at alt virker), sikkerhetskopi (den nattlige kopien) og oppdateringer (endringer, sikkerhet og fornying av token).</li>
+  <li>Begge repoene ligger hos FluxReveal på GitHub og kan overføres til sameiet.</li>
+</ul>
+
+<h3 id="slik-endrer-vi">Slik gjøres endringer</h3>
+<ol>
+  <li>Thomas ber om endringen i chat.</li>
+  <li>Endringen lages på en egen gren i <code>ht14</code>.</li>
+  <li>Cloudflare lager en forhåndsvisningslenke, og Thomas tester på iPhone.</li>
+  <li>Thomas sier «kjør», og grenen flettes inn i <code>main</code>.</li>
+  <li>Workers Builds publiserer automatisk på ht14.no.</li>
+  <li>Det kommer en linje i <a href="hva-er-nytt.html">Hva er nytt</a>.</li>
+  <li>Går noe galt: ett klikk tilbake i Cloudflare (Rollback).</li>
+</ol>
+
+<h3 id="sameiet-tar-over">Slik tar sameiet over</h3>
+<ol>
+  <li>Overfør de to repoene (<code>ht14</code> og <code>ht14-data</code>) til sameiets GitHub-konto (repoets Settings → Transfer ownership).</li>
+  <li>Lag sameiets egen Cloudflare-konto (gratis), lag en ny D1-database, legg inn siste kopi fra <code>ht14-data</code> og koble repoet med Workers Builds.</li>
+  <li>Legg inn hemmelighetene på nytt (ny pepper og nytt token). Da logger alle husene inn én gang til.</li>
+  <li>Flytt domenet: eierskifte for ht14.no hos Domeneshop til sameiet, og legg ht14.no til i sameiets Cloudflare-konto.</li>
+</ol>
+
+<nav class="pagenav" aria-label="Forrige og neste side"><span></span><a class="next" href="regler.html"><small>Neste →</small>Regler for bruk av badehuset</a></nav>
+      <p class="footer">Sameiet HT14. Et utkast til Badehusappen kan prøves på <a href="/badehusappen/">ht14.no/badehusappen/</a> – bookingene lagres foreløpig bare på din egen telefon. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+    </article>
+    <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
+  </div>
+</main>
+</body>
+</html>
