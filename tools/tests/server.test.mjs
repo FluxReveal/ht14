@@ -22,7 +22,7 @@ test("passord: eget salt per bruker gir ulike hasher for samme passord", async (
 });
 
 test("passord: iterasjoner er innenfor workerd-grensen og gir noen ms CPU", async () => {
-  assert.ok(PW_ITERATIONS >= 20000 && PW_ITERATIONS <= 100000);
+  assert.ok(PW_ITERATIONS >= 5000 && PW_ITERATIONS <= 100000);
   const t = performance.now(); await hashPassword("x".repeat(20), "p"); const ms = performance.now() - t;
   assert.ok(ms < 50, `${ms} ms`);
 });

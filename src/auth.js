@@ -3,15 +3,16 @@
  *
  * Passord: PBKDF2-SHA256 (WebCrypto) med eget salt per bruker og en hemmelig «pepper»:
  *   pw_hash = PBKDF2( HMAC-SHA256(SESSION_PEPPER, passord), salt, iterasjoner, 256 bit )
- * Antall iterasjoner (PW_ITERATIONS) er valgt så én innlogging bruker noen få ms CPU
- * og holder seg godt innenfor gratisplanens 10 ms per forespørsel (målt: ca. 4 ms).
+ * Antall iterasjoner (PW_ITERATIONS) er valgt så én innlogging holder seg godt innenfor
+ * gratisplanens 10 ms CPU per forespørsel. Målt på ht14.no 26.10.2026: 30 000 runder ga
+ * 13–18 ms CPU for hele innloggingen (for mye), derfor 10 000 (se teknisk dokumentasjon).
  * Salt og iterasjoner lagres per bruker, så tallet kan økes senere: gamle hasher
  * oppgraderes automatisk ved neste vellykkede innlogging.
  *
  * Økter: tilfeldig 32-byte nøkkel i cookien __Host-ht14_okt. I databasen lagres
  * bare SHA-256 av nøkkelen, så en lekket database gir ingen gyldige økter.
  */
-export const PW_ITERATIONS = 30000;
+export const PW_ITERATIONS = 10000;
 export const COOKIE = "__Host-ht14_okt";
 export const SESSION_DAYS = 365;
 const enc = new TextEncoder();
