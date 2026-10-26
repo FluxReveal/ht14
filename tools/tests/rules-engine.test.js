@@ -18,7 +18,7 @@ const FULL = ["AM", "MID", "PM"];
 
 test("dato-hjelpere", () => {
   assert.equal(R.weekday("2027-07-10"), "sat");
-  assert.equal(R.weekendKey("2027-08-01"), "2027-07-30");      // søndag 1. aug → fredag 30. juli
+  assert.equal(R.mondayOf("2027-08-01"), "2027-07-26");        // søndag 1. aug hører til uka som starter mandag 26. juli
   assert.equal(R.addMonths("2027-04-15", 3), "2027-07-15");
   assert.equal(R.addMonths("2026-11-30", 3), "2027-02-28");
   assert.equal(R.diffDays("2027-07-10", "2027-07-03"), 7);
@@ -100,17 +100,61 @@ test("③ sommerkvote teller DAGER, ikke perioder", () => {
   assert.equal(multi("2027-07-09", FULL, "C").quota, true);                           // heldag på fredag = én kvotedag
 });
 
-test("④ helgebegrensning: én dag per helg (uansett antall perioder)", () => {
-  const ex = day("2027-07-09", "B");
-  assert.equal(multi("2027-07-10", FULL, "B", ex).error, "WEEKEND_LIMIT");
-  assert.equal(multi("2027-07-11", ["AM"], "B", ex).error, "WEEKEND_LIMIT");
-  assert.equal(multi("2027-07-17", FULL, "B", ex).ok, true);                          // neste helg, lørdag
+test("standard er kveld, og heldag er ikke forhåndsvalgt", () => {
+  assert.deepEqual(rules.defaultPeriods, ["PM"]);
+  assert.equal(rules.fullDay.default, false);
+  assert.deepEqual(rules.summer.limitedDays, ["thu", "fri", "sat"]);
+  assert.equal(multi("2027-07-10", ["AM"], "A").ok, true);                           // dagtid kan fortsatt velges – ingen teknisk sperre
 });
 
-test("Å3: helg over månedsskifte – kvote følger datoen, helgeregel følger helgen", () => {
-  const ex = [...day("2027-07-30", "C"), bk("2027-07-02", "PM", "C", { status: "COMPLETED" })];
-  assert.equal(multi("2027-08-01", FULL, "C", ex).error, "WEEKEND_LIMIT");
-  assert.equal(multi("2027-08-08", FULL, "C", ex).ok, true);                          // august-søndag, annen helg
+test("sommer: torsdag nr. 2 i samme måned avvises", () => {
+  const ex = [bk("2027-07-01", "PM", "A")];                                          // torsdag 1. juli
+  const r = multi("2027-07-15", ["PM"], "A", ex);
+  assert.equal(r.error, "QUOTA_WEEKDAY");
+  assert.match(r.message, /torsdag i juli/);
+  assert.match(r.message, /én torsdag, én fredag og én lørdag per måned/);
+  assert.equal(multi("2027-08-05", ["PM"], "A", ex, at("2027-06-01")).ok, true);      // ny måned
+});
+
+test("sommer: torsdag og lørdag i samme uke avvises (uke = mandag–søndag)", () => {
+  const ex = [bk("2027-07-08", "PM", "A")];                                          // torsdag 8. juli
+  assert.equal(multi("2027-07-10", ["PM"], "A", ex).error, "WEEK_LIMIT");            // lørdag samme uke
+  assert.equal(multi("2027-07-09", FULL, "A", ex).error, "WEEK_LIMIT");              // fredag samme uke
+  assert.match(multi("2027-07-10", ["PM"], "A", ex).message, /torsdag, fredag og lørdag i samme uke/);
+  assert.equal(multi("2027-07-10", ["PM"], "B", ex).ok, true);                       // et annet hus
+});
+
+test("sommer: torsdag i uke 1 og fredag i uke 2 går fint", () => {
+  const ex = [bk("2027-07-01", "PM", "A")];                                          // torsdag 1. juli
+  const r = multi("2027-07-09", ["PM"], "A", ex);                                    // fredag 9. juli, neste uke
+  assert.equal(r.ok, true); assert.equal(r.quota, true);
+  assert.equal(multi("2027-07-17", ["PM"], "A", ex.concat([bk("2027-07-09", "PM", "A")])).ok, true); // lørdag uka etter
+});
+
+test("sommer: søndag er ikke begrenset", () => {
+  const ex = [bk("2027-07-04", "PM", "A"), bk("2027-07-11", "PM", "A"), bk("2027-07-10", "PM", "A")];
+  const r = multi("2027-07-18", FULL, "A", ex);                                      // tredje søndag i juli
+  assert.equal(r.ok, true); assert.equal(r.quota, false);
+  assert.equal(multi("2027-07-25", ["PM"], "A", ex).ok, true);
+});
+
+test("sommerregelen gjelder bare juni–august", () => {
+  const now = at("2027-03-01");
+  const mai = [bk("2027-05-06", "PM", "D")];                                         // torsdag 6. mai
+  assert.equal(multi("2027-05-13", ["PM"], "D", mai, now).ok, true);                 // ny torsdag i mai
+  assert.equal(multi("2027-05-07", ["PM"], "D", mai, now).ok, true);                 // fredag samme uke
+  const juni = [bk("2027-06-03", "PM", "D")];
+  assert.equal(multi("2027-06-10", ["PM"], "D", juni, at("2027-04-01")).error, "QUOTA_WEEKDAY"); // juni: begrenset
+  const sep = [bk("2027-09-02", "PM", "D")];
+  assert.equal(multi("2027-09-09", ["PM"], "D", sep, at("2027-07-01")).ok, true);    // september: fritt
+  assert.equal(multi("2027-09-03", ["PM"], "D", sep, at("2027-07-01")).ok, true);
+});
+
+test("uke over månedsskifte: kvoten følger datoen, ukeregelen følger uka", () => {
+  const now = at("2026-05-20");
+  const ex = day("2026-07-31", "C");                                                 // fredag 31. juli 2026
+  assert.equal(multi("2026-08-01", ["PM"], "C", ex, now).error, "WEEK_LIMIT");       // lørdag 1. august, samme uke
+  assert.equal(multi("2026-08-07", ["PM"], "C", ex, now).ok, true);                  // fredag i august: egen kvote
 });
 
 test("⑤ 7-dagersregel: under 7 dager → førstemann til mølla og ikke kvote (Å1)", () => {
@@ -119,9 +163,9 @@ test("⑤ 7-dagersregel: under 7 dager → førstemann til mølla og ikke kvote 
   const fre = multi("2027-07-09", FULL, "A", ex, now);                               // 5 dager før
   assert.equal(fre.ok, true); assert.equal(fre.lifted, true); assert.equal(fre.quota, false);
   assert.equal(multi("2027-07-10", ["MID"], "A", ex, now).ok, true);                  // 6 dager før
-  assert.equal(multi("2027-07-11", FULL, "A", ex, now).ok, true);                     // 7 dager før → regler gjelder, men ingen søndag brukt ennå
-  const ex2 = ex.concat([bk("2027-07-04", "PM", "A")]);                               // søndag 4. juli med kvote
-  assert.equal(multi("2027-07-11", ["AM"], "A", ex2, now).error, "QUOTA_WEEKDAY");
+  assert.equal(multi("2027-07-11", FULL, "A", ex, now).quota, false);                 // 7 dager før, men søndag er ikke begrenset
+  assert.equal(multi("2027-07-15", ["PM"], "A", ex, now).quota, true);                 // torsdag 11 dager før: teller i kvoten
+  assert.equal(multi("2027-07-16", ["PM"], "A", ex, now).error, "QUOTA_WEEKDAY");      // fredag nr. 2 i juli (fredag 2. er brukt)
 });
 
 test("Å4: utenfor sommer ingen begrensninger", () => {

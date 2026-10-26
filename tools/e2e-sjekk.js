@@ -53,8 +53,10 @@ const REDIR = [["dokumentasjon/", /dokumentasjon\/teknisk(\.html)?$/], ["dokumen
       await p.click("#myHouseBtn"); await p.click('#sheetBody [data-house="A"]'); await p.waitForTimeout(200);
       await p.click("#nextBtn"); await p.waitForTimeout(200);
       await p.locator(".day").nth(2).locator(".dnum").click(); await p.waitForSelector("#bookBtn");
-      await p.click('#sheetBody [data-type="AM"]'); await p.click('#sheetBody [data-type="PM"]');
-      const bt = await p.textContent("#bookBtn"); if (!/ettermiddag/i.test(bt)) prob.push("bookknapp: " + bt);
+      const pre = await p.locator('#sheetBody [data-type][aria-checked="true"]').evaluateAll(bs => bs.map(x => x.dataset.type));
+      if (JSON.stringify(pre) !== '["PM"]') prob.push("forhåndsvalg er ikke kveld: " + JSON.stringify(pre));
+      if (!/gjester/.test(await p.locator("#sheetBody").innerText())) prob.push("mangler hint om gjester");
+      const bt = await p.textContent("#bookBtn"); if (!/kveld/i.test(bt)) prob.push("bookknapp: " + bt);
       await shoot("6-app-booking");
       await p.click("#bookBtn"); await p.waitForFunction(() => !document.querySelector("#sheet").open);
       const day = await p.locator(".day").nth(2).innerText();

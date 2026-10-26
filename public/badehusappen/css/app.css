@@ -281,3 +281,4 @@ button, .ghost, .primary, .danger, .secondary { max-width: 100%; overflow-wrap: 
 }
 .acts > *, .pitem .row > * { min-width: 0; }
 .plist { grid-template-columns: minmax(0, 1fr); } .pitem { min-width: 0; }
+.daytime { margin: -.4rem 0 .8rem; }
