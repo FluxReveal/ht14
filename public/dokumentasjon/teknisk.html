@@ -7,20 +7,22 @@
 <meta name="description" content="Teknisk dokumentasjon for HT14 og Badehusappen på ht14.no – kort for alle, overordnet arkitektur (HLD), detaljer (LLD), drift og oppsett, og drift og overlevering.">
 <meta name="robots" content="noindex">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css?v=20261026v05">
-<script src="app.js?v=20261026v05" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180">
+<link rel="stylesheet" href="style.css?v=20261027v06">
+<script src="app.js?v=20261027v06" defer></script>
 <script type="module" src="mermaid-init.js"></script>
 </head>
 <body>
 <a href="#innhold" class="chip" style="position:absolute;left:-9999px" onfocus="this.style.left='8px'">Hopp til innhold</a>
 <header class="topbar">
   <button class="hamburger" aria-label="Åpne meny" aria-expanded="false" aria-controls="sidemeny"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
-  <a class="topbar-home" href="/"><b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
-  <a class="topbar-app" href="/badehusappen/">Badehusappen</a>
+  <a class="topbar-home" href="/"><svg width="24" height="24" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ht14-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2a4a"/><stop offset=".62" stop-color="#155e75"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#ht14-bg)"/><circle cx="50" cy="14" r="5.5" fill="#fdba74"/><path d="M0 25 L9 25 L56 50 L0 50 Z" fill="#0f3d3a" opacity=".8"/><g><rect x="6" y="13" width="15" height="10" rx="1.5" fill="#fff"/><rect x="8.5" y="16.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="17" y="21" width="15" height="10" rx="1.5" fill="#fff"/><rect x="19.5" y="24.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="28" y="29" width="15" height="10" rx="1.5" fill="#fff"/><rect x="30.5" y="32.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="39" y="37" width="15" height="10" rx="1.5" fill="#fff"/><rect x="41.5" y="40.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/></g><path d="M5 53c4.5-3 9-3 13.5 0s9 3 13.5 0 9-3 13.5 0 9 3 13.5 0" fill="none" stroke="#67e8f9" stroke-width="3.2" stroke-linecap="round"/><path d="M12 59c3.3-2 6.7-2 10 0s6.7 2 10 0 6.7-2 10 0 6.7 2 10 0" fill="none" stroke="#a5f3fc" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg><b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
+  <a class="topbar-app" href="/badehusappen/"><img src="/badehusappen/ikoner/ikon.svg" width="18" height="18" alt="">Badehusappen</a>
 </header>
 <div class="scrim"></div>
 <nav class="sidebar" id="sidemeny" aria-label="Hovedmeny">
-  <a class="brand" href="/"><svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg><span><b>Sameiet HT14</b><small>Halden Terrasse 14</small></span></a>
+  <a class="brand" href="/"><svg width="38" height="38" viewBox="0 0 64 64" aria-hidden="true"><defs><linearGradient id="ht14-bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2a4a"/><stop offset=".62" stop-color="#155e75"/><stop offset="1" stop-color="#0e7490"/></linearGradient></defs><rect width="64" height="64" rx="14" fill="url(#ht14-bg)"/><circle cx="50" cy="14" r="5.5" fill="#fdba74"/><path d="M0 25 L9 25 L56 50 L0 50 Z" fill="#0f3d3a" opacity=".8"/><g><rect x="6" y="13" width="15" height="10" rx="1.5" fill="#fff"/><rect x="8.5" y="16.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="17" y="21" width="15" height="10" rx="1.5" fill="#fff"/><rect x="19.5" y="24.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="28" y="29" width="15" height="10" rx="1.5" fill="#fff"/><rect x="30.5" y="32.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/><rect x="39" y="37" width="15" height="10" rx="1.5" fill="#fff"/><rect x="41.5" y="40.5" width="10" height="3.5" rx=".8" fill="#fbbf24"/></g><path d="M5 53c4.5-3 9-3 13.5 0s9 3 13.5 0 9-3 13.5 0 9 3 13.5 0" fill="none" stroke="#67e8f9" stroke-width="3.2" stroke-linecap="round"/><path d="M12 59c3.3-2 6.7-2 10 0s6.7 2 10 0 6.7-2 10 0 6.7 2 10 0" fill="none" stroke="#a5f3fc" stroke-width="2" stroke-linecap="round" opacity=".7"/></svg><span><b>Sameiet HT14</b><small>Halden Terrasse 14</small></span></a>
   <div class="search" role="search"><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9cc3d1" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
     <input id="sok" type="search" placeholder="Søk i dokumentasjonen  ( / )" aria-label="Søk i dokumentasjonen" autocomplete="off">
     <ul id="sok-resultat" class="search-results" aria-live="polite"></ul>
@@ -28,7 +30,7 @@
   <ul class="nav">
 <li class="nav-label">Sameiet HT14</li>
 <li><a href="/"><span class="num">⌂</span>Hjem</a></li>
-<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen <small>utkast</small></a></li>
+<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen</a></li>
 <li class="nav-label">Dokumentasjon</li>
 <li><a href="teknisk.html" data-sok aria-current="page"><span class="num">1</span>Teknisk dokumentasjon</a></li>
 <li><a href="regler.html" data-sok><span class="num">2</span>Regler for bruk av badehuset</a></li>
@@ -48,10 +50,10 @@
   <div class="eyebrow">Teknisk</div>
   <h1>Teknisk dokumentasjon</h1>
   <p>Hvordan ht14.no og Badehusappen er bygget – først kort for alle, så stadig mer detaljert. Les så langt du har lyst.</p>
-  <div class="meta"><span class="chip">⏱ Ca. 14 min lesetid</span></div>
+  <div class="meta"><span class="chip">⏱ Ca. 15 min lesetid</span></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.5</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.6</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -96,7 +98,8 @@ flowchart LR
 <p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus og avbestille alle bookinger. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
 
 <h3 id="om-oss">Om oss</h3>
-<p>«Om oss» er første side i appen. Før innlogging viser den bare Hus A–D og innloggingen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
+<p>«Om oss» er en del av forsiden <a href="/#om-oss">ht14.no</a> (ikke i appen). Før innlogging viser den bare Hus A–D og et innloggingsskjema – samme innlogging og samme økt som i Badehusappen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
+<p>I appen er fanene <b>Kalender</b>, <b>Mine</b>, <b>Statistikk</b> og <b>Mer</b>. Kalenderen starter på i dag og viser de neste 30 dagene (eller én måned); pilene øverst blar frem og tilbake. Statistikk viser sesongen (juni–august) og hele året.</p>
 
 <h3 id="trygghet-og-personvern">Trygghet og personvern</h3>
 <ul>
@@ -167,15 +170,19 @@ flowchart LR
 <h3 id="filstruktur">Filer</h3>
 <pre><code>ht14/                         ← offentlig (github.com/FluxReveal/ht14)
 ├── public/                   statiske filer på ht14.no
-│   ├── index.html            startside  (/)
+│   ├── index.html            startside med «Om oss»  (/)
+│   ├── om-oss.js             Om oss på startsiden (henter fra /api/contacts)
+│   ├── favicon.svg, ht14-logo.svg   HT14-logoen (SVG)
 │   ├── dokumentasjon/        disse sidene  (/dokumentasjon/)
 │   └── badehusappen/         Badehusappen  (/badehusappen/)
-│       ├── index.html, css/, ikoner/, manifest.webmanifest, sw.js
+│       ├── index.html, css/, manifest.webmanifest, sw.js
+│       ├── ikoner/           app-ikonet (SVG)
 │       ├── rules.json        reglene
 │       └── js/               rules-engine.js, store.js, app.js
 ├── src/index.js              Workeren: API-et (/api/…) og regler
 ├── src/auth.js               passord-hash og økter
 ├── src/export.js             nattlig kopi til ht14-data
+├── src/ikoner.js             PNG/ICO-ikonene (base64, lages av tools/lag-ikoner.mjs)
 ├── wrangler.jsonc            navn, D1 (ht14 og ht14-test), ht14.no
 ├── schema.sql                databasen
 └── tools/                    generator, lenkesjekk og tester
@@ -234,14 +241,14 @@ stateDiagram-v2
 </pre>
 <figcaption>«Pågår», «ikke bekreftet» og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
 </figure>
-<p>CANCELLED frigjør perioden og teller aldri i sommerkvoten. Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
+<p>CANCELLED frigjør perioden og teller aldri – verken i sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt (<code>countsForQuota</code> og <code>stats</code> ser bare på aktive bookinger, og Workeren bruker samme motor). Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
 <h3 id="worker-api">API</h3>
 <p>Alle kall går til <code>/api/</code> på ht14.no med JSON og økt-cookie. Uten innlogging svarer alt unntatt <code>/api/helse</code> og <code>/api/login</code> med 401.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.5"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.6"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
@@ -266,7 +273,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.5"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.6"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
@@ -327,7 +334,7 @@ stateDiagram-v2
 </ol>
 
 <nav class="pagenav" aria-label="Forrige og neste side"><span></span><a class="next" href="regler.html"><small>Neste →</small>Regler for bruk av badehuset</a></nav>
-      <p class="footer">Sameiet HT14 · HT14 versjon 0.5. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.6. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
