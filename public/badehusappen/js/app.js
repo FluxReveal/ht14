@@ -170,16 +170,18 @@
     else html += `<p class="lead">${cap(periodsText(can.map(t => t.p)))} er ledig – velg hus og tid under.</p>`;
     // 2) Bookingskjema: hus først, så perioder (kryss av én eller flere); «Book» står fast nederst
     if (!dayOver && date <= lastBookable() && can.length) {
-      // Forhåndsvalg: perioden man trykket på, ellers heldag, ellers resten av dagen
-      const sel = (wanted && can.some(t => t.p === wanted)) ? [wanted] : can.map(t => t.p);
+      // Forhåndsvalg: perioden man trykket på, ellers kvelden (vanlig booking) hvis den er ledig
+      const def = (rules.defaultPeriods || []).filter(p => can.some(t => t.p === p));
+      const sel = (wanted && can.some(t => t.p === wanted)) ? [wanted] : def;
       const fdTime = periodsTime(FULLDAY);
       html += `<h3 class="label">Hvilket hus?</h3><div class="pick" role="group" aria-label="Velg hus">${HOUSES.map(h =>
         `<button type="button" class="h${h}" data-house="${h}" aria-pressed="${h === myHouse}">Hus ${h}</button>`).join("")}</div>
         <h3 class="label" id="whenLbl">Når? <span class="muted">Velg én eller flere</span></h3>
         <div class="types" role="group" aria-labelledby="whenLbl">
-        <button type="button" class="fullday" data-full aria-pressed="${fullOk && sel.length === PKEYS.length}" ${fullOk ? "" : "disabled"}><span>Heldag (vanligst)</span><span class="t">${fdTime}${fullOk ? "" : R.canBookFullDay(rules, date, n) ? " · noe er opptatt" : ` · bare før kl. ${hh(rules.periods[FULLDAY[0]].start)}`}</span></button>
+        <button type="button" class="fullday" data-full aria-pressed="${fullOk && sel.length === PKEYS.length}" ${fullOk ? "" : "disabled"}><span>Heldag</span><span class="t">${fdTime}${fullOk ? "" : R.canBookFullDay(rules, date, n) ? " · noe er opptatt" : ` · bare før kl. ${hh(rules.periods[FULLDAY[0]].start)}`}</span></button>
         ${types.map(t => `<button type="button" role="checkbox" class="per" data-type="${t.p}" aria-checked="${sel.includes(t.p) && t.free && !t.started}" ${t.free && !t.started ? "" : "disabled"}><span><span class="box" aria-hidden="true"></span>${PLABEL[t.p]}</span><span class="t">${PTIME[t.p]}${!t.free ? " · opptatt" : t.ended ? " · over" : t.started ? " · har startet" : ""}</span></button>`).join("")}
         </div>
+        ${rules.daytimeHint ? `<p class="muted daytime">${esc(rules.daytimeHint)}</p>` : ""}
         <div id="ruleMsg" aria-live="polite"></div>`;
       foot = `<button type="button" class="primary wide" id="bookBtn">Book</button>`;
     }
@@ -207,7 +209,7 @@
       btn.disabled = !res.ok;
       btn.textContent = `Book ${periodsText(ps)} for Hus ${house}`;
       if (!res.ok) { box.innerHTML = `<div class="msg no">${esc(res.message)}</div>`; return; }
-      const wd = R.weekday(date), summer = rules.summer.months.includes(R.monthOf(date)) && rules.summer.weekendDays.includes(wd);
+      const wd = R.weekday(date), summer = rules.summer.months.includes(R.monthOf(date)) && rules.summer.limitedDays.includes(wd);
       const info = res.lifted ? (summer ? "Under 7 dager igjen – da er det førstemann til mølla, og bookingen teller ikke i sommerkvoten." : "Dette går fint.")
         : res.quota ? `Dette går fint. Dagen blir Hus ${house} sin ${R.WD_NB[wd]} i ${R.MONTHS[R.monthOf(date) - 1]} – uansett hvor mange perioder dere tar.`
         : "Dette går fint.";
@@ -326,7 +328,7 @@
     for (let d = n.date.slice(0, 7) + "-01"; d <= end; d = R.addMonths(d, 1)) {
       const m = R.monthOf(d), y = R.yearOf(d);
       if (!rules.summer.months.includes(m)) continue;
-      const parts = rules.summer.weekendDays.map(wd => {
+      const parts = rules.summer.limitedDays.map(wd => {
         const used = [...new Set(mine.filter(b => R.countsForQuota(b) && R.monthOf(b.date) === m && R.yearOf(b.date) === y && R.weekday(b.date) === wd).map(b => b.date))];
         return `${R.WD_NB[wd]}: ${used.length ? "brukt (" + used.map(shortDate).join(", ") + ")" : "ledig"}`;
       });

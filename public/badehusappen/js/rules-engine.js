@@ -14,8 +14,8 @@
  *   AM  = formiddag   10–14
  *   MID = ettermiddag 14–17
  *   PM  = kveld       17–24
- * Man kan booke én eller flere perioder samme dag. «Heldag» er alle tre,
- * og er bare et valg i appen – hver periode lagres som sin egen booking,
+ * Kveld er vanlig booking. Man kan booke én eller flere perioder samme dag.
+ * «Heldag» er alle tre, og er bare et valg i appen – hver periode lagres som sin egen booking,
  * så den kan avbestilles, sjekkes inn og telles hver for seg.
  */
 (function (root, factory) {
@@ -66,14 +66,6 @@
   const weekday = s => WD[parseDate(s).t.getUTCDay()];
   const monthOf = s => parseDate(s).m;
   const yearOf = s => parseDate(s).y;
-  /** Helgenøkkel = fredagens dato for helgen datoen hører til (avklaring 3). */
-  function weekendKey(s) {
-    const w = weekday(s);
-    if (w === "fri") return s;
-    if (w === "sat") return addDays(s, -1);
-    if (w === "sun") return addDays(s, -2);
-    return null;
-  }
   /** Mandagen i uka datoen ligger i. */
   function mondayOf(s) { const i = parseDate(s).t.getUTCDay(); return addDays(s, -((i + 6) % 7)); }
   /** «lørdag 10. juli» */
@@ -178,24 +170,26 @@
 
     if (!rules.summer.months.includes(monthOf(req.date))) return ok({ quota: false });  // Å4
     const wd = weekday(req.date);
-    if (!rules.summer.weekendDays.includes(wd)) return ok({ quota: false });
+    const days = rules.summer.limitedDays;
+    if (!days.includes(wd)) return ok({ quota: false });                              // f.eks. søndag: ingen grense
 
     const mine = bookings.filter(b => b.household === req.household && countsForQuota(b));
     const opens = dateLabel(addDays(req.date, -(rules.liftSummerRulesWhenDaysBefore - 1)));
     const tail = ` Fra ${opens} (under 7 dager før) er det førstemann til mølla, så da kan dere ta den hvis den er ledig.`;
 
-    // 1) Maks én av hver helgedag per måned – teller DAGER. En annen periode
-    //    samme dato som husstanden allerede har, teller ikke som en ny dag.
+    // 1) Maks én av hver begrensede dag (torsdag, fredag, lørdag) per måned – teller DAGER.
+    //    En annen periode samme dato som huset allerede har, teller ikke som en ny dag.
     const sameWd = distinct(mine.filter(b => b.date !== req.date && monthOf(b.date) === monthOf(req.date)
       && yearOf(b.date) === yearOf(req.date) && weekday(b.date) === wd));
+    const dayList = listNb(days.map(d => "én " + WD_NB[d]));
     if (sameWd.length >= rules.summer.maxPerWeekdayPerMonth[wd])
-      return fail("QUOTA_WEEKDAY", `Hus ${req.household} har allerede en ${WD_NB[wd]} i ${MONTHS[monthOf(req.date) - 1]} (${dateLabel(sameWd[0], false)}). Om sommeren kan hvert hus ha én fredag, én lørdag og én søndag per måned.` + tail, { rule: "summer.maxPerWeekdayPerMonth" });
+      return fail("QUOTA_WEEKDAY", `Hus ${req.household} har allerede en ${WD_NB[wd]} i ${MONTHS[monthOf(req.date) - 1]} (${dateLabel(sameWd[0], false)}). Om sommeren kan hvert hus ha ${dayList} per måned.` + tail, { rule: "summer.maxPerWeekdayPerMonth" });
 
-    // 2) Maks én helgedag per helg (fre–søn), også over månedsskifte (Å3).
-    const wk = weekendKey(req.date);
-    const sameWeekend = distinct(mine.filter(b => b.date !== req.date && weekendKey(b.date) === wk));
-    if (sameWeekend.length >= rules.summer.maxDaysPerWeekend)
-      return fail("WEEKEND_LIMIT", `Hus ${req.household} har allerede ${dateLabel(sameWeekend[0])} denne helgen. Om sommeren kan hvert hus ta én dag per helg.` + tail, { rule: "summer.maxDaysPerWeekend" });
+    // 2) Maks én av disse dagene i samme uke (mandag–søndag), også over månedsskifte.
+    const wk = mondayOf(req.date);
+    const sameWeek = distinct(mine.filter(b => b.date !== req.date && days.includes(weekday(b.date)) && mondayOf(b.date) === wk));
+    if (sameWeek.length >= rules.summer.maxLimitedDaysPerWeek)
+      return fail("WEEK_LIMIT", `Hus ${req.household} har allerede ${dateLabel(sameWeek[0])} denne uka. Om sommeren kan hvert hus ta bare én av dagene ${listNb(days.map(d => WD_NB[d]))} i samme uke.` + tail, { rule: "summer.maxLimitedDaysPerWeek" });
 
     return ok({ quota: true });
   }
@@ -340,7 +334,7 @@
   }
 
   return {
-    osloNow, isDate, addDays, diffDays, addMonths, weekday, weekendKey, mondayOf, monthOf, yearOf,
+    osloNow, isDate, addDays, diffDays, addMonths, weekday, mondayOf, monthOf, yearOf,
     dateLabel, MONTHS, WD_NB, range, periodKeys, fullDayPeriods, overlaps, hasEnded, isOver, hasStarted, isActive, effectiveStatus,
     countsForQuota, validateBooking, validateBookingMulti, canBookFullDay, validateCancel, validateCheckin, checkinChain,
     spontaneousOptions, spontaneousPlans, validateSpontaneous, validateConfirm, stats
