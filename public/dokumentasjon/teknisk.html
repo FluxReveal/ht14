@@ -48,10 +48,10 @@
   <div class="eyebrow">Teknisk</div>
   <h1>Teknisk dokumentasjon</h1>
   <p>Hvordan ht14.no og Badehusappen er bygget – først kort for alle, så stadig mer detaljert. Les så langt du har lyst.</p>
-  <div class="meta"><span class="chip">⏱ Ca. 10 min lesetid</span></div>
+  <div class="meta"><span class="chip">⏱ Ca. 11 min lesetid</span></div>
 </section>
 
-<p>Det er laget et <b>utkast til Badehusappen</b> som du kan prøve på <a href="/badehusappen/">ht14.no/badehusappen/</a>. Foreløpig lagres bookingene bare på din egen telefon. Thomas lager dette på oppdrag fra sameiet – ingenting er bestemt ennå, vi tar det sammen på sameiemøtet.</p>
+<p>Det er laget et <b>utkast til Badehusappen</b> som du kan prøve på <a href="/badehusappen/">ht14.no/badehusappen/</a>. Foreløpig lagres bookingene bare på din egen telefon. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -198,7 +198,7 @@ ht14-data/                    ← privat, bare Workeren skriver
   "summer": { "months": [6, 7, 8], "limitedDays": ["thu", "fri", "sat"],
               "maxPerWeekdayPerMonth": { "thu": 1, "fri": 1, "sat": 1 },
               "maxLimitedDaysPerWeek": 1 },
-  "liftSummerRulesWhenDaysBefore": 7, "lateCancellationDays": 7 }</code></pre>
+  "liftSummerRulesWhenDaysBefore": 7 }</code></pre>
 
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
@@ -216,18 +216,16 @@ stateDiagram-v2
   [*] --> BOOKED: booking opprettet
   [*] --> CHECKED_IN: spontan innsjekk
   BOOKED --> CHECKED_IN: sjekk inn
-  BOOKED --> CANCELLED: avbestilt mer enn 7 dager før
-  BOOKED --> CANCELLED_LATE: avbestilt 7 dager eller mindre før
+  BOOKED --> CANCELLED: avbestilt
   BOOKED --> NOT_CONFIRMED: perioden slutter uten innsjekk
   CHECKED_IN --> COMPLETED: automatisk utsjekk ved periodeslutt
   NOT_CONFIRMED --> COMPLETED: Vi brukte badehuset
   COMPLETED --> [*]
   CANCELLED --> [*]
-  CANCELLED_LATE --> [*]
 </pre>
 <figcaption>Admin kan i tillegg rette en status. Det lagres i hendelsesloggen og som et merke (<code>corrected</code>), ikke som en egen status.</figcaption>
 </figure>
-<p>CANCELLED og CANCELLED_LATE frigjør perioden. CANCELLED_LATE teller fortsatt i sommerkvoten. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
+<p>CANCELLED frigjør perioden og teller aldri i sommerkvoten. Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
 <h3 id="worker-api">API</h3>
 <p>Alle kall går til <code>/api/</code> på ht14.no, med JSON og økt-cookie (unntatt innlogging). I dag finnes bare <code>/api/helse</code>.</p>
