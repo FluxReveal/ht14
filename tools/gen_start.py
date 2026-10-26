@@ -34,6 +34,7 @@ EV = [
 # Ingen versjonsnumre – bare dato og hva som er nytt.
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/vedtekter.html#punkt-2"),
  ("2026-10-26", "HT14 får egen adresse: ht14.no", "Startsiden, dokumentasjonen og Badehusappen flytter til Cloudflare på ht14.no. Bookingene skal lagres i en database med en kopi hver natt, og hvert hus får én felles innlogging.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Kortere og ryddigere dokumentasjon", "Dokumentasjonen er omtrent halvert og samlet i fem sider: Teknisk dokumentasjon, Regler for bruk av badehuset, Forslag til tillegg i vedtektene, Årshjul og Hva er nytt. Gamle lenker virker fortsatt.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Felles meny for hele HT14", "Hjem, Badehusappen og Dokumentasjon henger sammen, med «Sameiet HT14» øverst – så det er lett å finne fram og tilbake.", None),
