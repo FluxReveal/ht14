@@ -253,7 +253,7 @@ pre.mermaid{background:transparent;color:var(--ink);box-shadow:none;padding:0;ma
 .legal{background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:34px 40px;margin:24px 0;
   font-family:Georgia,"Iowan Old Style","Times New Roman",serif;font-size:1.04rem;line-height:1.7;color:#1e293b;max-width:780px}
 .legal p,.legal li{max-width:68ch}
-.legal ul{padding-left:1.4em}.legal li{margin:.25em 0}
+.legal ul,.legal ol{padding-left:1.4em}.legal li{margin:.25em 0}
 .legal h2.legal-title{font-family:inherit;font-size:1.45rem;margin:.4rem 0 1rem;text-align:center;letter-spacing:.01em}
 .legal h2.legal-title::before{display:none}
 .legal .legal-kicker{text-align:center;font-size:.86rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 .2rem;font-family:system-ui,sans-serif;font-weight:700;max-width:none}
