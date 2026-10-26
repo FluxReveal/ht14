@@ -7,7 +7,8 @@
     "deploy": "wrangler deploy",
     "build": "python3 tools/build.py",
     "sjekk": "python3 tools/checklinks.py",
-    "test": "node --test tools/tests/rules-engine.test.js"
+    "test": "node --test tools/tests/rules-engine.test.js tools/tests/server.test.mjs",
+    "test:api": "node --test tools/tests/api.test.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.152.0"
