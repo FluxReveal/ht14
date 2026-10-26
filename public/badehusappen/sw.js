@@ -5,7 +5,7 @@
  * aldri hengende fast i hurtigbufferen.
  * Registreres med scope /badehusappen/ på ht14.no.
  */
-const CACHE = "ht14-badehusappen-2026-10-26-v05";   // endres ved oppdatering, så gamle kopier ryddes
+const CACHE = "ht14-badehusappen-2026-10-27-v06";   // endres ved oppdatering, så gamle kopier ryddes
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", e => e.waitUntil(
   caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
