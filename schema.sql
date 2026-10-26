@@ -1,5 +1,5 @@
 -- =====================================================================
--- HT14 versjon 0.5 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
+-- HT14 versjon 0.6 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
 -- Legges inn med:  npx wrangler d1 execute ht14 --remote --file=schema.sql
 -- Trygt å kjøre flere ganger (IF NOT EXISTS / INSERT OR IGNORE).
 -- Tider lagres som ISO 8601 i UTC (tekst). Datoer (YYYY-MM-DD) er norsk dato.

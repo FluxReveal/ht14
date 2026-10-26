@@ -6,7 +6,7 @@
   <div class="meta"></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.5</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.6</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -51,7 +51,8 @@ flowchart LR
 <p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus og avbestille alle bookinger. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
 
 <h3 id="om-oss">Om oss</h3>
-<p>«Om oss» er første side i appen. Før innlogging viser den bare Hus A–D og innloggingen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
+<p>«Om oss» er en del av forsiden <a href="/#om-oss">ht14.no</a> (ikke i appen). Før innlogging viser den bare Hus A–D og et innloggingsskjema – samme innlogging og samme økt som i Badehusappen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
+<p>I appen er fanene <b>Kalender</b>, <b>Mine</b>, <b>Statistikk</b> og <b>Mer</b>. Kalenderen starter på i dag og viser de neste 30 dagene (eller én måned); pilene øverst blar frem og tilbake. Statistikk viser sesongen (juni–august) og hele året.</p>
 
 <h3 id="trygghet-og-personvern">Trygghet og personvern</h3>
 <ul>
@@ -122,15 +123,19 @@ flowchart LR
 <h3 id="filstruktur">Filer</h3>
 <pre><code>ht14/                         ← offentlig (github.com/FluxReveal/ht14)
 ├── public/                   statiske filer på ht14.no
-│   ├── index.html            startside  (/)
+│   ├── index.html            startside med «Om oss»  (/)
+│   ├── om-oss.js             Om oss på startsiden (henter fra /api/contacts)
+│   ├── favicon.svg, ht14-logo.svg   HT14-logoen (SVG)
 │   ├── dokumentasjon/        disse sidene  (/dokumentasjon/)
 │   └── badehusappen/         Badehusappen  (/badehusappen/)
-│       ├── index.html, css/, ikoner/, manifest.webmanifest, sw.js
+│       ├── index.html, css/, manifest.webmanifest, sw.js
+│       ├── ikoner/           app-ikonet (SVG)
 │       ├── rules.json        reglene
 │       └── js/               rules-engine.js, store.js, app.js
 ├── src/index.js              Workeren: API-et (/api/…) og regler
 ├── src/auth.js               passord-hash og økter
 ├── src/export.js             nattlig kopi til ht14-data
+├── src/ikoner.js             PNG/ICO-ikonene (base64, lages av tools/lag-ikoner.mjs)
 ├── wrangler.jsonc            navn, D1 (ht14 og ht14-test), ht14.no
 ├── schema.sql                databasen
 └── tools/                    generator, lenkesjekk og tester
@@ -189,14 +194,14 @@ stateDiagram-v2
 </pre>
 <figcaption>«Pågår», «ikke bekreftet» og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
 </figure>
-<p>CANCELLED frigjør perioden og teller aldri i sommerkvoten. Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
+<p>CANCELLED frigjør perioden og teller aldri – verken i sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt (<code>countsForQuota</code> og <code>stats</code> ser bare på aktive bookinger, og Workeren bruker samme motor). Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
 <h3 id="worker-api">API</h3>
 <p>Alle kall går til <code>/api/</code> på ht14.no med JSON og økt-cookie. Uten innlogging svarer alt unntatt <code>/api/helse</code> og <code>/api/login</code> med 401.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.5"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.6"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
@@ -221,7 +226,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.5"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.6"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
