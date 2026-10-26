@@ -1,0 +1,26 @@
+{
+  "name": "Badehusappen – HT14",
+  "short_name": "Badehusappen",
+  "description": "Book badehuset i Halden Terrasse 14.",
+  "lang": "nb",
+  "id": "/badehusappen/",
+  "start_url": "/badehusappen/?kilde=hjemskjerm",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ecfeff",
+  "theme_color": "#0e7490",
+  "icons": [
+    {
+      "src": "/badehusappen/ikoner/ikon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/badehusappen/ikoner/ikon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

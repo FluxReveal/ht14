@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Badehusappen – HT14</title>
+<meta name="description" content="Badehusappen for Halden Terrasse 14 – book badehuset på mobilen.">
+<meta name="theme-color" content="#0e7490">
+<meta name="color-scheme" content="light dark">
+<link rel="manifest" href="/badehusappen/manifest.webmanifest">
+<link rel="icon" href="ikoner/ikon.svg" type="image/svg+xml">
+<!-- iOS bruker ikke SVG som Hjem-skjerm-ikon; derfor en liten PNG som data-URI. -->
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAAwFBMVEXs/v/q/P7h9/nR7fKl8/yh8Pqa6vVn6Pm94ee02+Oa4+2P4OyG2eafztiWyNSOw9CDvMtj5PZi4vVr3O1d3O5a1+p70N51y9pV0eVSzeBwx9ZpwdF9ucdSxtliu81Kw9hIwNVFvdJzs8JbtcdLs8hQrMBTqLtIpbpKn7RElqs+s8k7sMY1qL8yors6mrAtnbUyla0mlK43jaQtkaoqiaIkhJ0hjqcch6Ecg54df5kXfpkVfJYUeZQReJMRdpIOdJDIbn5nAAADaUlEQVR42u3a6XKiQBQF4FYimhHjUsZdESlEQTEmLnEj7/9Wk3GMNNq4TbfC1Dn/UpcbvzR9G2NCviIYAjTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAx0itJvNulFDL54JeV5ECz2RyHekSZTQ/TjZJt6PDroTI7vEOhFBu1lCRcQ48kcvUsSX1CL86L8jSIf/OPJG9+LkKPFeuNENwkwjxGg3QwKSccOKPhxBYePIEf0ukROR3sOIZo2goHEkgkdQyDhyQq8z5IJk1mFCT1PkoqSm4UGfHkH+40juMILcx5HcZQQ5jyO5zwjyHUdypxHkOo7/iO5L5IZI/UeiuzFyU2Ldx6G75OZ0H4bO3Y7OAc0BLeUa++SkaKAl328pbjwS6Kz/opdIoF+ABhpooIEGGmiggf4P0ZL/Iilk6M4zM43++z79BvuazsPQjwrQ0UBPzFY5nVBqeo/5x6uNY9QUWS7Vjbdb2oWgP0pP+yRan4fllSF7dcW5tl0I+o16ze3r1n0fhq502V9Pm9e0C0FPlKejJOr7u7w5JG/ZzqXtItCrj9oTMwl9+x8HU/MXu644iwva+aPXRokWlVqmY9TpdUv7vqgZTk8vU8suK2fayyZ/tG8rln9WxkmzVk42duVli7myAe0GdzR9s+mDzDxiy/rKK0+Pd0Rge4k32g08xFw/W9aX/voB+0S7Imp7MM7dry/vYE60lowTp3zq2Pba+W+Ptf7nARd0OE0dvVbWe5PAY8dsnW03BT5ctvkcD7SmNRwvA37C2chS2/Zoflu7EPSwmPxJZcYgtfflgr2+ul0IevSapNM8WM6llqfLxcHmqnYh6FkleRiNetOztvOH5eLo8nYh6LmaZCRv7U5md1Bk1Svjy9r5o2cDq131NmtFs1TvRhdUzbI11SMXm5ZWpfauqtln2gef/NGW744Pd0eZlWSmvQOMK8xyQPuYO5r65gV7wzop9qnOAsfuZHuTN3rj7UDbvwPn7YANfHzAnWmvcl/p1+ChocerwrjH1HSebLe4o+fN7+EZzjbsx/R4oBYLTXscMEzzkVU9266tBD5c8LkH0EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQIvKbzsGhcS/tgjTAAAAAElFTkSuQmCC">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Badehusappen">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/app.css?v=7">
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="/" title="Til startsiden for Sameiet HT14"><img src="ikoner/ikon.svg" alt="" width="30" height="30"><span class="brand-txt"><small>‹ Sameiet HT14</small><span>Badehusappen</span></span></a>
+  <button class="myhouse" id="myHouseBtn" type="button" aria-haspopup="dialog">Mitt hus: <b id="myHouseLabel">velg</b></button>
+</header>
+<p class="trial">Dette er en prøveversjon – bookingene lagres bare på din egen telefon foreløpig. <span id="clockNote"></span></p>
+
+<main id="main">
+  <section id="view-kalender" class="view" aria-labelledby="calTitle">
+    <div class="toolbar">
+      <button class="nav" id="prevBtn" type="button" aria-label="Forrige">‹</button>
+      <h1 id="calTitle" class="caltitle" aria-live="polite"></h1>
+      <button class="nav" id="nextBtn" type="button" aria-label="Neste">›</button>
+    </div>
+    <div class="toolbar2">
+      <div class="seg" role="group" aria-label="Visning">
+        <button type="button" id="modeWeek" aria-pressed="true">Uke</button>
+        <button type="button" id="modeMonth" aria-pressed="false">Måned</button>
+      </div>
+      <button type="button" class="ghost" id="todayBtn">I dag</button>
+      <button type="button" class="primary small" id="checkinNowBtn">Sjekk inn nå</button>
+    </div>
+    <p class="hint" id="hint" hidden>👆 Trykk på en dag – eller rett på en ledig tid – for å booke.</p>
+    <div id="calendar"></div>
+    <p class="legend" id="legend"></p>
+  </section>
+
+  <section id="view-mine" class="view" hidden aria-labelledby="mineTitle">
+    <h1 id="mineTitle">Mine bookinger</h1>
+    <div id="mine"></div>
+  </section>
+
+  <section id="view-statistikk" class="view" hidden aria-labelledby="statTitle">
+    <h1 id="statTitle">Statistikk</h1>
+    <div class="toolbar">
+      <button class="nav" id="statPrev" type="button" aria-label="Forrige måned">‹</button>
+      <h2 id="statMonth" class="caltitle"></h2>
+      <button class="nav" id="statNext" type="button" aria-label="Neste måned">›</button>
+    </div>
+    <div id="stats"></div>
+    <p class="muted">Bruk telles i perioder: formiddag (10–14) = 1, ettermiddag (14–17) = 1, kveld (17–24) = 1, heldag = 3. Det er ikke for å rangere noen – bare så alle ser hvordan badehuset brukes. Den lyse delen av stolpen er «ikke bekreftet»: ingen sjekket inn, så det regnes ikke som bruk før noen bekrefter; trykk «Vi brukte badehuset» under Mine bookinger hvis dere var der.</p>
+  </section>
+
+  <section id="view-mer" class="view" hidden aria-labelledby="merTitle">
+    <h1 id="merTitle">Mer</h1>
+    <p class="links">
+      <a class="ghost linkbtn" href="/dokumentasjon/regler.html">⚖️ Regler for bruk</a>
+      <a class="ghost linkbtn" href="/dokumentasjon/teknisk.html">📖 Dokumentasjon</a>
+    </p>
+    <h2>Om utkastet</h2>
+    <p>Her kan du prøve hvordan Badehusappen skal fungere. Det er ingen innlogging ennå – du velger bare hvilket hus du booker for. Bookingene lagres bare i nettleseren på denne enheten, så naboene ser dem ikke. Reglene er Thomas sitt forslag, som vi tar på sameiemøtet.</p>
+    <p>Dagen er delt i tre: <b>formiddag 10–14</b>, <b>ettermiddag 14–17</b> og <b>kveld 17–24</b>. Du kan booke én eller flere – heldag er alle tre, og det er det vanligste valget. Badehuset åpner kl. 10. Også denne inndelingen er en del av forslaget til sameiemøtet.</p>
+    <p>Vil du begynne på nytt? Dette sletter prøvebookingene på denne enheten.</p>
+    <p><button type="button" class="danger" id="resetBtn">Nullstill prøvedata</button></p>
+    <h2>Legg Badehusappen på Hjem-skjermen</h2>
+    <p><b>iPhone:</b> åpne siden i Safari → Del-knappen → «Legg til på Hjem-skjerm».<br><b>Android:</b> Chrome → menyen ⋮ → «Legg til på startskjermen» eller «Installer app».</p>
+  </section>
+</main>
+
+<nav class="tabs" aria-label="Hovedmeny">
+  <button type="button" data-view="kalender" aria-current="page"><span aria-hidden="true">📅</span>Kalender</button>
+  <button type="button" data-view="mine"><span aria-hidden="true">🏠</span>Mine</button>
+  <button type="button" data-view="statistikk"><span aria-hidden="true">📊</span>Statistikk</button>
+  <button type="button" data-view="mer"><span aria-hidden="true">☰</span>Mer</button>
+</nav>
+
+<dialog id="sheet" aria-labelledby="sheetTitle">
+  <div class="sheet-head"><h2 id="sheetTitle"></h2><button type="button" class="close" id="sheetClose" aria-label="Lukk">✕</button></div>
+  <div id="sheetBody"></div>
+  <div id="sheetFoot" hidden></div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script src="js/rules-engine.js?v=7"></script>
+<script src="js/store.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
+</body>
+</html>

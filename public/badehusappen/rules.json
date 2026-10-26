@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 2,
+  "timezone": "Europe/Oslo",
+  "households": {
+    "A": { "name": "Halden Terrasse 14A", "color": "#2563eb", "colorName": "Blå" },
+    "B": { "name": "Halden Terrasse 14B", "color": "#16a34a", "colorName": "Grønn" },
+    "C": { "name": "Halden Terrasse 14C", "color": "#ea580c", "colorName": "Oransje" },
+    "D": { "name": "Halden Terrasse 14D", "color": "#7c3aed", "colorName": "Lilla" }
+  },
+  "periods": {
+    "AM": { "label": "Formiddag", "start": "10:00", "end": "14:00", "units": 1 },
+    "MID": { "label": "Ettermiddag", "start": "14:00", "end": "17:00", "units": 1 },
+    "PM": { "label": "Kveld", "start": "17:00", "end": "24:00", "units": 1 }
+  },
+  "fullDay": { "label": "Heldag", "periods": ["AM", "MID", "PM"], "default": true, "onlyBeforeStart": true },
+  "multiplePeriods": true,
+  "bookingWindow": { "months": 3, "mode": "rolling" },
+  "summer": {
+    "months": [6, 7, 8],
+    "maxPerWeekdayPerMonth": { "fri": 1, "sat": 1, "sun": 1 },
+    "countBy": "day",
+    "weekendDays": ["fri", "sat", "sun"],
+    "maxDaysPerWeekend": 1,
+    "quotaMonthBy": "date",
+    "weekendBy": "weekend"
+  },
+  "offSeason": { "restrictions": "none" },
+  "liftSummerRulesWhenDaysBefore": 7,
+  "shortNoticeCountsTowardQuota": false,
+  "spontaneousCheckinCountsTowardQuota": false,
+  "lateCancellationDays": 7,
+  "cancelPermission": "household",
+  "stats": { "notConfirmedAsUsage": false, "cancelledLateAsUsage": false }
+}
