@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="nb">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Årshjul – Dokumentasjon – Sameiet HT14</title>
+<meta name="description" content="Sameiets årshjul: dugnader, badesesongen, møter og regninger gjennom året i Sameiet HT14.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css?v=20261026a">
+<script src="app.js?v=20261026a" defer></script>
+<style>
+  .hjul-boks{background:#fff;border:1px solid var(--line);border-radius:22px;padding:14px;box-shadow:var(--shadow);max-width:560px;margin:0 auto 18px}
+  .wheel{width:100%;height:auto;display:block}
+  .wheel .mlabel{font:700 15px system-ui,sans-serif;fill:#334155}
+  .wheel .evnum{font:800 12px system-ui,sans-serif}
+  .wheel .c1{font:800 34px system-ui,sans-serif;fill:#0e7490}
+  .wheel .c2{font:700 15px system-ui,sans-serif;fill:#0f172a}
+  .wheel .c3{font:500 12px system-ui,sans-serif;fill:#64748b}
+  .wheel .mnd.naa{fill:#0e7490}
+  .legend{list-style:none;padding:0;margin:10px 4px 2px;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88rem;color:var(--ink-2)}
+  .legend .sw{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:6px;vertical-align:-2px}
+  .legend .sw.solid{background:#94a3b8}
+  .legend .sw.dashed{background:repeating-linear-gradient(45deg,#e2e8f0 0 3px,#94a3b8 3px 5px);outline:2px dashed #64748b;outline-offset:-1px}
+  .evlist{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+  .ev-item{display:flex;gap:12px;background:#fff;border:1px solid var(--line);border-left:6px solid var(--c);border-radius:14px;padding:12px 14px}
+  .ev-item.er-forslag{border-style:dashed;border-left-style:dashed;background:linear-gradient(90deg,var(--bg),#fff 40%)}
+  .ev-item p{margin:.35rem 0 0;color:var(--ink-2);font-size:.93rem}
+  .ev-item .when{color:var(--muted);font-size:.9rem}
+  .ev-item .cat{font-size:.78rem;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.04em}
+  .nr{flex:none;display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--c);color:#fff;font-weight:800;font-size:.85rem}
+  .er-forslag .nr{background:#fff;color:var(--c);border:2px dashed var(--c)}
+  .tag{display:inline;font-size:.8rem;font-style:italic;font-weight:500;margin-left:4px;color:var(--muted)}
+  .tag::before{content:"· "}
+  .tag.forslag{color:#b45309}
+  .nytt-dag h2{font-size:1.15rem;color:var(--brand)}
+  .nytt-dag ul{padding-left:1.1rem;display:grid;gap:8px}
+  .nytt-dag li b{color:var(--ink)}
+</style>
+</head>
+<body>
+<a href="#innhold" class="chip" style="position:absolute;left:-9999px" onfocus="this.style.left='8px'">Hopp til innhold</a>
+<header class="topbar">
+  <button class="hamburger" aria-label="Åpne meny" aria-expanded="false" aria-controls="sidemeny"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+  <a class="topbar-home" href="/"><b>Sameiet HT14</b></a><span class="topbar-sep" aria-hidden="true">›</span><span>Dokumentasjon</span>
+  <a class="topbar-app" href="/badehusappen/">Badehusappen</a>
+</header>
+<div class="scrim"></div>
+<nav class="sidebar" id="sidemeny" aria-label="Hovedmeny">
+  <a class="brand" href="/"><svg width="38" height="38" viewBox="0 0 48 48" aria-hidden="true"><rect width="48" height="48" rx="12" fill="#0891b2"/><path d="M10 25 24 13l14 12" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="15" y="24" width="18" height="12" rx="2" fill="#fff"/><path d="M8 40c3-2 5-2 8 0s5 2 8 0 5-2 8 0 5 2 8 0" fill="none" stroke="#a5f3fc" stroke-width="2.4" stroke-linecap="round"/><circle cx="20" cy="30" r="2" fill="#2563eb"/><circle cx="28" cy="30" r="2" fill="#16a34a"/></svg><span><b>Sameiet HT14</b><small>Halden Terrasse 14</small></span></a>
+  <div class="search" role="search"><svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9cc3d1" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+    <input id="sok" type="search" placeholder="Søk i dokumentasjonen  ( / )" aria-label="Søk i dokumentasjonen" autocomplete="off">
+    <ul id="sok-resultat" class="search-results" aria-live="polite"></ul>
+  </div>
+  <ul class="nav">
+<li class="nav-label">Sameiet HT14</li>
+<li><a href="/"><span class="num">⌂</span>Hjem</a></li>
+<li><a href="/badehusappen/"><span class="num">📱</span>Badehusappen <small>utkast</small></a></li>
+<li class="nav-label">Dokumentasjon</li>
+<li><a href="teknisk.html" data-sok><span class="num">1</span>Teknisk dokumentasjon</a></li>
+<li><a href="regler.html" data-sok><span class="num">2</span>Regler for bruk av badehuset</a></li>
+<li><a href="vedtekter.html" data-sok><span class="num">3</span>Forslag til tillegg i vedtektene</a></li>
+<li><a href="arshjul.html" data-sok aria-current="page"><span class="num">4</span>Årshjul</a></li>
+<li><a href="hva-er-nytt.html" data-sok><span class="num">5</span>Hva er nytt</a></li>
+  </ul>
+  <div class="side-foot">
+    <div class="legend-mini"><span style="background:var(--hus-a)">A</span><span style="background:var(--hus-b)">B</span><span style="background:var(--hus-c)">C</span><span style="background:var(--hus-d)">D</span></div>
+    Laget av Thomas for oss i HT14.
+  </div>
+</nav>
+<main class="main" id="innhold">
+  <div class="content-wrap">
+    <article>
+<section class="hero">
+  <div class="eyebrow">For alle</div>
+  <h1>Årshjul</h1>
+  <p>Det som skjer i sameiet gjennom året – dugnader, badesesongen, møter og regninger.</p>
+  <div class="meta"><span class="chip">⏱ Ca. 2 min lesetid</span></div>
+</section>
+<p>Hjulet går med klokka fra januar øverst. <b>Heltrukne</b> buer er ting vi har gjort på omtrent samme tid tidligere år, <b>stiplede</b> er forslag vi må bli enige om. Nummeret finner du igjen i listen.</p>
+<div class="hjul-boks">
+<svg class="wheel" viewBox="0 0 600 600" role="img" aria-labelledby="hjul-tittel hjul-desc">
+<title id="hjul-tittel">Sameiets årshjul</title><desc id="hjul-desc">Sirkel med tolv måneder. Fargede buer viser når dugnader, badehuset, møter og regninger skjer i løpet av året. Heltrukne buer er kjent fra tidligere år, stiplede er forslag. Den samme informasjonen står i listen under.</desc>
+<defs>
+<pattern id="stripe-dugnad" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#dcfce7"/><rect width="3" height="8" fill="#16a34a" opacity=".35"/></pattern>
+<pattern id="stripe-badehus" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#cffafe"/><rect width="3" height="8" fill="#0891b2" opacity=".35"/></pattern>
+<pattern id="stripe-mote" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#ede9fe"/><rect width="3" height="8" fill="#7c3aed" opacity=".35"/></pattern>
+<pattern id="stripe-regning" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#fef3c7"/><rect width="3" height="8" fill="#d97706" opacity=".35"/></pattern>
+</defs>
+<path d="M300.0 10.0A290 290 0 0 1 445.0 48.9L422.5 87.8A245 245 0 0 0 300.0 55.0Z" fill="#e2e8f0" class="mnd" data-m="0"/>
+<text x="369.2" y="41.6" class="mlabel" text-anchor="middle" dominant-baseline="central">Jan</text>
+<path d="M445.0 48.9A290 290 0 0 1 551.1 155.0L512.2 177.5A245 245 0 0 0 422.5 87.8Z" fill="#f1f5f9" class="mnd" data-m="1"/>
+<text x="489.2" y="110.8" class="mlabel" text-anchor="middle" dominant-baseline="central">Feb</text>
+<path d="M551.1 155.0A290 290 0 0 1 590.0 300.0L545.0 300.0A245 245 0 0 0 512.2 177.5Z" fill="#e2e8f0" class="mnd" data-m="2"/>
+<text x="558.4" y="230.8" class="mlabel" text-anchor="middle" dominant-baseline="central">Mar</text>
+<path d="M590.0 300.0A290 290 0 0 1 551.1 445.0L512.2 422.5A245 245 0 0 0 545.0 300.0Z" fill="#f1f5f9" class="mnd" data-m="3"/>
+<text x="558.4" y="369.2" class="mlabel" text-anchor="middle" dominant-baseline="central">Apr</text>
+<path d="M551.1 445.0A290 290 0 0 1 445.0 551.1L422.5 512.2A245 245 0 0 0 512.2 422.5Z" fill="#e2e8f0" class="mnd" data-m="4"/>
+<text x="489.2" y="489.2" class="mlabel" text-anchor="middle" dominant-baseline="central">Mai</text>
+<path d="M445.0 551.1A290 290 0 0 1 300.0 590.0L300.0 545.0A245 245 0 0 0 422.5 512.2Z" fill="#f1f5f9" class="mnd" data-m="5"/>
+<text x="369.2" y="558.4" class="mlabel" text-anchor="middle" dominant-baseline="central">Jun</text>
+<path d="M300.0 590.0A290 290 0 0 1 155.0 551.1L177.5 512.2A245 245 0 0 0 300.0 545.0Z" fill="#e2e8f0" class="mnd" data-m="6"/>
+<text x="230.8" y="558.4" class="mlabel" text-anchor="middle" dominant-baseline="central">Jul</text>
+<path d="M155.0 551.1A290 290 0 0 1 48.9 445.0L87.8 422.5A245 245 0 0 0 177.5 512.2Z" fill="#f1f5f9" class="mnd" data-m="7"/>
+<text x="110.8" y="489.2" class="mlabel" text-anchor="middle" dominant-baseline="central">Aug</text>
+<path d="M48.9 445.0A290 290 0 0 1 10.0 300.0L55.0 300.0A245 245 0 0 0 87.8 422.5Z" fill="#e2e8f0" class="mnd" data-m="8"/>
+<text x="41.6" y="369.2" class="mlabel" text-anchor="middle" dominant-baseline="central">Sep</text>
+<path d="M10.0 300.0A290 290 0 0 1 48.9 155.0L87.8 177.5A245 245 0 0 0 55.0 300.0Z" fill="#f1f5f9" class="mnd" data-m="9"/>
+<text x="41.6" y="230.8" class="mlabel" text-anchor="middle" dominant-baseline="central">Okt</text>
+<path d="M48.9 155.0A290 290 0 0 1 155.0 48.9L177.5 87.8A245 245 0 0 0 87.8 177.5Z" fill="#e2e8f0" class="mnd" data-m="10"/>
+<text x="110.8" y="110.8" class="mlabel" text-anchor="middle" dominant-baseline="central">Nov</text>
+<path d="M155.0 48.9A290 290 0 0 1 300.0 10.0L300.0 55.0A245 245 0 0 0 177.5 87.8Z" fill="#f1f5f9" class="mnd" data-m="11"/>
+<text x="230.8" y="41.6" class="mlabel" text-anchor="middle" dominant-baseline="central">Des</text>
+<circle cx="300" cy="300" r="221.5" fill="none" stroke="#dcfce7" stroke-width="33" opacity=".55"/>
+<circle cx="300" cy="300" r="186.5" fill="none" stroke="#cffafe" stroke-width="33" opacity=".55"/>
+<circle cx="300" cy="300" r="151.5" fill="none" stroke="#ede9fe" stroke-width="33" opacity=".55"/>
+<circle cx="300" cy="300" r="116.5" fill="none" stroke="#fef3c7" stroke-width="33" opacity=".55"/>
+<line x1="300.0" y1="205.0" x2="300.0" y2="10.0" stroke="#fff" stroke-width="2"/>
+<line x1="347.5" y1="217.7" x2="445.0" y2="48.9" stroke="#fff" stroke-width="2"/>
+<line x1="382.3" y1="252.5" x2="551.1" y2="155.0" stroke="#fff" stroke-width="2"/>
+<line x1="395.0" y1="300.0" x2="590.0" y2="300.0" stroke="#fff" stroke-width="2"/>
+<line x1="382.3" y1="347.5" x2="551.1" y2="445.0" stroke="#fff" stroke-width="2"/>
+<line x1="347.5" y1="382.3" x2="445.0" y2="551.1" stroke="#fff" stroke-width="2"/>
+<line x1="300.0" y1="395.0" x2="300.0" y2="590.0" stroke="#fff" stroke-width="2"/>
+<line x1="252.5" y1="382.3" x2="155.0" y2="551.1" stroke="#fff" stroke-width="2"/>
+<line x1="217.7" y1="347.5" x2="48.9" y2="445.0" stroke="#fff" stroke-width="2"/>
+<line x1="205.0" y1="300.0" x2="10.0" y2="300.0" stroke="#fff" stroke-width="2"/>
+<line x1="217.7" y1="252.5" x2="48.9" y2="155.0" stroke="#fff" stroke-width="2"/>
+<line x1="252.5" y1="217.7" x2="155.0" y2="48.9" stroke="#fff" stroke-width="2"/>
+<path d="M303.2 99.0A201 201 0 0 1 472.5 196.8L447.6 211.7A172 172 0 0 0 302.7 128.0Z" fill="#0891b2" class="ev" data-ev="1"><title>1. Vi booker badehuset for sommeren (januar–februar) – kjent fra tidligere år</title></path>
+<circle cx="393.2" cy="138.5" r="11" fill="#fff" stroke="#0891b2" stroke-width="1.5"/><text x="393.2" y="138.5" class="evnum" fill="#0891b2" text-anchor="middle" dominant-baseline="central">1</text>
+<path d="M445.0 219.3A166 166 0 0 1 466.0 297.4L437.0 297.8A137 137 0 0 0 419.7 233.4Z" fill="url(#stripe-mote)" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="2"><title>2. Kort vårmøte: planlegge dugnad og badesesong (mars) – forslag, avklares</title></path>
+<circle cx="446.3" cy="260.8" r="11" fill="#7c3aed" stroke="#7c3aed" stroke-width="1.5"/><text x="446.3" y="260.8" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">2</text>
+<path d="M525.2 370.6A236 236 0 0 1 421.2 502.5L406.3 477.6A207 207 0 0 0 497.5 361.9Z" fill="#16a34a" class="ev" data-ev="3"><title>3. Vårdugnad med grilling (slutten av april – mai) – kjent fra tidligere år</title></path>
+<circle cx="473.9" cy="437.1" r="11" fill="#fff" stroke="#16a34a" stroke-width="1.5"/><text x="473.9" y="437.1" class="evnum" fill="#16a34a" text-anchor="middle" dominant-baseline="central">3</text>
+<path d="M493.3 355.1A201 201 0 0 1 403.2 472.5L388.3 447.6A172 172 0 0 0 465.4 347.1Z" fill="#0891b2" class="ev" data-ev="4"><title>4. Badehuset gjøres klart og åpner for sesongen (april–mai) – kjent fra tidligere år</title></path>
+<circle cx="448.0" cy="413.5" r="11" fill="#fff" stroke="#0891b2" stroke-width="1.5"/><text x="448.0" y="413.5" class="evnum" fill="#0891b2" text-anchor="middle" dominant-baseline="central">4</text>
+<path d="M412.4 367.3A131 131 0 0 1 367.3 412.4L352.4 387.5A102 102 0 0 0 387.5 352.4Z" fill="url(#stripe-regning)" stroke="#d97706" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="5"><title>5. Oppgjør av utlegg etter dugnaden (mai) – forslag, avklares</title></path>
+<circle cx="382.4" cy="382.4" r="11" fill="#d97706" stroke="#d97706" stroke-width="1.5"/><text x="382.4" y="382.4" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">5</text>
+<path d="M397.8 475.6A201 201 0 0 1 127.5 403.2L152.4 388.3A172 172 0 0 0 383.6 450.3Z" fill="url(#stripe-badehus)" stroke="#0891b2" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="6"><title>6. Sommerregler for booking (juni–august) – forslag, avklares</title></path>
+<circle cx="251.7" cy="480.1" r="11" fill="#0891b2" stroke="#0891b2" stroke-width="1.5"/><text x="251.7" y="480.1" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">6</text>
+<path d="M124.4 397.8A201 201 0 0 1 99.0 303.2L128.0 302.7A172 172 0 0 0 149.7 383.6Z" fill="url(#stripe-badehus)" stroke="#0891b2" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="7"><title>7. Badehuset stenges for vinteren (september) – forslag, avklares</title></path>
+<circle cx="119.9" cy="348.3" r="11" fill="#0891b2" stroke="#0891b2" stroke-width="1.5"/><text x="119.9" y="348.3" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">7</text>
+<path d="M71.1 357.5A236 236 0 0 1 93.8 185.2L119.1 199.3A207 207 0 0 0 99.2 350.4Z" fill="url(#stripe-dugnad)" stroke="#16a34a" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="8"><title>8. Høstdugnad med nabofest (september–oktober) – forslag, avklares</title></path>
+<circle cx="80.4" cy="271.1" r="11" fill="#16a34a" stroke="#16a34a" stroke-width="1.5"/><text x="80.4" y="271.1" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">8</text>
+<path d="M134.0 297.4A166 166 0 0 1 214.8 157.6L229.6 182.4A137 137 0 0 0 163.0 297.8Z" fill="url(#stripe-mote)" stroke="#7c3aed" stroke-width="2" stroke-dasharray="5 4" class="ev" data-ev="9"><title>9. Sameiemøte etter sommeren (oktober–november) – forslag, avklares</title></path>
+<circle cx="168.8" cy="224.2" r="11" fill="#7c3aed" stroke="#7c3aed" stroke-width="1.5"/><text x="168.8" y="224.2" class="evnum" fill="#fff" text-anchor="middle" dominant-baseline="central">9</text>
+<path d="M169.0 297.9A131 131 0 0 1 185.5 236.3L210.9 250.4A102 102 0 0 0 198.0 298.4Z" fill="#d97706" class="ev" data-ev="10"><title>10. Regning for snømåking for vinteren (oktober) – kjent fra tidligere år</title></path>
+<circle cx="187.5" cy="269.8" r="11" fill="#fff" stroke="#d97706" stroke-width="1.5"/><text x="187.5" y="269.8" class="evnum" fill="#d97706" text-anchor="middle" dominant-baseline="central">10</text>
+<g class="pin"><circle cx="186.5" cy="199.6" r="6" fill="#fff" stroke="#7c3aed" stroke-width="3"/><title>Neste møte: torsdag 12. november 2026 – foreslått</title></g>
+<circle cx="300" cy="300" r="95" fill="#fff" stroke="#e2e8f0"/>
+<text x="300" y="282" text-anchor="middle" class="c1">HT14</text><text x="300" y="312" text-anchor="middle" class="c2">Sameiets årshjul</text><text x="300" y="334" text-anchor="middle" class="c3">4 hus · 12 måneder</text>
+<g id="naa" style="display:none"><line x1="300" y1="205" x2="300" y2="18" stroke="#0f172a" stroke-width="2.5" stroke-linecap="round" opacity=".75"/><circle cx="300" cy="18" r="5" fill="#0f172a"/></g>
+</svg>
+  <ul class="legend"><li><span class="sw" style="background:#16a34a"></span>Dugnad og nabofest</li><li><span class="sw" style="background:#0891b2"></span>Badehuset</li><li><span class="sw" style="background:#7c3aed"></span>Møter i sameiet</li><li><span class="sw" style="background:#d97706"></span>Regninger</li><li><span class="sw solid"></span>Heltrukket = kjent fra tidligere år</li><li><span class="sw dashed"></span>Stiplet = forslag – avklares</li></ul>
+</div>
+<h2 id="gjennom-aret">Gjennom året</h2>
+<ol class="evlist" aria-label="Aktiviteter i årshjulet"><li class="ev-item" style="--c:#0891b2;--bg:#cffafe"><span class="nr">1</span><div><b>Vi booker badehuset for sommeren</b> <span class="when">januar–februar</span><br><span class="cat">Badehuset</span> <span class="tag kilde">kjent fra tidligere år</span><p>Sommerbookingene har tidligere blitt lagt inn i januar–februar. Med de foreslåtte reglene kan man booke tre måneder frem, altså juni fra 1. mars.</p></div></li><li class="ev-item er-forslag" style="--c:#7c3aed;--bg:#ede9fe"><span class="nr">2</span><div><b>Kort vårmøte: planlegge dugnad og badesesong</b> <span class="when">mars</span><br><span class="cat">Møter i sameiet</span> <span class="tag forslag">forslag – avklares</span><p>Forslag – avklares. Et kort møte før våren, gjerne sammen med planleggingen av dugnaden.</p></div></li><li class="ev-item" style="--c:#16a34a;--bg:#dcfce7"><span class="nr">3</span><div><b>Vårdugnad med grilling</b> <span class="when">slutten av april – mai</span><br><span class="cat">Dugnad og nabofest</span> <span class="tag kilde">kjent fra tidligere år</span><p>Vi tar dugnad og rydder ute, og avslutter med grilling sammen. Dato avtales hvert år.</p></div></li><li class="ev-item" style="--c:#0891b2;--bg:#cffafe"><span class="nr">4</span><div><b>Badehuset gjøres klart og åpner for sesongen</b> <span class="when">april–mai</span><br><span class="cat">Badehuset</span> <span class="tag kilde">kjent fra tidligere år</span><p>Badehuset vaskes og gjøres klart, gjerne på vårdugnaden. Første bookinger har vært i slutten av april / starten av mai. Fast åpningsdag: forslag – avklares.</p></div></li><li class="ev-item er-forslag" style="--c:#d97706;--bg:#fef3c7"><span class="nr">5</span><div><b>Oppgjør av utlegg etter dugnaden</b> <span class="when">mai</span><br><span class="cat">Regninger</span> <span class="tag forslag">forslag – avklares</span><p>Forslag – avklares. Den som har lagt ut for noe til dugnaden, får pengene tilbake og utgiftene deles.</p></div></li><li class="ev-item er-forslag" style="--c:#0891b2;--bg:#cffafe"><span class="nr">6</span><div><b>Sommerregler for booking</b> <span class="when">juni–august</span><br><span class="cat">Badehuset</span> <span class="tag forslag">forslag – avklares</span><p>Forslag: maks én fredag, én lørdag og én søndag per hus per måned, og bare én av dagene i samme helg (vedlegg 1 punkt 6–7).</p></div></li><li class="ev-item er-forslag" style="--c:#0891b2;--bg:#cffafe"><span class="nr">7</span><div><b>Badehuset stenges for vinteren</b> <span class="when">september</span><br><span class="cat">Badehuset</span> <span class="tag forslag">forslag – avklares</span><p>Forslag – avklares. Badesesongen har vart fra mai til ut i september. Ingen fast stengedato er avtalt.</p></div></li><li class="ev-item er-forslag" style="--c:#16a34a;--bg:#dcfce7"><span class="nr">8</span><div><b>Høstdugnad med nabofest</b> <span class="when">september–oktober</span><br><span class="cat">Dugnad og nabofest</span> <span class="tag forslag">forslag – avklares</span><p>Forslag – avklares. Rydde før vinteren og avslutte sesongen med en nabofest.</p></div></li><li class="ev-item er-forslag" style="--c:#7c3aed;--bg:#ede9fe"><span class="nr">9</span><div><b>Sameiemøte etter sommeren</b> <span class="when">oktober–november</span><br><span class="cat">Møter i sameiet</span> <span class="tag forslag">forslag – avklares</span><p>Forslag – avklares: minst ett møte i året, gjerne etter sommeren. Neste møte er foreslått torsdag 12. november 2026 (ikke bekreftet).</p></div></li><li class="ev-item" style="--c:#d97706;--bg:#fef3c7"><span class="nr">10</span><div><b>Regning for snømåking for vinteren</b> <span class="when">oktober</span><br><span class="cat">Regninger</span> <span class="tag kilde">kjent fra tidligere år</span><p>Regningen for snømåking for sesongen har kommet i oktober, og deles på husene.</p></div></li></ol>
+<p>Forsikring og eventuelle andre faste regninger står ikke i hjulet ennå – de legges inn når vi vet når de kommer.</p>
+<h2 id="hvor-kommer-tidspunktene-fra">Hvor kommer tidspunktene fra?</h2>
+<p>«Kjent fra tidligere år» bygger på e-poster og bookinger fra de siste årene: sommerbookinger i januar–februar (2023, 2024, 2026), vårdugnad med grilling i april–mai (2023–2026), klargjøring av badehuset i april–mai (2024–2026) og regning for snømåking i oktober (2019–2025). Resten er forslag. Vi viser bare måned – ingen navn eller beløp.</p>
+
+<nav class="pagenav" aria-label="Forrige og neste side"><a class="prev" href="vedtekter.html"><small>← Forrige</small>Forslag til tillegg i vedtektene</a><a class="next" href="hva-er-nytt.html"><small>Neste →</small>Hva er nytt</a></nav>
+      <p class="footer">Sameiet HT14. Et utkast til Badehusappen kan prøves på <a href="/badehusappen/">ht14.no/badehusappen/</a> – bookingene lagres foreløpig bare på din egen telefon. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+    </article>
+    <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
+  </div>
+</main>
+<script>
+(function(){
+  var m=new Date().getMonth();
+  var s=document.querySelector('.wheel .mnd[data-m="'+m+'"]'); if(s) s.classList.add('naa');
+  var n=document.getElementById('naa');
+  if(n){ var d=new Date(), dim=new Date(d.getFullYear(),m+1,0).getDate();
+    var ang=(m+(d.getDate()-.5)/dim)*30; n.setAttribute('transform','rotate('+ang.toFixed(2)+' 300 300)'); n.style.display=''; }
+  document.querySelectorAll('.wheel .mlabel').forEach(function(t,i){ if(i===m) t.style.fill='#fff'; });
+})();
+</script>
+</body>
+</html>
