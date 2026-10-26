@@ -6,7 +6,7 @@ Nettsiden til **Sameiet Halden Terrasse 14** (fire hus, 14A–14D):
 - **Dokumentasjon** – `/dokumentasjon/` (teknisk dokumentasjon, regler, forslag til vedtekter, årshjul, hva er nytt)
 - **Badehusappen** – `/badehusappen/` (utkast: ingen innlogging ennå, bookingene lagres bare på egen telefon)
 
-Thomas lager dette på oppdrag fra sameiet. Ingenting er bestemt ennå – vi tar det sammen på sameiemøtet.
+Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.
 
 ## Slik er det bygget
 

@@ -63,7 +63,6 @@ test("flere perioder: alt eller ingenting, heldag = alle tre", () => {
 
 test("avbestilte bookinger opptar ikke perioden", () => {
   assert.equal(multi("2027-07-10", FULL, "C", day("2027-07-10", "A", { status: "CANCELLED" })).ok, true);
-  assert.equal(multi("2027-07-10", FULL, "C", day("2027-07-10", "A", { status: "CANCELLED_LATE" })).ok, true);
 });
 
 test("② bookingvindu: rullerende 3 måneder (Å5)", () => {
@@ -174,23 +173,48 @@ test("Å4: utenfor sommer ingen begrensninger", () => {
   assert.equal(multi("2027-09-10", FULL, "D", ex, at("2027-07-01")).ok, true);
 });
 
-test("⑥ avbestilling per periode: tidlig vs. sen, og sen teller i kvoten", () => {
+test("⑥ avbestilling per periode: alltid CANCELLED, uansett hvor kort tid det er igjen", () => {
   const b = bk("2027-07-10", "MID", "A");
   assert.equal(R.validateCancel(b, "A", rules, at("2027-07-02")).status, "CANCELLED");      // 8 dager før
-  assert.equal(R.validateCancel(b, "A", rules, at("2027-07-03")).status, "CANCELLED_LATE"); // 7 dager før
+  assert.equal(R.validateCancel(b, "A", rules, at("2027-07-03")).status, "CANCELLED");      // 7 dager før: ingen «sen avbestilling»
+  assert.equal(R.validateCancel(b, "A", rules, at("2027-07-09")).status, "CANCELLED");      // dagen før
   assert.match(R.validateCancel(b, "A", rules, at("2027-07-03")).message, /Ettermiddagen blir ledig/);
   assert.equal(R.validateCancel(b, "B", rules, at("2027-07-02")).error, "FORBIDDEN");       // Å6
   assert.equal(R.validateCancel(b, "A", rules, at("2027-07-10", "17:00")).error, "NOT_CANCELLABLE"); // perioden er over
   assert.equal(R.validateCancel(b, "A", rules, at("2027-07-10", "15:00")).ok, true);              // pågår: kan frigis til andre
-  const late = [bk("2027-07-10", "PM", "A", { status: "CANCELLED_LATE" })];
-  assert.equal(multi("2027-07-24", FULL, "A", late).error, "QUOTA_WEEKDAY");                 // teller fortsatt
   const early = [bk("2027-07-10", "PM", "A", { status: "CANCELLED" })];
   assert.equal(multi("2027-07-24", FULL, "A", early).ok, true);                              // ut av kvoten
-  // avbestiller bare kvelden av en heldag tidlig → lørdagen teller fortsatt (formiddag og ettermiddag står)
+  // avbestiller bare kvelden av en heldag → lørdagen teller fortsatt (formiddag og ettermiddag står)
   const partly = [bk("2027-07-10", "AM", "A"), bk("2027-07-10", "MID", "A"), bk("2027-07-10", "PM", "A", { status: "CANCELLED" })];
   assert.equal(multi("2027-07-24", ["PM"], "A", partly).error, "QUOTA_WEEKDAY");
   // og den ledige kvelden kan tas av et annet hus
   assert.equal(multi("2027-07-10", ["PM"], "C", partly).ok, true);
+});
+
+test("avbestilling frigjør kvoten: book torsdag i juli, avbestill, book en annen torsdag", () => {
+  const thu = bk("2027-07-01", "PM", "A");                                           // torsdag 1. juli
+  assert.equal(multi("2027-07-15", ["PM"], "A", [thu]).error, "QUOTA_WEEKDAY");      // før avbestilling
+  const res = R.validateCancel(thu, "A", rules, at("2027-05-20"));
+  assert.equal(res.ok, true); assert.match(res.message, /booke en annen dag/);
+  const r = multi("2027-07-15", ["PM"], "A", [{ ...thu, status: res.status }]);
+  assert.equal(r.ok, true); assert.equal(r.quota, true);                             // ny torsdag i juli går fint
+});
+
+test("sen avbestilling teller ikke lenger i kvoten (heller ikke gamle CANCELLED_LATE)", () => {
+  const thu = bk("2027-07-08", "PM", "A");                                           // torsdag 8. juli
+  const now = at("2027-07-03");                                                      // 5 dager før
+  const res = R.validateCancel(thu, "A", rules, now);
+  assert.equal(res.status, "CANCELLED");
+  assert.equal(R.countsForQuota({ ...thu, status: res.status }), false);
+  assert.equal(R.countsForQuota({ ...thu, status: "CANCELLED_LATE" }), false);       // gamle prøvedata
+  assert.equal(multi("2027-07-22", ["PM"], "A", [{ ...thu, status: "CANCELLED_LATE" }], now).ok, true);
+});
+
+test("innsjekk gjelder alle perioder, også formiddag og ettermiddag", () => {
+  for (const [p, t] of [["AM", "10:00"], ["MID", "14:00"], ["PM", "17:00"]]) {
+    const b = bk("2027-07-10", p, "A");
+    assert.equal(R.validateCheckin(b, "A", rules, at("2027-07-10", t)).ok, true, p);
+  }
 });
 
 test("statusmaskin: automatisk utsjekk kl. 14, 17 og 24", () => {

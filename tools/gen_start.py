@@ -34,6 +34,7 @@ EV = [
 # Ingen versjonsnumre – bare dato og hva som er nytt.
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-26", "Avbestilling frigjør kvoten, og innsjekk gjelder alle perioder", "Avbestiller dere, teller ikke bookingen i kvoten, så dere kan booke en annen dag. Sjekk inn hver gang dere er i badehuset – også formiddag og ettermiddag.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-26", "Nye sommerregler og enklere regler", "Sommerregelen gjelder nå torsdag, fredag og lørdag – maks én av hver per måned, og ikke to i samme uke. Vanlig booking er én kveld; formiddag og ettermiddag bare når dere har gjester. Reglene og vedtektsforslaget er kortere og enklere.", "/dokumentasjon/regler.html#hvor-mye"),
  ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/vedtekter.html#punkt-2"),
  ("2026-10-26", "HT14 får egen adresse: ht14.no", "Startsiden, dokumentasjonen og Badehusappen flytter til Cloudflare på ht14.no. Bookingene skal lagres i en database med en kopi hver natt, og hvert hus får én felles innlogging.", "/dokumentasjon/teknisk.html"),
@@ -249,7 +250,7 @@ def write_start(LOGO, out_path):
     <h1>Velkommen til HT14</h1>
     <p>Vi er fire hus og gode naboer med felles uteområder og et felles badehus. Nå er det laget et <b>utkast til Badehusappen</b>, så vi kan booke badehuset selv – prøv det gjerne! Bookingene lagres foreløpig bare på din egen telefon.</p>
     <div class="husrad"><span class="hus a">Hus A</span><span class="hus b">Hus B</span><span class="hus c">Hus C</span><span class="hus d">Hus D</span></div>
-    <p>Thomas lager dette på oppdrag fra sameiet. Ingenting er bestemt ennå – vi tar det sammen på sameiemøtet.</p>
+    <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
   </header>
   <nav class="cards" aria-label="Snarveier">
     <a class="hoved" href="/badehusappen/"><div class="ico">🛁</div><b>Badehusappen</b><span>Prøv å booke badehuset.</span></a>

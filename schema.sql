@@ -53,7 +53,7 @@ CREATE TABLE IF NOT EXISTS bookings (
   user_id       INTEGER REFERENCES users(id),
   source        TEXT NOT NULL DEFAULT 'BOOKING' CHECK (source IN ('BOOKING', 'CHECKIN')),
   status        TEXT NOT NULL DEFAULT 'BOOKED' CHECK (status IN
-                  ('BOOKED', 'CHECKED_IN', 'COMPLETED', 'NOT_CONFIRMED', 'CANCELLED', 'CANCELLED_LATE')),
+                  ('BOOKED', 'CHECKED_IN', 'COMPLETED', 'NOT_CONFIRMED', 'CANCELLED')),
   quota         INTEGER NOT NULL DEFAULT 1 CHECK (quota IN (0, 1)),      -- teller i sommerkvoten
   override      INTEGER NOT NULL DEFAULT 0 CHECK (override IN (0, 1)),   -- admin-unntak
   corrected     INTEGER NOT NULL DEFAULT 0 CHECK (corrected IN (0, 1)),  -- rettet av admin
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS bookings (
 );
 -- Ingen dobbeltbooking: bare én aktiv booking per dato og periode.
 CREATE UNIQUE INDEX IF NOT EXISTS bookings_one_active_per_slot
-  ON bookings (date, period) WHERE status NOT IN ('CANCELLED', 'CANCELLED_LATE');
+  ON bookings (date, period) WHERE status <> 'CANCELLED';
 CREATE INDEX IF NOT EXISTS bookings_house_date ON bookings (house_id, date);
 CREATE INDEX IF NOT EXISTS bookings_group ON bookings (group_id);
 
