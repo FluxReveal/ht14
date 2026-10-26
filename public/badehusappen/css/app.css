@@ -1,0 +1,283 @@
+/* Badehusappen – stil. Husfargene settes fra rules.json som CSS-variabler (--A … --D).
+ *
+ * Tilpasset alle skjermer:
+ *  - Mobil (stående): liste med dager, faner nederst, ark som glir opp.
+ *  - Mobil liggende / nettbrett / PC: faner som sidemeny, uka som 7 kolonner,
+ *    arket som en dialog midt på skjermen.
+ *  - Tekststørrelse: alt er i rem/em, og på iPhone følger grunnstørrelsen
+ *    innstillingen «Tekststørrelse» (Dynamic Type). Zoom er ikke sperret.
+ *  - Trygge soner (Dynamic Island, hjemlinjen, avrundede hjørner) via env(safe-area-inset-*).
+ *  - Mørk modus via prefers-color-scheme.
+ */
+:root {
+  color-scheme: light dark;
+  --A: #2563eb; --B: #16a34a; --C: #ea580c; --D: #7c3aed;
+  --brand: #0e7490; --brand-2: #0891b2; --accent: #0e7490;
+  --bg: #f0fdff; --card: #fff; --surface: #fff; --ink: #0f172a; --muted: #475569;
+  --line: #dbe4ea; --soft: #ecfeff; --quiet: #f1f5f9; --slot: #f8fafc;
+  --warn: #9a3412; --warn-bg: #fff7ed; --ok: #166534; --ok-bg: #f0fdf4;
+  --danger: #b91c1c; --disabled: #94a3b8;
+  --radius: 16px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --tabh: max(60px, 3.8rem);                         /* høyden på fanelinja nederst */
+  --sl: env(safe-area-inset-left, 0px); --sr: env(safe-area-inset-right, 0px);
+  --st: env(safe-area-inset-top, 0px);  --sb: env(safe-area-inset-bottom, 0px);
+  --pad: 1rem;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --brand: #0e7490; --accent: #67e8f9;
+    --bg: #0b1220; --card: #111a2b; --surface: #152033; --ink: #e5edf5; --muted: #a3b1c2;
+    --line: #2a3a50; --soft: #123542; --quiet: #1e2b3f; --slot: #18243a;
+    --warn: #fdba74; --warn-bg: #3a1f10; --ok: #86efac; --ok-bg: #0f2e1c;
+    --danger: #fca5a5; --disabled: #475569;
+  }
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; font-size: 106.25%; } /* 17 px når nettleseren står på standard */
+/* iPhone/iPad: følg «Tekststørrelse» i Innstillinger (Dynamic Type). Bare på berøringsskjerm,
+   for på Mac gir -apple-system-body for liten tekst. */
+@supports (font: -apple-system-body) and (-webkit-touch-callout: none) {
+  html { font: -apple-system-body; }
+}
+body { margin: 0; font-family: var(--font); font-size: 1rem; line-height: 1.45; color: var(--ink); background: var(--bg);
+  padding-bottom: calc(var(--tabh) + .8rem + var(--sb)); overflow-wrap: break-word; }
+button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
+input, select, textarea { font-size: max(16px, 1rem); }   /* hindrer at iPhone zoomer inn i felt */
+:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+a { color: var(--accent); }
+h1 { font-size: 1.35rem; margin: .4rem 0 .6rem; }
+h2 { font-size: 1.1rem; margin: 1.2rem 0 .4rem; }
+.muted { color: var(--muted); font-size: .92rem; }
+
+.top { position: sticky; top: 0; z-index: 5; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .4rem .5rem; background: var(--brand); color: #fff;
+  padding: calc(.5rem + var(--st)) max(var(--pad), var(--sr)) .5rem max(var(--pad), var(--sl)); }
+.brand { display: flex; align-items: center; gap: .5rem; font-weight: 800; font-size: 1.1rem; min-width: 0; color: #fff; text-decoration: none; min-height: 44px; border-radius: 10px; }
+.brand-txt { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.brand-txt small { font-size: .72rem; font-weight: 600; opacity: .85; letter-spacing: .01em; }
+@media (hover: hover) { .brand:hover small { text-decoration: underline; } }
+.links { display: flex; flex-wrap: wrap; gap: .5rem; }
+.linkbtn { display: inline-flex; align-items: center; color: var(--ink); text-decoration: none; font-weight: 600; }
+.brand img { border-radius: 8px; box-shadow: 0 0 0 2px rgba(255,255,255,.35); width: 1.8em; height: 1.8em; flex: 0 0 auto; }
+.myhouse { border: 0; border-radius: 999px; padding: .45rem .85rem; background: rgba(255,255,255,.18); color: #fff; min-height: 44px; }
+.myhouse b { margin-left: .2rem; }
+.trial { margin: 0 auto; max-width: 1200px; padding: .45rem max(var(--pad), var(--sr)) .45rem max(var(--pad), var(--sl)); font-size: .86rem; color: var(--muted); }
+main { max-width: 760px; margin: 0 auto; padding: 0 max(var(--pad), var(--sr)) 0 max(var(--pad), var(--sl)); }
+
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .3rem; }
+.caltitle { font-size: 1.12rem; margin: 0; text-align: center; flex: 1; min-width: 0; }
+.nav { min-width: 48px; min-height: 48px; width: 2.8rem; height: 2.8rem; flex: 0 0 auto; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--card); font-size: 1.6rem; line-height: 1; padding: 0; }
+.toolbar2 { display: flex; gap: .5rem; align-items: center; margin: .6rem 0 .7rem; flex-wrap: wrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); }
+.seg button { border: 0; background: none; padding: .55rem .9rem; min-height: 44px; }
+.seg button[aria-pressed="true"] { background: var(--brand); color: #fff; font-weight: 700; }
+.ghost { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: .55rem .9rem; min-height: 44px; }
+.primary { border: 0; background: var(--brand); color: #fff; border-radius: 14px; padding: .8rem 1.1rem; font-weight: 700; min-height: 48px; }
+.primary.small { margin-left: auto; padding: .55rem .9rem; min-height: 44px; }
+.primary:disabled { background: var(--disabled); cursor: not-allowed; }
+.secondary { border: 2px solid var(--accent); background: var(--surface); color: var(--accent); border-radius: 14px; padding: .65rem 1rem; font-weight: 700; min-height: 48px; }
+.danger { border: 2px solid var(--danger); background: var(--surface); color: var(--danger); border-radius: 14px; padding: .65rem 1rem; font-weight: 700; min-height: 48px; }
+
+/* Ukevisning – mobil: én dag per rad */
+#calendar { container: cal / inline-size; }
+.week { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; }
+.week li { display: flex; min-width: 0; }
+.day { width: 100%; display: grid; grid-template-columns: minmax(3.6em, auto) minmax(0, 1fr); gap: .6rem; align-items: stretch; text-align: left;
+  background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: .5rem; min-height: 76px; }
+.day.today { border: 2px solid var(--brand-2); }
+.day.past { opacity: .6; }
+.dnum { display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; background: var(--soft); padding: .2rem .3rem; }
+.dnum small { font-size: .78rem; color: var(--muted); text-transform: capitalize; }
+.dnum b { font-size: 1.4rem; line-height: 1.1; }
+.slots { display: grid; grid-template-rows: repeat(3, auto); gap: .25rem; min-width: 0; }   /* formiddag, ettermiddag, kveld */
+.slot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 .45rem; border-radius: 10px; padding: .2rem .55rem; font-size: .92rem;
+  background: var(--slot); color: var(--muted); min-height: 44px; min-width: 0; }
+.slot.taken { color: #fff; font-weight: 600; }
+.slot .t { font-variant-numeric: tabular-nums; opacity: .85; font-weight: 500; }
+.slot.nc { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.22) 0 8px, transparent 8px 16px); }
+.hA { background: var(--A) !important; } .hB { background: var(--B) !important; }
+.hC { background: var(--C) !important; } .hD { background: var(--D) !important; }
+@media (hover: hover) {
+  .day:not(.past):hover, .mcell:not(.past):hover { border-color: var(--brand-2); }
+  .slot.free:hover { outline: 2px solid var(--brand-2); outline-offset: -2px; }
+}
+
+/* Ukevisning – bredt (nettbrett, PC, mobil liggende): 7 kolonner.
+   Måles i em, så stor tekst gir liste i stedet for trange kolonner. */
+@container cal (min-width: 40em) {
+  .week { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: .45rem; }
+  .day { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; gap: .4rem; padding: .4rem; }
+  .dnum { flex-direction: row; gap: .35rem; padding: .3rem; }
+  .dnum b { font-size: 1.2rem; }
+  .slot { flex-direction: column; align-items: flex-start; justify-content: center; padding: .25rem .45rem; font-size: .85rem; line-height: 1.2; min-height: 48px; }
+}
+
+/* Månedsvisning */
+.month { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.month .wd { text-align: center; font-size: .78rem; color: var(--muted); padding: .2rem 0; }
+.mcell { position: relative; aspect-ratio: 1 / 1.1; border: 1px solid var(--line); border-radius: 10px; background: var(--card);
+  padding: 0; overflow: hidden; display: flex; flex-direction: column; min-height: 44px; min-width: 0; }
+.mcell .n { position: absolute; top: 3px; left: 5px; font-size: .85rem; font-weight: 700; z-index: 1; }
+.mcell .half { flex: 1; display: flex; align-items: center; justify-content: flex-end; min-height: 0; }
+.mcell .half i { display: none; font-style: normal; font-size: .78rem; font-weight: 700; color: #fff; padding: 0 .4rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcell.out { opacity: .35; }
+.mcell.today { outline: 2px solid var(--brand-2); outline-offset: -2px; }
+.mcell.past .n { color: var(--muted); }
+.mcell .half.taken ~ .n, .mcell.has .n { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35); }
+@container cal (min-width: 34em) {
+  .month { gap: 6px; max-width: 64em; margin: 0 auto; }
+  .mcell { aspect-ratio: 4 / 3; }
+  .mcell .half i { display: block; }           /* «Hus A» står i cellen */
+  .month .wd { font-size: .85rem; }
+}
+.legend { display: flex; gap: .4rem .8rem; flex-wrap: wrap; font-size: .88rem; color: var(--muted); margin: .8rem 0; }
+.dot { display: inline-block; width: .8rem; height: .8rem; border-radius: 4px; vertical-align: -1px; margin-right: .25rem; }
+
+/* Ark (dialog)
+ * Mobil: glir opp nederst. Høyden følger den synlige skjermen (dvh), med vh som reserve
+ * for eldre Safari. Bare midtdelen ruller; overskrift og «Book»-knapp står fast.
+ * Brede skjermer: dialog midt på skjermen.
+ * Virker også uten innebygd <dialog> (iOS før 15.4): da settes bare open-attributtet. */
+#sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; top: auto; z-index: 50;
+  border: 0; padding: 0; margin: 0 auto; width: min(560px, 100%); max-width: 100%;
+  max-height: 88vh; max-height: 88dvh; height: auto;
+  border-radius: 22px 22px 0 0; background: var(--surface); color: var(--ink); overflow: hidden;
+  box-shadow: 0 -10px 40px rgba(2,6,23,.25); flex-direction: column; }
+#sheet[open] { display: flex; }
+#sheet::backdrop { background: rgba(15,23,42,.5); }
+.sheet-fallback-backdrop { position: fixed; inset: 0; background: rgba(15,23,42,.5); z-index: 49; }
+@media (min-width: 640px) and (min-height: 600px) {
+  #sheet { bottom: auto; top: 50%; transform: translateY(-50%); width: min(600px, calc(100% - 3rem)); border-radius: 22px;
+    max-height: min(86vh, 900px); max-height: min(86dvh, 900px); box-shadow: 0 20px 60px rgba(2,6,23,.35); }
+  #sheetFoot, #sheet.nofoot #sheetBody { padding-bottom: 1rem; }
+}
+html.sheet-open, html.sheet-open body { overflow: hidden; }
+.sheet-head { flex: 0 0 auto; background: var(--surface); display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+  padding: 1rem max(1rem, var(--sr)) .4rem max(1rem, var(--sl)); }
+.sheet-head h2 { margin: 0; font-size: 1.2rem; min-width: 0; }
+.close { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--quiet); font-size: 1.1rem; flex: 0 0 auto; }
+#sheetBody { container-type: inline-size; flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+  padding: 0 max(1rem, var(--sr)) 1rem max(1rem, var(--sl)); }
+#sheet.nofoot #sheetBody { padding-bottom: calc(1rem + var(--sb)); }
+#sheetFoot { flex: 0 0 auto; background: var(--surface); border-top: 1px solid var(--line);
+  padding: .7rem max(1rem, var(--sr)) calc(.7rem + var(--sb)) max(1rem, var(--sl)); box-shadow: 0 -6px 16px rgba(2,6,23,.06); }
+#sheetFoot[hidden] { display: none; }
+.lead { margin: .1rem 0 .6rem; font-weight: 600; }
+.hint { margin: 0 0 .6rem; padding: .55rem .8rem; border-radius: 12px; background: var(--soft); color: var(--accent); font-weight: 600; font-size: .95rem; }
+.slot.free { cursor: pointer; }
+.plist { list-style: none; padding: 0; margin: .2rem 0 .8rem; display: grid; gap: .4rem; }
+.pitem { border: 1px solid var(--line); border-radius: 14px; padding: .6rem .7rem; background: var(--card); }
+.pitem .row { display: flex; flex-wrap: wrap; align-items: center; gap: .2rem .5rem; }
+.pitem .acts { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+.chip { display: inline-flex; align-items: center; border-radius: 999px; padding: .1rem .6rem; color: #fff; font-weight: 700; font-size: .9rem; white-space: nowrap; }
+.stat { font-size: .85rem; color: var(--muted); margin-left: auto; }
+.pick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem; margin: .3rem 0 .8rem; }
+.pick button { border: 2px solid transparent; border-radius: 14px; padding: .7rem .2rem; min-height: 56px; font-weight: 800; color: #fff; }
+.pick button[aria-pressed="true"] { border-color: var(--ink); box-shadow: 0 0 0 3px #fff inset; }
+.pick button:not([aria-pressed="true"]) { opacity: .75; }
+@container (max-width: 14.5em) { .pick { grid-template-columns: repeat(2, minmax(0, 1fr)); } }   /* smal skjerm eller stor tekst */
+.types { display: grid; gap: .45rem; margin: .3rem 0 .8rem; }
+.types button { display: flex; flex-wrap: wrap; gap: 0 .5rem; justify-content: space-between; align-items: center; text-align: left; border: 2px solid var(--line);
+  background: var(--surface); border-radius: 14px; padding: .7rem .9rem; min-height: 56px; }
+.types button[aria-pressed="true"], .types button[aria-checked="true"] { border-color: var(--accent); background: var(--soft); font-weight: 700; }
+.types .box { display: inline-block; width: 1.25em; height: 1.25em; border: 2px solid var(--muted); border-radius: 6px; margin-right: .55rem; vertical-align: -.25em; position: relative; }
+.types [aria-checked="true"] .box { background: var(--brand); border-color: var(--brand); }
+.types [aria-checked="true"] .box::after { content: ""; position: absolute; left: .32em; top: .08em; width: .3em; height: .6em; border: solid #fff; border-width: 0 .16em .16em 0; transform: rotate(45deg); }
+.types .fullday { border-style: dashed; }
+.types .fullday[aria-pressed="true"] { border-style: solid; }
+.types button:disabled { opacity: .5; text-decoration: line-through; cursor: not-allowed; }
+.msg { border-radius: 14px; padding: .7rem .85rem; margin: .4rem 0 .8rem; font-size: .95rem; }
+.msg.ok { background: var(--ok-bg); color: var(--ok); }
+.msg.no { background: var(--warn-bg); color: var(--warn); }
+.wide { width: 100%; }
+.label { font-weight: 700; font-size: .95rem; margin-top: .6rem; }
+
+/* Mine bookinger og statistikk */
+.list { list-style: none; padding: 0; margin: 0 0 1rem; display: grid; gap: .45rem; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: .8rem; min-width: 0; }
+#stats { container-type: inline-size; }
+.bars { display: grid; gap: .45rem; margin-top: .5rem; }
+.bar { display: grid; grid-template-columns: max-content minmax(3rem, 1fr) auto; gap: .3rem .5rem; align-items: center; font-size: .95rem; }
+.bar .track { background: var(--quiet); border-radius: 8px; height: 18px; overflow: hidden; display: flex; }
+.bar .fill { height: 100%; }
+.bar .fill.nc { opacity: .35; }
+.bar small { color: var(--muted); }
+@container (max-width: 19em) { .bar { grid-template-columns: max-content minmax(0, 1fr); } .bar > :last-child { grid-column: 1 / -1; } }
+.statgrid { display: grid; gap: .7rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); }
+
+/* Faner nederst (mobil stående). På brede skjermer holdes knappene samlet på midten. */
+.tabs { position: fixed; bottom: 0; left: 0; right: 0; z-index: 6; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding: 0 max(var(--sr), calc((100% - 640px) / 2)) var(--sb) max(var(--sl), calc((100% - 640px) / 2)); }
+.tabs button { border: 0; background: none; padding: .4rem .1rem .5rem; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: .1rem; font-size: min(.8rem, 3.6vw); color: var(--muted); min-height: var(--tabh); min-width: 0; overflow-wrap: anywhere; line-height: 1.15; }
+.tabs button span { font-size: 1.3rem; line-height: 1.2; }
+.tabs button[aria-current="page"] { color: var(--accent); font-weight: 800; }
+
+#toast { position: fixed; left: 50%; bottom: calc(var(--tabh) + 1.4rem + var(--sb)); transform: translateX(-50%);
+  background: #0f172a; color: #fff; padding: .7rem 1rem; border-radius: 14px; font-size: .95rem; width: max-content; max-width: min(92vw, 34rem);
+  opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 60; box-shadow: 0 6px 24px rgba(0,0,0,.3); }
+#toast.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Veldig smale skjermer (sammenleggbare, 280–340 px) */
+@media (max-width: 340px) {
+  :root { --pad: .6rem; }
+  .month { gap: 3px; }
+  .mcell .n { left: 3px; font-size: .78rem; }
+  .seg button, .ghost, .primary.small { padding-inline: .65rem; }
+}
+
+/* Lave skjermer (mobil liggende): kompakt ark */
+@media (max-height: 500px) {
+  .pick button { min-height: 46px; padding: .45rem .2rem; }
+  .types { grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); }
+  .types button { min-height: 46px; padding: .45rem .6rem; flex-direction: column; align-items: flex-start; }
+  .sheet-head { padding-top: .6rem; padding-bottom: .2rem; }
+  #sheet { max-height: 96vh; max-height: 96dvh; }
+  .top { position: static; }
+}
+
+/* Sidemeny: PC/nettbrett (≥1000 px) og mobil liggende (lav og bred) */
+@media (min-width: 1000px), (min-width: 640px) and (max-height: 500px) {
+  body { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto auto 1fr; padding-bottom: calc(1rem + var(--sb)); }
+  .top { grid-column: 1 / -1; grid-row: 1; }
+  .trial { grid-column: 2; grid-row: 2; width: 100%; }
+  main { grid-column: 2; grid-row: 3; width: 100%; max-width: 1200px; }
+  .tabs { grid-column: 1; grid-row: 2 / span 2; position: sticky; top: 4.5rem; bottom: auto; align-self: start; z-index: 4;
+    display: flex; flex-direction: column; gap: .3rem; border: 0; background: none;
+    padding: .6rem .4rem 1rem max(.6rem, var(--sl)); width: 13.5rem; }
+  .tabs button { flex-direction: row; justify-content: flex-start; gap: .6rem; font-size: 1rem; padding: .55rem .8rem;
+    border-radius: 12px; min-height: 48px; text-align: left; }
+  .tabs button[aria-current="page"] { background: var(--soft); }
+  #toast { bottom: calc(1.5rem + var(--sb)); }
+  #view-mer, #view-mine > p, #view-statistikk > .muted { max-width: 46rem; }
+  #mine .list { grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr)); }
+}
+@media (min-width: 1000px) and (hover: hover) { .tabs button:hover { background: var(--quiet); } }
+/* Mobil liggende: smal sidemeny med ikon over tekst */
+@media (min-width: 640px) and (max-height: 500px) {
+  .tabs { width: 5.6rem; top: 0; padding: .4rem .3rem calc(.4rem + var(--sb)) max(.3rem, var(--sl)); }
+  .tabs button { flex-direction: column; justify-content: center; text-align: center; gap: 0; font-size: .72rem; padding: .35rem .2rem; min-height: 52px; }
+  .tabs button span { font-size: 1.15rem; }
+  .trial { font-size: .8rem; padding-block: .3rem; }
+}
+
+/* Veldig smal skjerm + stor tekst: ingenting skal stikke ut */
+.seg { max-width: 100%; flex-wrap: wrap; }
+.seg button { flex: 1 1 auto; min-width: 0; }
+.types { grid-template-columns: minmax(0, 1fr); }
+.types button { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+.types button > * { min-width: 0; }
+@media (max-width: 340px) { .seg button, .ghost, .primary.small { padding-left: .6rem; padding-right: .6rem; } }
+.linkbtn { max-width: 100%; min-width: 0; overflow-wrap: anywhere; }
+button, .ghost, .primary, .danger, .secondary { max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 340px) {
+  .mcell { aspect-ratio: auto; min-height: 44px; }   /* høyden følger ikke bredden når cellene blir smale */
+  #sheet { max-height: 100vh; max-height: 100dvh; top: 0; border-radius: 0; }
+  #sheetFoot .primary { font-size: .9em; padding: .55rem .7rem; }
+}
+.acts > *, .pitem .row > * { min-width: 0; }
+.plist { grid-template-columns: minmax(0, 1fr); } .pitem { min-width: 0; }
