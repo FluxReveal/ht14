@@ -1,8 +1,9 @@
 /*
- * Badehusappen – brukergrensesnitt (HT14 versjon 0.5)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.6)
  * ---------------------------------------------------------------
- * Om oss (første side), innlogging, kalender, booking, innsjekk,
- * Mine bookinger, statistikk, bytte passord og administrasjon.
+ * Innlogging, kalender (i dag + 30 dager, eller måned), booking, innsjekk,
+ * Mine bookinger, statistikk (sesong og år), bytte passord og administrasjon.
+ * «Om oss» ligger på forsiden ht14.no (om-oss.js), ikke i appen.
  * All data hentes og lagres via Store (js/store.js) → /api/… på ht14.no.
  * Reglene sjekkes med RulesEngine for rask tilbakemelding; Workeren
  * sjekker dem på nytt før noe lagres.
@@ -13,7 +14,8 @@
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const HOUSES = ["A", "B", "C", "D"];
-  const MODE_KEY = "ht14-badehusappen-visning", HINT_KEY = "ht14-badehusappen-hint-v05";
+  const MODE_KEY = "ht14-badehusappen-visning-v06", HINT_KEY = "ht14-badehusappen-hint-v05";
+  const LIST_DAYS = 31;                    // «30 dager»: i dag + de neste 30 dagene
   // Fylles fra rules.json i init(): AM = formiddag 10–14, MID = ettermiddag 14–17, PM = kveld 17–24
   let PLABEL = {}, PTIME = {}, PKEYS = [], FULLDAY = [];
   const hh = t => t === "24:00" ? "24" : t.slice(0, 2).replace(/^0/, "");
@@ -22,10 +24,10 @@
     : (a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " og " + a[a.length - 1])(ps.map(p => PLABEL[p].toLowerCase()));
   const periodsTime = ps => `${hh(rules.periods[ps[0]].start)}–${hh(rules.periods[ps[ps.length - 1]].end)}`;
   const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke bekreftet", CANCELLED: "Avbestilt" };
-  const WD_SHORT = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
+  const WD_SHORT = ["man", "tir", "ons", "tor", "fre", "lør", "søn"], WD_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const MON_SHORT = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 
-  let rules, mode = localStorage.getItem(MODE_KEY) || "week", anchor, view = "om", statAnchor;
+  let rules, mode = localStorage.getItem(MODE_KEY) === "month" ? "month" : "list", anchor, view = "login", statYear;
   let myHouse = null, mineHouse = "A";
   const isAdmin = () => !!(S.user() && S.user().admin);
 
@@ -70,13 +72,15 @@
   /* ---------- Kalender ---------- */
   async function renderCalendar() {
     const n = now();
-    if (mode === "week") {
-      const from = R.mondayOf(anchor), to = R.addDays(from, 6);
-      $("#calTitle").textContent = `Uke ${isoWeek(from)} · ${shortDate(from)} – ${shortDate(to)}`;
+    if (mode === "list") {
+      // Starter på «anker»-dagen (i dag som standard) og viser 31 dager fremover – ingen dager bakover.
+      const from = anchor, to = R.addDays(from, LIST_DAYS - 1);
+      $("#calTitle").textContent = `${from === n.date ? "I dag" : shortDate(from)} – ${shortDate(to)}`;
       const list = await S.calendar({ from, to });
-      let html = '<ol class="week">';
-      for (let i = 0; i < 7; i++) {
-        const date = R.addDays(from, i), act = activeOn(list, date);
+      let html = '<ol class="week list">';
+      for (let i = 0; i < LIST_DAYS; i++) {
+        const date = R.addDays(from, i), act = activeOn(list, date), wd = R.weekday(date);
+        if (i === 0 || wd === "mon") html += `<li class="wkhead" aria-hidden="true">Uke ${isoWeek(date)}${d2(date).d <= 7 || i === 0 ? " · " + R.MONTHS[d2(date).m - 1] : ""}</li>`;
         const past = R.hasEnded(rules, date, PKEYS[PKEYS.length - 1], n);
         // Tre rader per dag: formiddag, ettermiddag, kveld
         const slot = (b, p) => {
@@ -88,7 +92,7 @@
         const slots = PKEYS.map(p => slot(act.find(b => b.period === p), p)).join("");
         const aria = PKEYS.map(p => { const b = act.find(x => x.period === p); return `${PLABEL[p].toLowerCase()} ${PTIME[p]} ${b ? "Hus " + b.household : "ledig"}`; }).join(", ");
         html += `<li><button type="button" class="day${date === n.date ? " today" : ""}${past ? " past" : ""}" data-date="${date}" aria-label="${esc(R.dateLabel(date))}${date === n.date ? " (i dag)" : ""}: ${esc(aria)}">
-          <span class="dnum"><small>${WD_SHORT[i]}</small><b>${d2(date).d}</b></span><span class="slots">${slots}</span></button></li>`;
+          <span class="dnum"><small>${WD_SHORT[WD_KEYS.indexOf(wd)]}</small><b>${d2(date).d}</b></span><span class="slots">${slots}</span></button></li>`;
       }
       $("#calendar").innerHTML = html + "</ol>";
     } else {
@@ -109,13 +113,13 @@
       }
       $("#calendar").innerHTML = html + "</div>";
     }
-    $("#modeWeek").setAttribute("aria-pressed", mode === "week");
+    $("#modeList").setAttribute("aria-pressed", mode === "list");
     $("#modeMonth").setAttribute("aria-pressed", mode === "month");
     $("#calendar").querySelectorAll("[data-date]").forEach(b => b.addEventListener("click", e => {
       const slot = e.target.closest("[data-period]");
       openDay(b.dataset.date, slot ? slot.dataset.period : null).catch(e => toast(e.message));
     }));
-    $("#hint").hidden = mode !== "week" || !!localStorage.getItem(HINT_KEY);
+    $("#hint").hidden = mode !== "list" || !!localStorage.getItem(HINT_KEY);
   }
 
   /* ---------- Ark: én dag ---------- */
@@ -171,7 +175,7 @@
     const title = R.dateLabel(date).replace(/^./, c => c.toUpperCase()) + (date === n.date ? " · i dag" : "");
     let html = "", foot = "";
     // 1) Kort beskjed rett under datoen
-    if (dayOver) html += `<p class="lead">Denne dagen er over, så den kan ikke bookes. Trykk › i kalenderen for å se kommende uker.</p>`;
+    if (dayOver) html += `<p class="lead">Denne dagen er over, så den kan ikke bookes. Kalenderen starter alltid på i dag.</p>`;
     else if (date > lastBookable()) html += `<div class="msg no">Denne datoen kan ikke bookes ennå. Du kan booke maks ${rules.bookingWindow.months} måneder frem – den åpner ${R.dateLabel(R.addMonths(date, -rules.bookingWindow.months))}.</div>`;
     else if (!can.length) html += `<p class="lead">${ongoingFree ? `Det er ingen flere perioder å booke i dag, men ${PLABEL[ongoingFree.p].toLowerCase()} er ledig nå – bruk «Sjekk inn nå».` : "Hele dagen er booket."}</p>`;
     else if (fullOk) html += `<p class="lead">Ledig hele dagen – velg tid under.</p>`;
@@ -313,7 +317,7 @@
     const n = now(), all = (await allBookings()).filter(b => b.household === h);
     const need = all.filter(b => b.displayStatus === "NOT_CONFIRMED");
     const coming = all.filter(b => b.displayStatus === "BOOKED" || b.displayStatus === "CHECKED_IN");
-    const past = all.filter(b => ["COMPLETED", "CANCELLED", "CANCELLED_LATE"].includes(b.displayStatus)).reverse().slice(0, 30);
+    const past = all.filter(b => ["COMPLETED", "CANCELLED"].includes(b.displayStatus)).reverse().slice(0, 30);
     const li = b => `<li class="pitem"><div class="row"><b>${esc(R.dateLabel(b.date).replace(/^./, c => c.toUpperCase()))}</b><span class="stat">${STATUS[b.displayStatus]}</span></div>
       <div class="row muted">${PLABEL[b.period]} ${PTIME[b.period]}${b.source === "CHECKIN" ? " · spontan" : ""}${b.quota ? " · i sommerkvoten" : ""}</div>${bookingItemActs(b, n)}</li>`;
     let html = isAdmin() ? `<div class="seg" role="group" aria-label="Hus">${HOUSES.map(x => `<button type="button" data-mine="${x}" aria-pressed="${x === h}">Hus ${x}</button>`).join("")}</div>` : "";
@@ -345,11 +349,11 @@
     return out.length ? `<h2 class="ghead">Sommerkvote</h2><ul class="list">${out.join("")}</ul>` : "";
   }
 
-  /* ---------- Statistikk ---------- */
+  /* ---------- Statistikk: bare sesongen (juni–august) og hele året ---------- */
   async function renderStats() {
-    const { y, m } = statAnchor;
-    $("#statMonth").textContent = `${R.MONTHS[m - 1].replace(/^./, c => c.toUpperCase())} ${y}`;
-    const s = await S.stats({ year: y, month: m });
+    const y = statYear;
+    $("#statYear").textContent = String(y);
+    const s = await S.stats({ year: y, month: 1 });
     const card = (title, data) => {
       const max = Math.max(1, ...HOUSES.map(h => data[h].used + data[h].notConfirmed + data[h].upcoming));
       return `<div class="card"><b>${title}</b><div class="bars">${HOUSES.map(h => {
@@ -357,54 +361,7 @@
         return `<div class="bar"><span>${houseChip(h)}</span><span class="track" aria-hidden="true"><span class="fill h${h}" style="display:block;width:${(d.used / max) * 100}%"></span><span class="fill nc h${h}" style="display:block;width:${(d.notConfirmed / max) * 100}%"></span></span><span><b>${d.used}</b> ${extra ? `<small>(${extra})</small>` : ""}</span></div>`;
       }).join("")}</div></div>`;
     };
-    $("#stats").innerHTML = `<div class="statgrid">${card(`${R.MONTHS[m - 1].replace(/^./, c => c.toUpperCase())}`, s.month)}${card(`Sesongen ${y} (juni–august)`, s.season)}${card(`Hele ${y}`, s.year)}</div>`;
-  }
-
-  /* ---------- Om oss ---------- */
-  async function renderOm() {
-    const box = $("#om");
-    if (!S.user()) {        // før innlogging: bare de fire husene
-      box.innerHTML = `<ul class="group houses">${HOUSES.map(h => `<li class="cell"><span class="dot big h${h}" aria-hidden="true"></span><span>Hus ${h}</span></li>`).join("")}</ul>`;
-      return;
-    }
-    let list;
-    try { list = await S.contacts(); } catch (e) { box.innerHTML = `<p class="msg no">${esc(e.message)}</p>`; return; }
-    box.innerHTML = `<p class="intro">Hvem bor hvor, og hvem dere kan kontakte. Bare de som er logget inn ser dette.</p>` + list.map(h => {
-      const people = h.contacts.filter(c => c.name || c.email || c.phone);
-      return `<h2 class="ghead"><span class="dot h${h.house}" aria-hidden="true"></span>Hus ${h.house}${h.household ? " – " + esc(h.household) : ""}</h2>
-      <ul class="group">${people.length ? people.map(c => `<li class="cell contact"><b>${esc(c.name || "Kontakt")}</b>
-          ${c.phone ? `<a href="tel:${esc(c.phone.replace(/[^0-9+]/g, ""))}">${esc(c.phone)}</a>` : ""}
-          ${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : ""}</li>`).join("")
-        : `<li class="cell muted">Ingen kontaktpersoner lagt inn ennå.</li>`}
-        ${h.note ? `<li class="cell note">${esc(h.note).replace(/\n/g, "<br>")}</li>` : ""}
-        ${h.canEdit ? `<li><button type="button" class="cell nav tint" data-edit="${h.house}">Endre ${h.house === myHouse ? "vårt hus" : "Hus " + h.house}</button></li>` : ""}
-      </ul>`;
-    }).join("");
-    box.querySelectorAll("[data-edit]").forEach(b => b.addEventListener("click", () => editContacts(list.find(x => x.house === b.dataset.edit))));
-  }
-
-  function editContacts(h) {
-    const c = h.contacts;
-    const html = `<form id="contactForm" autocomplete="off">
-      <h3 class="ghead">Husstanden</h3>
-      <div class="group form">${field("Navn", "household", h.household, 'maxlength="200" placeholder="F.eks. Ola og Kari Nordmann"')}</div>
-      ${[0, 1].map(i => `<h3 class="ghead">Kontaktperson ${i + 1}</h3><div class="group form">
-        ${field("Navn", `n${i}`, c[i].name, 'maxlength="80"')}
-        ${field("E-post", `e${i}`, c[i].email, 'type="email" inputmode="email" autocapitalize="none" spellcheck="false" maxlength="120"')}
-        ${field("Mobil", `p${i}`, c[i].phone, 'type="tel" inputmode="tel" maxlength="30"')}</div>`).join("")}
-      <h3 class="ghead">Til naboene</h3>
-      <div class="group form"><label class="cell field area"><span class="sr">Fritekst</span><textarea name="note" rows="4" maxlength="1000" placeholder="F.eks. «Ring gjerne etter kl. 17»">${esc(h.note)}</textarea></label></div>
-      <p id="contactMsg" class="formmsg" role="alert"></p></form>`;
-    openSheet(`Hus ${h.house}`, html, `<button type="submit" form="contactForm" class="btn filled wide">Lagre</button>`);
-    $("#contactForm").addEventListener("submit", async e => {
-      e.preventDefault();
-      const f = e.target.elements;
-      try {
-        await S.saveContacts(h.house, { household: f.household.value, note: f.note.value,
-          contacts: [0, 1].map(i => ({ name: f["n" + i].value, email: f["e" + i].value, phone: f["p" + i].value })) });
-        closeSheet(); toast("Lagret."); renderOm();
-      } catch (err) { $("#contactMsg").textContent = err.message; }
-    });
+    $("#stats").innerHTML = `<div class="statgrid">${card(`Sesongen ${y} (juni–august)`, s.season)}${card(`Hele ${y}`, s.year)}</div>`;
   }
 
   /* ---------- Innlogging ---------- */
@@ -427,20 +384,18 @@
     const u = S.user();
     myHouse = u.house || null;
     document.body.classList.toggle("admin", !!u.admin);
-    $("#login").hidden = true;
     document.querySelector(".tabs").hidden = false;
     $("#whoami").innerHTML = u.admin ? `<b>${esc(u.name)}</b> <span class="muted">· administrator</span>` : `${houseChip(u.house)} <span class="muted">${esc(u.email)}</span>`;
     $("#adminLink").hidden = !u.admin;
     cache = null;
-    show(goCalendar ? "kalender" : view === "om" ? "om" : view);
+    show(goCalendar || view === "login" ? "kalender" : view);
   }
   function loggedOut() {
     myHouse = null; cache = null;
     closeSheet();
     document.body.classList.remove("admin");
     document.querySelector(".tabs").hidden = true;
-    $("#login").hidden = false;
-    show("om");
+    show("login");
   }
 
   function openPassword() {
@@ -481,7 +436,7 @@
     html += `</ul>`;
     const admins = users.filter(u => u.role === "admin");
     html += `<h2 class="ghead">Administrator</h2><ul class="group">${admins.map(u => `<li class="cell"><span>${esc(u.name)}<br><span class="muted">${esc(u.email)}</span></span></li>`).join("")}</ul>`;
-    html += `<h2 class="ghead">Om oss</h2><ul class="group"><li><button type="button" class="cell nav" data-goto="om">Endre kontakter for et hus</button></li></ul>`;
+    html += `<h2 class="ghead">Om oss</h2><ul class="group"><li><a class="cell nav" href="/#om-oss">Endre kontakter for et hus (på ht14.no)</a></li></ul>`;
     html += `<h2 class="ghead">Siste hendelser</h2><ul class="group small">${events.map(e => `<li class="cell"><span>${esc(EVENT[e.action] || e.action)}${e.house ? " · Hus " + esc(e.house) : ""}<br><span class="muted">${fmt(e.ts)}${e.who ? " · " + esc(e.who) : ""}</span></span></li>`).join("") || `<li class="cell muted">Ingen ennå.</li>`}</ul>`;
     box.innerHTML = html;
     box.querySelectorAll("[data-new]").forEach(b => b.addEventListener("click", () => newLogin(b.dataset.new)));
@@ -522,7 +477,6 @@
   async function refresh() {
     cache = null;
     try {
-      if (view === "om") await renderOm();
       if (!S.user()) return;
       if (view === "kalender") await renderCalendar();
       if (view === "mine") await renderMine();
@@ -531,7 +485,7 @@
     } catch (e) { if (e.status !== 401) toast(e.message); }
   }
   function show(v) {
-    if (!S.user()) v = "om";
+    if (!S.user()) v = "login";
     if (v === "admin" && !isAdmin()) v = "mer";
     view = v;
     document.querySelectorAll(".view").forEach(s => { s.hidden = s.id !== "view-" + v; });
@@ -542,29 +496,30 @@
   }
   function wireGoto(scope) { scope.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => show(b.dataset.goto))); }
   function step(dir) {
-    anchor = mode === "week" ? R.addDays(anchor, 7 * dir) : R.addMonths(anchor.slice(0, 8) + "01", dir);
+    anchor = mode === "list" ? R.addDays(anchor, (LIST_DAYS - 1) * dir) : R.addMonths(anchor.slice(0, 8) + "01", dir);
     renderCalendar().catch(e => toast(e.message));
   }
 
   async function init() {
     try { rules = await S.getRules(); }
-    catch (e) { $("#om").innerHTML = `<p class="msg no">${esc(e.message)}</p>`; document.body.classList.remove("booting"); return; }
+    catch (e) { $("#loginMsg").textContent = e.message; document.body.classList.remove("booting"); return; }
     for (const h of HOUSES) document.documentElement.style.setProperty("--" + h, rules.households[h].color);
     PKEYS = R.periodKeys(rules); FULLDAY = R.fullDayPeriods(rules);
     for (const p of PKEYS) { PLABEL[p] = rules.periods[p].label; PTIME[p] = `${hh(rules.periods[p].start)}–${hh(rules.periods[p].end)}`; }
     $("#legend").innerHTML = HOUSES.map(h => `<span><span class="dot h${h}"></span>Hus ${h}</span>`).join("") + `<span>Stripete = ikke bekreftet</span>`;
     anchor = now().date;
-    const p = d2(anchor); statAnchor = { y: p.y, m: p.m };
+    statYear = d2(anchor).y;
     $("#prevBtn").addEventListener("click", () => step(-1));
     $("#nextBtn").addEventListener("click", () => step(1));
     $("#todayBtn").addEventListener("click", () => { anchor = now().date; renderCalendar(); });
-    $("#modeWeek").addEventListener("click", () => { mode = "week"; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
-    $("#modeMonth").addEventListener("click", () => { mode = "month"; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
+    // Bytte visning starter alltid på i dag igjen.
+    $("#modeList").addEventListener("click", () => { mode = "list"; anchor = now().date; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
+    $("#modeMonth").addEventListener("click", () => { mode = "month"; anchor = now().date; localStorage.setItem(MODE_KEY, mode); renderCalendar(); });
     $("#checkinNowBtn").addEventListener("click", () => openCheckin().catch(e => toast(e.message)));
     $("#sheetClose").addEventListener("click", closeSheet);
     sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
-    $("#statPrev").addEventListener("click", () => { statAnchor = statAnchor.m === 1 ? { y: statAnchor.y - 1, m: 12 } : { y: statAnchor.y, m: statAnchor.m - 1 }; renderStats(); });
-    $("#statNext").addEventListener("click", () => { statAnchor = statAnchor.m === 12 ? { y: statAnchor.y + 1, m: 1 } : { y: statAnchor.y, m: statAnchor.m + 1 }; renderStats(); });
+    $("#statPrev").addEventListener("click", () => { statYear--; renderStats(); });
+    $("#statNext").addEventListener("click", () => { statYear++; renderStats(); });
     document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
     wireGoto(document);
     $("#pwBtn").addEventListener("click", openPassword);

@@ -1,5 +1,5 @@
 /*
- * Badehusappen – datalag (HT14 versjon 0.5)
+ * Badehusappen – datalag (HT14 versjon 0.6)
  * ---------------------------------------------------------------
  * All lesing og skriving går til Workeren på /api/… (felles for alle hus).
  * Reglene sjekkes her i appen for rask tilbakemelding, og Workeren sjekker

@@ -10,27 +10,27 @@
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <meta name="color-scheme" content="light dark">
 <link rel="manifest" href="/badehusappen/manifest.webmanifest">
-<link rel="icon" href="ikoner/ikon.svg" type="image/svg+xml">
-<!-- iOS bruker ikke SVG som Hjem-skjerm-ikon; derfor en liten PNG som data-URI. -->
-<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAMAAAAKE/YAAAAAwFBMVEXs/v/q/P7h9/nR7fKl8/yh8Pqa6vVn6Pm94ee02+Oa4+2P4OyG2eafztiWyNSOw9CDvMtj5PZi4vVr3O1d3O5a1+p70N51y9pV0eVSzeBwx9ZpwdF9ucdSxtliu81Kw9hIwNVFvdJzs8JbtcdLs8hQrMBTqLtIpbpKn7RElqs+s8k7sMY1qL8yors6mrAtnbUyla0mlK43jaQtkaoqiaIkhJ0hjqcch6Ecg54df5kXfpkVfJYUeZQReJMRdpIOdJDIbn5nAAADaUlEQVR42u3a6XKiQBQF4FYimhHjUsZdESlEQTEmLnEj7/9Wk3GMNNq4TbfC1Dn/UpcbvzR9G2NCviIYAjTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAx0itJvNulFDL54JeV5ECz2RyHekSZTQ/TjZJt6PDroTI7vEOhFBu1lCRcQ48kcvUsSX1CL86L8jSIf/OPJG9+LkKPFeuNENwkwjxGg3QwKSccOKPhxBYePIEf0ukROR3sOIZo2goHEkgkdQyDhyQq8z5IJk1mFCT1PkoqSm4UGfHkH+40juMILcx5HcZQQ5jyO5zwjyHUdypxHkOo7/iO5L5IZI/UeiuzFyU2Ldx6G75OZ0H4bO3Y7OAc0BLeUa++SkaKAl328pbjwS6Kz/opdIoF+ABhpooIEGGmiggf4P0ZL/Iilk6M4zM43++z79BvuazsPQjwrQ0UBPzFY5nVBqeo/5x6uNY9QUWS7Vjbdb2oWgP0pP+yRan4fllSF7dcW5tl0I+o16ze3r1n0fhq502V9Pm9e0C0FPlKejJOr7u7w5JG/ZzqXtItCrj9oTMwl9+x8HU/MXu644iwva+aPXRokWlVqmY9TpdUv7vqgZTk8vU8suK2fayyZ/tG8rln9WxkmzVk42duVli7myAe0GdzR9s+mDzDxiy/rKK0+Pd0Rge4k32g08xFw/W9aX/voB+0S7Imp7MM7dry/vYE60lowTp3zq2Pba+W+Ptf7nARd0OE0dvVbWe5PAY8dsnW03BT5ctvkcD7SmNRwvA37C2chS2/Zoflu7EPSwmPxJZcYgtfflgr2+ul0IevSapNM8WM6llqfLxcHmqnYh6FkleRiNetOztvOH5eLo8nYh6LmaZCRv7U5md1Bk1Svjy9r5o2cDq131NmtFs1TvRhdUzbI11SMXm5ZWpfauqtln2gef/NGW744Pd0eZlWSmvQOMK8xyQPuYO5r65gV7wzop9qnOAsfuZHuTN3rj7UDbvwPn7YANfHzAnWmvcl/p1+ChocerwrjH1HSebLe4o+fN7+EZzjbsx/R4oBYLTXscMEzzkVU9266tBD5c8LkH0EADDTTQQAMNNNBAAw000EADDTTQQAMNNNBAAw000EADDTTQQIvKbzsGhcS/tgjTAAAAAElFTkSuQmCC">
+<link rel="icon" href="/badehusappen/ikoner/ikon.svg" type="image/svg+xml">
+<link rel="icon" href="/badehusappen/favicon.ico" sizes="16x16 32x32 48x48">
+<link rel="apple-touch-icon" href="/badehusappen/ikoner/apple-touch-icon.png" sizes="180x180">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Badehusappen">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="css/app.css?v=10">
+<link rel="stylesheet" href="css/app.css?v=11">
 </head>
 <body class="booting">
 <a class="skip" href="#main">Hopp til innholdet</a>
 <main id="main">
 
-  <!-- Om oss: første side. Uten innlogging bare de fire husene og innloggingen. -->
-  <section id="view-om" class="view" aria-labelledby="omTitle">
+  <!-- Innlogging: vises når man ikke er logget inn. («Om oss» ligger på forsiden ht14.no.) -->
+  <section id="view-login" class="view" aria-labelledby="loginTitle">
     <header class="large">
       <a class="back" href="/">‹ Sameiet HT14</a>
-      <h1 id="omTitle">Om oss</h1>
+      <div class="applogo"><img src="/badehusappen/ikoner/ikon.svg" width="72" height="72" alt=""></div>
+      <h1 id="loginTitle">Badehusappen</h1>
     </header>
-    <div id="om"></div>
-    <div id="login" hidden>
+    <div id="login">
       <p class="intro">Badehusappen er felles for de fire husene i Halden Terrasse 14. Logg inn med husets e-post og passord.</p>
       <form id="loginForm" method="post" action="#" novalidate>
         <div class="group form">
@@ -48,10 +48,10 @@
 
   <section id="view-kalender" class="view" hidden aria-labelledby="calTitle">
     <header class="large">
-      <div class="row-between"><h1>Kalender</h1><button type="button" class="btn tinted small" id="checkinNowBtn">Sjekk inn nå</button></div>
+      <div class="row-between"><h1><img class="hico" src="/badehusappen/ikoner/ikon.svg" width="34" height="34" alt="">Kalender</h1><button type="button" class="btn tinted small" id="checkinNowBtn">Sjekk inn nå</button></div>
     </header>
     <div class="seg" role="group" aria-label="Visning">
-      <button type="button" id="modeWeek" aria-pressed="true">Uke</button>
+      <button type="button" id="modeList" aria-pressed="true">30 dager</button>
       <button type="button" id="modeMonth" aria-pressed="false">Måned</button>
     </div>
     <div class="toolbar">
@@ -73,9 +73,9 @@
   <section id="view-statistikk" class="view" hidden aria-labelledby="statTitle">
     <header class="large"><h1 id="statTitle">Statistikk</h1></header>
     <div class="toolbar">
-      <button class="navbtn" id="statPrev" type="button" aria-label="Forrige måned">‹</button>
-      <h2 id="statMonth" class="caltitle"></h2>
-      <button class="navbtn" id="statNext" type="button" aria-label="Neste måned">›</button>
+      <button class="navbtn" id="statPrev" type="button" aria-label="Forrige år">‹</button>
+      <h2 id="statYear" class="caltitle"></h2>
+      <button class="navbtn" id="statNext" type="button" aria-label="Neste år">›</button>
     </div>
     <div id="stats"></div>
     <p class="foot">Bruk telles i perioder: formiddag (10–14) = 1, ettermiddag (14–17) = 1, kveld (17–24) = 1, heldag = 3. Det er ikke for å rangere noen – bare så alle ser hvordan badehuset brukes. Den lyse delen av stolpen er «ikke bekreftet»: ingen sjekket inn. Trykk «Vi brukte badehuset» under Mine hvis dere var der.</p>
@@ -94,19 +94,20 @@
     <ul class="group">
       <li><a class="cell nav" href="/dokumentasjon/regler.html">Regler for bruk</a></li>
       <li><a class="cell nav" href="/dokumentasjon/teknisk.html">Dokumentasjon</a></li>
+      <li><a class="cell nav" href="/#om-oss">Om oss (på ht14.no)</a></li>
       <li><a class="cell nav" href="/">Startsiden ht14.no</a></li>
     </ul>
     <h2 class="ghead">Kort om booking</h2>
     <div class="group text">
       <p>Dagen er delt i tre: <b>formiddag 10–14</b>, <b>ettermiddag 14–17</b> og <b>kveld 17–24</b>. Vanlig booking er <b>én kveld</b>. Formiddag og ettermiddag booker dere bare når dere har gjester.</p>
-      <p>Sjekk inn hver gang dere er i badehuset. Avbestiller dere, teller ikke bookingen i kvoten.</p>
+      <p>Sjekk inn hver gang dere er i badehuset. En avbestilt booking teller aldri – verken i sommerkvoten, ukeregelen eller statistikken – uansett når dere avbestiller.</p>
       <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
     </div>
     <h2 class="ghead">Legg appen på Hjem-skjermen</h2>
     <div class="group text">
       <p><b>iPhone:</b> Safari → Del-knappen → «Legg til på Hjem-skjerm».<br><b>Android:</b> Chrome → menyen ⋮ → «Legg til på startskjermen».</p>
     </div>
-    <p class="foot center">HT14 versjon 0.5</p>
+    <p class="foot center">HT14 versjon 0.6</p>
   </section>
 
   <section id="view-admin" class="view" hidden aria-labelledby="adminTitle">
@@ -119,7 +120,6 @@
 </main>
 
 <nav class="tabs" aria-label="Hovedmeny" hidden>
-  <button type="button" data-view="om"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5M5.5 9.5V20h13V9.5"/></svg>Om oss</button>
   <button type="button" data-view="kalender"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Kalender</button>
   <button type="button" data-view="mine"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Mine</button>
   <button type="button" data-view="statistikk"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>Statistikk</button>
@@ -134,8 +134,8 @@
 </dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/rules-engine.js?v=10"></script>
-<script src="js/store.js?v=10"></script>
-<script src="js/app.js?v=10"></script>
+<script src="js/rules-engine.js?v=11"></script>
+<script src="js/store.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
 </body>
 </html>

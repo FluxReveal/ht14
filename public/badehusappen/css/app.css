@@ -1,4 +1,4 @@
-/* Badehusappen – stil (HT14 versjon 0.5), laget for å ligne en vanlig iPhone-app.
+/* Badehusappen – stil (HT14 versjon 0.6), laget for å ligne en vanlig iPhone-app.
  *
  *  - Systemfonten (SF Pro på Apple, Segoe/Roboto ellers), store titler, grupperte lister med innrykk,
  *    gjennomsiktig fanelinje, segmentkontroller og ark som glir opp nedenfra.
@@ -292,3 +292,22 @@ body:has(.tabs[hidden]) { padding-left: 0; }
   .slot.free:hover { box-shadow: inset 0 0 0 2px var(--tint); }
   .tabs button:hover { color: var(--tint); }
 }
+
+/* v0.6: «30 dager» – kompakt liste fra i dag og fremover (tre tider ved siden av hverandre) */
+.week.list { gap: .4rem; }
+.week.list .wkhead { display: block; margin: .5rem .3rem -.1rem; font-size: .8rem; font-weight: 600; color: var(--ink2); text-transform: uppercase; letter-spacing: .04em; }
+.week.list li:first-child.wkhead { margin-top: 0; }
+.week.list .day { min-height: 0; padding: .4rem; gap: .45rem; }
+.week.list .dnum { padding: .15rem .25rem; } .week.list .dnum b { font-size: 1.2rem; }
+.week.list .slots { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: none; }
+.week.list .slot { flex-direction: column; align-items: flex-start; justify-content: center; gap: 0; padding: .2rem .45rem; font-size: .8rem; line-height: 1.2; min-height: 46px; }
+.week.list .slot > span:last-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+@container cal (min-width: 40em) {
+  .week.list { grid-template-columns: minmax(0, 1fr); }
+  .week.list .day { grid-template-columns: minmax(3.4em, auto) minmax(0, 1fr); grid-template-rows: none; }
+  .week.list .dnum { flex-direction: column; gap: 0; }
+  .week.list .slot { font-size: .88rem; }
+}
+/* v0.6: app-ikonet i toppen */
+.applogo img { display: block; width: 72px; height: 72px; border-radius: 16px; margin: .6rem 0 .2rem; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.large h1 .hico { width: 34px; height: 34px; border-radius: 8px; vertical-align: -5px; margin-right: .45rem; }
