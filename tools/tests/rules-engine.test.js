@@ -210,6 +210,28 @@ test("sen avbestilling teller ikke lenger i kvoten (heller ikke gamle CANCELLED_
   assert.equal(multi("2027-07-22", ["PM"], "A", [{ ...thu, status: "CANCELLED_LATE" }], now).ok, true);
 });
 
+test("avbestilt booking teller ALDRI i noen kvote – uansett når den ble avbestilt", () => {
+  // Torsdag 1., fredag 9. og lørdag 17. juli, avbestilt på ulike tidspunkt (også samme dag og etter at perioden startet).
+  const when = ["2027-05-01T10:00:00Z", "2027-06-30T20:00:00Z", "2027-07-01T16:30:00Z", "2027-07-09T18:00:00Z", "2027-07-17T23:00:00Z"];
+  const cancelled = [bk("2027-07-01", "PM", "A"), bk("2027-07-09", "PM", "A"), bk("2027-07-17", "AM", "A"), ...day("2027-07-08", "A"),
+    bk("2027-07-02", "PM", "A", { source: "CHECKIN" })]
+    .map((b, i) => ({ ...b, status: "CANCELLED", cancelledAt: when[i % when.length] }));
+  for (const b of cancelled) assert.equal(R.countsForQuota(b), false, b.date + " " + b.period);
+  const now = at("2027-05-20");
+  // Månedsregelen: ny torsdag, fredag og lørdag i juli går fint
+  assert.equal(multi("2027-07-15", ["PM"], "A", cancelled, now).ok, true);
+  assert.equal(multi("2027-07-23", ["PM"], "A", cancelled, now).ok, true);
+  assert.equal(multi("2027-07-24", ["PM"], "A", cancelled, now).ok, true);
+  // Ukeregelen: lørdag 3. juli i samme uke som avbestilt torsdag 1./fredag 2. går fint
+  const r = multi("2027-07-03", FULL, "A", cancelled, now);
+  assert.equal(r.ok, true); assert.equal(r.quota, true);
+  // Statistikk og rettferdighet: ingenting av det avbestilte telles – verken brukt, ikke bekreftet eller booket
+  for (const n of [at("2027-06-01"), at("2027-07-10", "12:00"), at("2027-12-31", "23:00")]) {
+    const s = R.stats(cancelled, rules, n, 2027, 7);
+    for (const k of ["month", "season", "year"]) assert.deepEqual(s[k].A, { used: 0, notConfirmed: 0, upcoming: 0 }, k);
+  }
+});
+
 test("innsjekk gjelder alle perioder, også formiddag og ettermiddag", () => {
   for (const [p, t] of [["AM", "10:00"], ["MID", "14:00"], ["PM", "17:00"]]) {
     const b = bk("2027-07-10", p, "A");

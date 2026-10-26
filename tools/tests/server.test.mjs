@@ -70,3 +70,21 @@ test("skjemaet stopper dobbeltbooking og har én aktiv innlogging per hus", () =
   assert.match(sql, /CREATE UNIQUE INDEX IF NOT EXISTS bookings_one_active_per_slot\s+ON bookings \(date, period\) WHERE status <> 'CANCELLED'/);
   assert.match(sql, /CREATE UNIQUE INDEX IF NOT EXISTS users_one_login_per_house\s+ON users \(house_id\) WHERE role = 'house' AND active = 1/);
 });
+
+test("ikonene (src/ikoner.js) er gyldige PNG/ICO og matcher manifestet", async () => {
+  const { ICONS } = await import("../../src/ikoner.js");
+  const { readFileSync } = await import("node:fs");
+  const bytes = b64 => Buffer.from(b64, "base64");
+  for (const [path, icon] of Object.entries(ICONS)) {
+    const b = bytes(icon.b64);
+    if (icon.type === "image/png") assert.equal(b.subarray(1, 4).toString(), "PNG", path);
+    else { assert.equal(icon.type, "image/x-icon"); assert.equal(b.readUInt16LE(2), 1, path); assert.equal(b.readUInt16LE(4), 3, path + " (16/32/48)"); }
+  }
+  const man = JSON.parse(readFileSync(new URL("../../public/badehusappen/manifest.webmanifest", import.meta.url), "utf8"));
+  for (const i of man.icons.filter(i => i.type === "image/png")) {
+    assert.ok(ICONS[i.src], i.src);
+    const b = bytes(ICONS[i.src].b64);
+    assert.equal(`${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`, i.sizes, i.src);
+  }
+  assert.ok(ICONS["/apple-touch-icon.png"] && ICONS["/badehusappen/ikoner/apple-touch-icon.png"]);
+});

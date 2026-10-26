@@ -122,7 +122,8 @@
     if (b.status === "BOOKED") return "NOT_CONFIRMED";
     return b.status;
   }
-  /** Teller i sommerkvoten: quota=true og aktiv. En avbestilt booking teller aldri. */
+  /** Teller i sommerkvoten: quota=true og aktiv. En avbestilt booking teller aldri – verken i
+   *  sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt. */
   const countsForQuota = b => b.quota === true && isActive(b.status);
 
   /* ---------- Hjelpere for meldinger ---------- */
@@ -238,7 +239,7 @@
     // Avbestilling frigjør alltid kvoten, uansett hvor kort tid det er igjen.
     return ok({
       status: "CANCELLED",
-      message: `${cap(periodName(rules, b.period))} blir ledig for andre.${b.quota ? " Har dere ingen andre perioder denne dagen, teller den ikke lenger i kvoten – så dere kan booke en annen dag." : ""}`
+      message: `${cap(periodName(rules, b.period))} blir ledig for andre. En avbestilt booking teller aldri i kvoten${b.quota ? " – har dere ingen andre perioder denne dagen, kan dere booke en annen dag" : ""}.`
     });
   }
 
