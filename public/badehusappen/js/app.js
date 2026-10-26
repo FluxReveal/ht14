@@ -21,7 +21,7 @@
     : (a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " og " + a[a.length - 1])(ps.map(p => PLABEL[p].toLowerCase()));
   const periodsTime = ps => `${hh(rules.periods[ps[0]].start)}–${hh(rules.periods[ps[ps.length - 1]].end)}`;
   const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke bekreftet",
-    CANCELLED: "Avbestilt", CANCELLED_LATE: "Sent avbestilt" };
+    CANCELLED: "Avbestilt", CANCELLED_LATE: "Avbestilt" };   // CANCELLED_LATE: bare i gamle prøvedata
   const WD_SHORT = ["man", "tir", "ons", "tor", "fre", "lør", "søn"];
   const MON_SHORT = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 
@@ -253,12 +253,12 @@
           const { booking } = await S.getBooking(id);
           const pre = R.validateCancel(booking, myHouse, rules, now());
           const box = btn.closest(".acts");
-          box.innerHTML = `<div class="msg ${pre.ok ? (pre.late ? "no" : "ok") : "no"}" style="width:100%">${esc(pre.ok ? pre.message : pre.message)}</div>
+          box.innerHTML = `<div class="msg ${pre.ok ? "ok" : "no"}" style="width:100%">${esc(pre.message)}</div>
             ${pre.ok ? `<button type="button" class="danger" data-yes>Ja, avbestill</button>` : ""}<button type="button" class="ghost" data-no>Behold bookingen</button>`;
           box.querySelector("[data-no]").addEventListener("click", after);
           const yes = box.querySelector("[data-yes]");
           if (yes) yes.addEventListener("click", async () => {
-            try { const r = await S.cancelBooking(id, { household: myHouse }); await refresh(); await after(); toast(r.status === "CANCELLED_LATE" ? "Avbestilt (sen avbestilling)." : "Avbestilt."); }
+            try { const r = await S.cancelBooking(id, { household: myHouse }); await refresh(); await after(); toast("Avbestilt."); }
             catch (e) { toast(e.message); }
           });
           return;
@@ -310,7 +310,7 @@
     const past = all.filter(b => ["COMPLETED", "CANCELLED", "CANCELLED_LATE"].includes(b.displayStatus)).reverse().slice(0, 30);
     const li = b => `<li class="pitem"><div class="row"><b>${esc(R.dateLabel(b.date).replace(/^./, c => c.toUpperCase()))}</b><span class="stat">${STATUS[b.displayStatus]}</span></div>
       <div class="row muted">${PLABEL[b.period]} ${PTIME[b.period]}${b.source === "CHECKIN" ? " · spontan" : ""}${b.quota ? " · i sommerkvoten" : ""}</div>${bookingItemActs(b, n)}</li>`;
-    let html = `<p class="muted">Viser ${houseChip(myHouse)}. Alle i huset ser og kan endre de samme bookingene.</p>`;
+    let html = `<p class="muted">Viser ${houseChip(myHouse)}. Alle i huset ser og kan endre de samme bookingene. Husk å sjekke inn når dere er i badehuset – for alle perioder.</p>`;
     html += quotaSummary(all, n);
     if (need.length) html += `<h2>Ble badehuset brukt?</h2><ul class="list">${need.map(li).join("")}</ul>`;
     html += `<h2>Kommende</h2>` + (coming.length ? `<ul class="list">${coming.map(li).join("")}</ul>` : `<p class="muted">Ingen kommende bookinger. Trykk på en dag i kalenderen for å booke.</p>`);

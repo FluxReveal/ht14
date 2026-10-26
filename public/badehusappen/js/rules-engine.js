@@ -122,8 +122,8 @@
     if (b.status === "BOOKED") return "NOT_CONFIRMED";
     return b.status;
   }
-  /** Teller i sommerkvoten: quota=true og aktiv eller sent avbestilt. */
-  const countsForQuota = b => b.quota === true && (isActive(b.status) || b.status === "CANCELLED_LATE");
+  /** Teller i sommerkvoten: quota=true og aktiv. En avbestilt booking teller aldri. */
+  const countsForQuota = b => b.quota === true && isActive(b.status);
 
   /* ---------- Hjelpere for meldinger ---------- */
   const fail = (error, message, extra) => Object.assign({ ok: false, error, message }, extra || {});
@@ -235,14 +235,10 @@
       return fail("NOT_CANCELLABLE", "Denne bookingen kan ikke avbestilles.");
     if (rules.cancelPermission === "household" && b.household !== household)
       return fail("FORBIDDEN", `Bare Hus ${b.household} kan avbestille denne bookingen.`);
-    const daysBefore = diffDays(b.date, now.date);
-    const late = daysBefore <= rules.lateCancellationDays;
+    // Avbestilling frigjør alltid kvoten, uansett hvor kort tid det er igjen.
     return ok({
-      late, status: late ? "CANCELLED_LATE" : "CANCELLED",
-      message: late
-        ? (b.quota ? `Det er 7 dager eller mindre igjen, så dette er en sen avbestilling. ${cap(periodName(rules, b.period))} blir ledig for andre, men dagen teller fortsatt i sommerkvoten deres.`
-                   : `${cap(periodName(rules, b.period))} blir ledig for andre. (Sen avbestilling, men denne bookingen telte ikke i kvoten.)`)
-        : `${cap(periodName(rules, b.period))} blir ledig for andre.${b.quota ? " Har dere ingen andre perioder denne dagen, teller den ikke lenger i kvoten." : ""}`
+      status: "CANCELLED",
+      message: `${cap(periodName(rules, b.period))} blir ledig for andre.${b.quota ? " Har dere ingen andre perioder denne dagen, teller den ikke lenger i kvoten – så dere kan booke en annen dag." : ""}`
     });
   }
 

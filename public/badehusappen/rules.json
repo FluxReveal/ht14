@@ -30,7 +30,6 @@
   "liftSummerRulesWhenDaysBefore": 7,
   "shortNoticeCountsTowardQuota": false,
   "spontaneousCheckinCountsTowardQuota": false,
-  "lateCancellationDays": 7,
   "cancelPermission": "household",
-  "stats": { "notConfirmedAsUsage": false, "cancelledLateAsUsage": false }
+  "stats": { "notConfirmedAsUsage": false }
 }
