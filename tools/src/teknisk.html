@@ -44,7 +44,7 @@ flowchart LR
 </pre>
 <figcaption>Fra e-post til én nabo til én felles kalender for alle fire husene.</figcaption>
 </figure>
-<p>Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
+<p>Målet er at alle fire husene skal ha mulighet til å bruke badehuset like mye. Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24, og vanlig booking er én kveld. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
 <p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille, sjekke inn, bekrefte bruk og se historikk og statistikk. En <b>administrator</b> kan i tillegg bytte passord for et hus, logge ut en mistet mobil, legge inn regelendringer, gjøre unntak og rette feil. Alt administratorene gjør, logges.</p>
@@ -149,16 +149,18 @@ ht14-data/                    ← privat, bare Workeren skriver
                "MID": { "label": "Ettermiddag", "start": "14:00", "end": "17:00" },
                "PM":  { "label": "Kveld",       "start": "17:00", "end": "24:00" } },
   "bookingWindow": { "months": 3 },
-  "summer": { "months": [6, 7, 8], "maxPerWeekdayPerMonth": { "fri": 1, "sat": 1, "sun": 1 },
-              "maxDaysPerWeekend": 1 },
+  "defaultPeriods": ["PM"],
+  "summer": { "months": [6, 7, 8], "limitedDays": ["thu", "fri", "sat"],
+              "maxPerWeekdayPerMonth": { "thu": 1, "fri": 1, "sat": 1 },
+              "maxLimitedDaysPerWeek": 1 },
   "liftSummerRulesWhenDaysBefore": 7, "lateCancellationDays": 7 }</code></pre>
 
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
-  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → (admin-unntak) → under 7 dager? da OK → sommer og fre/lør/søn? → kvote per ukedag → én dag per helg.</li>
+  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → (admin-unntak) → under 7 dager? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
-  <li>Kvoten teller <b>dager</b>, ikke perioder. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
+  <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
 
 <h3 id="statusmaskin">Statuser</h3>
@@ -196,7 +198,7 @@ stateDiagram-v2
 </tbody></table></div>
 
 <h3 id="feilhandtering">Feilkoder</h3>
-<p>Feil returneres som <code>{ "error": KODE, "message": tekst }</code>, og brukeren ser alltid en forståelig norsk melding. De vanligste: <code>SLOT_TAKEN</code> (perioden er tatt), <code>STARTED</code> (har startet – bruk «Sjekk inn nå»), <code>FULLDAY_STARTED</code> (heldag etter kl. 10), <code>OUTSIDE_WINDOW</code> (over 3 måneder), <code>QUOTA_WEEKDAY</code> og <code>WEEKEND_LIMIT</code> (sommerreglene), <code>RATE_LIMITED</code> (for mange feil passord) og <code>RULES_INVALID</code> (feil i rules.json).</p>
+<p>Feil returneres som <code>{ "error": KODE, "message": tekst }</code>, og brukeren ser alltid en forståelig norsk melding. De vanligste: <code>SLOT_TAKEN</code> (perioden er tatt), <code>STARTED</code> (har startet – bruk «Sjekk inn nå»), <code>FULLDAY_STARTED</code> (heldag etter kl. 10), <code>OUTSIDE_WINDOW</code> (over 3 måneder), <code>QUOTA_WEEKDAY</code> og <code>WEEK_LIMIT</code> (sommerregelen), <code>RATE_LIMITED</code> (for mange feil passord) og <code>RULES_INVALID</code> (feil i rules.json).</p>
 
 <h2 id="drift" class="part-title"><span class="part-num">4</span> Drift og oppsett</h2>
 <p class="part-lead">For Thomas, steg for steg i Cloudflare-dashbordet. Alt er på gratisplanene.</p>
