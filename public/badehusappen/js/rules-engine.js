@@ -176,7 +176,7 @@
 
     const mine = bookings.filter(b => b.household === req.household && countsForQuota(b));
     const opens = dateLabel(addDays(req.date, -(rules.liftSummerRulesWhenDaysBefore - 1)));
-    const tail = ` Fra ${opens} (under 7 dager før) er det førstemann til mølla, så da kan dere ta den hvis den er ledig.`;
+    const tail = ` Fra ${opens} (under 7 dager før) er det førstemann til mølla – er dagen fortsatt ledig da, kan dere booke den selv om kvoten er brukt opp.`;
 
     // 1) Maks én av hver begrensede dag (torsdag, fredag, lørdag) per måned – teller DAGER.
     //    En annen periode samme dato som huset allerede har, teller ikke som en ny dag.
