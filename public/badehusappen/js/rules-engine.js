@@ -165,8 +165,10 @@
       return fail("SLOT_TAKEN", msg, { taken: clash.household });
     }
 
+    // «Dager før» = kalenderdager i Oslo-tid fra i dag til datoen (i dag = 0). Fra 7 dager før (≤ 7) er det
+    // førstemann til mølla: sommergrensene gjelder ikke, og bookingen lagres utenfor kvoten.
     const daysBefore = diffDays(req.date, today);
-    if (daysBefore < rules.liftSummerRulesWhenDaysBefore)
+    if (daysBefore <= rules.liftSummerRulesWhenDaysBefore)
       return ok({ quota: rules.shortNoticeCountsTowardQuota, lifted: true });          // Å1
 
     if (!rules.summer.months.includes(monthOf(req.date))) return ok({ quota: false });  // Å4
@@ -175,8 +177,8 @@
     if (!days.includes(wd)) return ok({ quota: false });                              // f.eks. søndag: ingen grense
 
     const mine = bookings.filter(b => b.household === req.household && countsForQuota(b));
-    const opens = dateLabel(addDays(req.date, -(rules.liftSummerRulesWhenDaysBefore - 1)));
-    const tail = ` Fra ${opens} (under 7 dager før) er det førstemann til mølla – er dagen fortsatt ledig da, kan dere booke den selv om kvoten er brukt opp.`;
+    const opens = dateLabel(addDays(req.date, -rules.liftSummerRulesWhenDaysBefore));
+    const tail = ` Fra ${opens} (${rules.liftSummerRulesWhenDaysBefore} dager før) er det førstemann til mølla – er dagen fortsatt ledig da, kan dere booke den selv om kvoten er brukt opp.`;
 
     // 1) Maks én av hver begrensede dag (torsdag, fredag, lørdag) per måned – teller DAGER.
     //    En annen periode samme dato som huset allerede har, teller ikke som en ny dag.

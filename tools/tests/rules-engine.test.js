@@ -169,6 +169,22 @@ test("⑤ 7-dagersregel: under 7 dager → førstemann til mølla og ikke kvote 
   assert.match(full.message, /kan dere booke den selv om kvoten er brukt opp/);
 });
 
+test("7-dagersgrensen: 8 dager før = kvote gjelder, 7, 6 og 0 dager før = førstemann til mølla", () => {
+  const usedFri = day("2027-07-02", "A", { status: "COMPLETED" });                 // fredag 2. juli er brukt
+  const fri = d => multi("2027-07-16", ["PM"], "A", usedFri, at(d, "09:00"));     // fredag 16. juli
+  const r8 = fri("2027-07-08");
+  assert.equal(r8.error, "QUOTA_WEEKDAY");
+  assert.match(r8.message, /Fra fredag 9\. juli \(7 dager før\)/);               // datoen den åpner
+  for (const d of ["2027-07-09", "2027-07-10", "2027-07-16"]) {                   // 7, 6 og 0 dager før
+    const r = fri(d);
+    assert.equal(r.ok, true, d); assert.equal(r.lifted, true, d); assert.equal(r.quota, false, d);
+  }
+  // Ukeregelen følger samme grense: torsdag 15. booket, lørdag 17. samme uke
+  const thu = [bk("2027-07-15", "PM", "A")];
+  assert.equal(multi("2027-07-17", ["PM"], "A", thu, at("2027-07-09")).error, "WEEK_LIMIT");   // 8 dager før
+  assert.equal(multi("2027-07-17", ["PM"], "A", thu, at("2027-07-10")).ok, true);              // 7 dager før
+});
+
 test("Å4: utenfor sommer ingen begrensninger", () => {
   const ex = day("2027-09-03", "D");
   assert.equal(multi("2027-09-04", FULL, "D", ex, at("2027-07-01")).ok, true);

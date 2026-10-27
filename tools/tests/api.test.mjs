@@ -167,6 +167,18 @@ test("avbestilt booking teller aldri: ukeregel, månedsregel og statistikk", asy
   for (const b of [s, f2]) await call("POST", `/api/bookings/${b.data.bookings[0].id}/cancel`, { cookie: houseA });
 });
 
+test("serveren bruker samme 7-dagersgrense: 8 dager før stoppes, 7 dager før går (utenfor kvoten)", async () => {
+  const at = d => ({ "X-Test-Now": `${d}T08:00:00Z` });
+  const first = await call("POST", "/api/bookings", { cookie: houseB, body: { date: FRI[0], periods: ["PM"] } });
+  assert.equal(first.status, 201, JSON.stringify(first.data)); assert.equal(first.data.quota, true);
+  const target = FRI[3];
+  const eight = await call("POST", "/api/bookings", { cookie: houseB, headers: at(R.addDays(target, -8)), body: { date: target, periods: ["PM"] } });
+  assert.equal(eight.status, 400); assert.equal(eight.data.error, "QUOTA_WEEKDAY");
+  const seven = await call("POST", "/api/bookings", { cookie: houseB, headers: at(R.addDays(target, -7)), body: { date: target, periods: ["PM"] } });
+  assert.equal(seven.status, 201, JSON.stringify(seven.data)); assert.equal(seven.data.quota, false); assert.equal(seven.data.lifted, true);
+  for (const b of [first, seven]) assert.equal((await call("POST", `/api/bookings/${b.data.bookings[0].id}/cancel`, { cookie: houseB })).status, 200);
+});
+
 test("Om oss: eget hus kan endres, andre hus ikke; husstanden beholdes", async () => {
   const body = { contacts: [{ name: "Test Person", email: "test@example.no", phone: "+47 400 00 000" }], note: "Hei" };
   assert.equal((await call("PUT", "/api/contacts/A", { cookie: houseA, body })).status, 200);

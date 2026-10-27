@@ -221,12 +221,12 @@
       btn.textContent = `Book ${periodsText(ps)} for Hus ${house}`;
       if (!res.ok) { box.innerHTML = `<div class="msg no">${esc(res.message)}</div>`; return; }
       const wd = R.weekday(date), summer = rules.summer.months.includes(R.monthOf(date)) && rules.summer.limitedDays.includes(wd);
-      // Ville huset vært stoppet av sommerkvoten om det var mer enn 7 dager igjen? Da sier vi det rett ut.
+      // Ville huset vært stoppet av sommerkvoten om det var mer enn 7 dager til datoen? Da sier vi det rett ut.
       const strict = res.lifted && summer ? R.validateBookingMulti({ date, periods: ps, household: house }, all, rules, { date: R.addDays(date, -30), minutes: 0 }) : null;
       const overQuota = strict && !strict.ok && ["QUOTA_WEEKDAY", "WEEK_LIMIT"].includes(strict.error);
       const info = res.lifted ? (summer ? (overQuota
-          ? `Hus ${house} har brukt opp kvoten for denne dagen, men under 7 dager før er det førstemann til mølla – så dere kan booke den likevel.`
-          : "Under 7 dager igjen – da er det førstemann til mølla. Er dagen ledig, kan alle hus booke den, også om kvoten er brukt opp.") : "Dette går fint.")
+          ? `Hus ${house} har brukt opp kvoten for denne dagen, men fra 7 dager før er det førstemann til mølla – så dere kan booke den likevel.`
+          : "Fra 7 dager før er det førstemann til mølla. Er dagen ledig, kan alle hus booke den – også om kvoten er brukt opp.") : "Dette går fint.")
         : res.quota ? `Dette går fint. Dagen blir Hus ${house} sin ${R.WD_NB[wd]} i ${R.MONTHS[R.monthOf(date) - 1]} – uansett hvor mange perioder dere tar.`
         : "Dette går fint.";
       box.innerHTML = `<div class="msg ok">${esc(info)}</div>`;
