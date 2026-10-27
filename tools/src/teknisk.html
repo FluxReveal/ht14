@@ -148,8 +148,8 @@ ht14-data/                    ← privat, bare Workeren skriver
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
-  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → under 7 dager? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
-  <li>Under 7 dager før datoen (<code>liftSummerRulesWhenDaysBefore</code> = 7, altså fra 6 dager før) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger lagres utenfor kvoten (<code>shortNoticeCountsTowardQuota</code> = false).</li>
+  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → 7 dager før eller senere? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
+  <li>Fra 7 dager før datoen (<code>liftSummerRulesWhenDaysBefore</code> = 7: kalenderdager i Oslo-tid fra i dag til datoen er 7 eller færre) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger lagres utenfor kvoten (<code>shortNoticeCountsTowardQuota</code> = false).</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
   <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
@@ -171,7 +171,7 @@ stateDiagram-v2
 </pre>
 <figcaption>«Pågår», «ikke bekreftet» og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
 </figure>
-<p>CANCELLED frigjør perioden og teller aldri – verken i sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt, også mindre enn 7 dager før (<code>countsForQuota</code> og <code>stats</code> ser bare på aktive bookinger, og Workeren bruker samme motor). Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
+<p>CANCELLED frigjør perioden og teller aldri – verken i sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt, også rett før (<code>countsForQuota</code> og <code>stats</code> ser bare på aktive bookinger, og Workeren bruker samme motor). Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
 <h3 id="worker-api">API</h3>
 <p>Alle kall går til <code>/api/</code> på ht14.no med JSON og økt-cookie. Uten innlogging svarer alt unntatt <code>/api/helse</code> og <code>/api/login</code> med 401.</p>
