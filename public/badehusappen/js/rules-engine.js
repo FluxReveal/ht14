@@ -239,7 +239,7 @@
     // Avbestilling frigjør alltid kvoten, uansett hvor kort tid det er igjen.
     return ok({
       status: "CANCELLED",
-      message: `${cap(periodName(rules, b.period))} blir ledig for andre. En avbestilt booking teller aldri i kvoten${b.quota ? " – har dere ingen andre perioder denne dagen, kan dere booke en annen dag" : ""}.`
+      message: `${cap(periodName(rules, b.period))} blir ledig for andre. En avbestilt booking teller aldri i kvoten, uansett hvor kort tid det er igjen${b.quota ? " – har dere ingen andre perioder denne dagen, kan dere booke en annen dag" : ""}.`
     });
   }
 

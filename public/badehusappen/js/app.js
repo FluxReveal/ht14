@@ -221,7 +221,7 @@
       btn.textContent = `Book ${periodsText(ps)} for Hus ${house}`;
       if (!res.ok) { box.innerHTML = `<div class="msg no">${esc(res.message)}</div>`; return; }
       const wd = R.weekday(date), summer = rules.summer.months.includes(R.monthOf(date)) && rules.summer.limitedDays.includes(wd);
-      const info = res.lifted ? (summer ? "Under 7 dager igjen – da er det førstemann til mølla, og bookingen teller ikke i sommerkvoten." : "Dette går fint.")
+      const info = res.lifted ? (summer ? "Under 7 dager igjen – da er det førstemann til mølla." : "Dette går fint.")
         : res.quota ? `Dette går fint. Dagen blir Hus ${house} sin ${R.WD_NB[wd]} i ${R.MONTHS[R.monthOf(date) - 1]} – uansett hvor mange perioder dere tar.`
         : "Dette går fint.";
       box.innerHTML = `<div class="msg ok">${esc(info)}</div>`;
