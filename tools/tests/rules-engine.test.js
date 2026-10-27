@@ -232,6 +232,20 @@ test("avbestilt booking teller ALDRI i noen kvote – uansett når den ble avbes
   }
 });
 
+test("avbestilling under 7 dager før: frigjør både månedsregelen og ukeregelen", () => {
+  const thu = bk("2027-07-08", "PM", "A");                                           // booket i mai (teller i kvoten)
+  assert.equal(R.countsForQuota(thu), true);
+  for (const when of ["2027-07-02", "2027-07-05", "2027-07-08"]) {                   // 6, 3 og 0 dager før
+    const res = R.validateCancel(thu, "A", rules, at(when, "09:00"));
+    assert.equal(res.ok, true); assert.equal(res.status, "CANCELLED"); assert.match(res.message, /teller aldri i kvoten/);
+    const after = [{ ...thu, status: res.status }];
+    assert.equal(R.countsForQuota(after[0]), false);
+    const now = at("2027-06-20");                                                    // ny booking mer enn 7 dager frem
+    assert.equal(multi("2027-07-29", ["PM"], "A", after, now).ok, true, "ny torsdag i juli");
+    assert.equal(multi("2027-07-10", ["PM"], "A", after, now).quota, true, "lørdag samme uke teller i kvoten og godtas");
+  }
+});
+
 test("innsjekk gjelder alle perioder, også formiddag og ettermiddag", () => {
   for (const [p, t] of [["AM", "10:00"], ["MID", "14:00"], ["PM", "17:00"]]) {
     const b = bk("2027-07-10", p, "A");
