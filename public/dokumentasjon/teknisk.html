@@ -50,7 +50,7 @@
   <div class="eyebrow">Teknisk</div>
   <h1>Teknisk dokumentasjon</h1>
   <p>Hvordan ht14.no og Badehusappen er bygget – først kort for alle, så stadig mer detaljert. Les så langt du har lyst.</p>
-  <div class="meta"><span class="chip">⏱ Ca. 15 min lesetid</span></div>
+  <div class="meta"><span class="chip">⏱ Ca. 14 min lesetid</span></div>
 </section>
 
 <p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.6</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
@@ -68,29 +68,6 @@
 
 <h3 id="hva-er-det">Hva er det?</h3>
 <p><b>ht14.no</b> er sameiets egen nettside med startsiden, denne dokumentasjonen og <b>Badehusappen</b> – en nettside som oppfører seg som en app. Der ser vi når badehuset er ledig, booker, avbestiller og sjekker inn. Den virker på mobil, nettbrett og PC, og kan legges på Hjem-skjermen.</p>
-<p>I dag sender vi en e-post til en nabo som har oversikten. Det har fungert fint takket være ham, men det blir mye e-post, og alt hviler på én person. Med Badehusappen ser alle den samme kalenderen og booker selv.</p>
-<figure>
-<pre class="mermaid">
-flowchart LR
-  subgraph IDAG["I dag"]
-    direction TB
-    N1["Nabo som vil booke"] -->|e-post: er lørdag ledig?| P["Én nabo med oversikten"]
-    P -->|e-post: oversikt over det han vet om| N1
-  end
-  subgraph NY["Med Badehusappen"]
-    direction TB
-    A["Hus A"] --> K["Felles kalender<br/>på ht14.no"]
-    B["Hus B"] --> K
-    C["Hus C"] --> K
-    D["Hus D"] --> K
-  end
-  IDAG -.->|blir til| NY
-  classDef idag fill:#fff7ed,stroke:#ea580c,color:#7c2d12;
-  classDef ny fill:#ecfeff,stroke:#0891b2,color:#0f172a;
-  class N1,P idag; class A,B,C,D,K ny;
-</pre>
-<figcaption>Fra e-post til én nabo til én felles kalender for alle fire husene.</figcaption>
-</figure>
 <p>Målet er at alle fire husene skal ha mulighet til å bruke badehuset like mye. Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24, og vanlig booking er én kveld. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
@@ -106,7 +83,6 @@ flowchart LR
   <li>Ingen registrerer seg selv – administratoren gir hvert hus e-post og passord. Mobilen kan huske passordet, og dere holder dere innlogget i omtrent ett år.</li>
   <li>Bookinger og kontaktinfo lagres i en database hos Cloudflare, aldri på de offentlige sidene. Passord lagres aldri i klartekst.</li>
   <li>Hver natt tas det en kopi til et privat lager. Ingen bookinger slettes, og alle endringer kan spores.</li>
-  <li>Ikke med i starten: varsler på e-post/SMS og Face ID uten passord (passkeys). Det kan komme senere.</li>
 </ul>
 
 <h2 id="hld" class="part-title"><span class="part-num">2</span> Overordnet (HLD)</h2>
