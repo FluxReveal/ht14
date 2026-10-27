@@ -149,6 +149,7 @@ ht14-data/                    ← privat, bare Workeren skriver
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
   <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → under 7 dager? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
+  <li>Under 7 dager før datoen (<code>liftSummerRulesWhenDaysBefore</code> = 7, altså fra 6 dager før) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger lagres utenfor kvoten (<code>shortNoticeCountsTowardQuota</code> = false).</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
   <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>

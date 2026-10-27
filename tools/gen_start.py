@@ -34,6 +34,7 @@ EV = [
 # Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.6», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-10-27", "Ledig torsdag, fredag eller lørdag under 7 dager før", "Er en torsdag, fredag eller lørdag fortsatt ledig når det er under 7 dager igjen, kan alle hus booke den – også om dere har brukt opp kvoten. Dette står nå i reglene og i Badehusappen.", "/dokumentasjon/regler.html#hvor-mye"),
  ("2026-10-27", "Avbestilling teller aldri i kvoten", "En avbestilt booking teller aldri i kvoten – heller ikke når dere avbestiller mindre enn 7 dager før. Regelen om under 7 dager sier nå bare at det er førstemann til mølla.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-27", "Ryddigere teknisk dokumentasjon", "Den tekniske dokumentasjonen er strammet inn: bakgrunnen om den gamle måten å booke på og et punkt om ting som kan komme senere er tatt bort.", "/dokumentasjon/teknisk.html#hva-er-det"),
  ("2026-10-27", "HT14 versjon 0.6: Om oss på forsiden og nye logoer", "«Om oss» ligger nå på forsiden ht14.no: alle ser Hus A–D, og når dere logger inn med husets innlogging ser dere navn og kontaktinfo og kan endre deres eget hus. Kalenderen i Badehusappen starter i dag og viser de neste 30 dagene, Statistikk viser bare sesongen og hele året, og en avbestilt booking teller aldri i noen kvote. HT14 og Badehusappen har også fått egne logoer og app-ikon.", "/#om-oss"),
