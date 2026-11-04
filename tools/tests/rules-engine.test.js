@@ -280,7 +280,8 @@ test("statusmaskin: automatisk utsjekk kl. 14, 17 og 24", () => {
   assert.equal(R.effectiveStatus(mid, rules, at("2027-07-10", "17:00")), "COMPLETED");
   assert.equal(R.effectiveStatus(pm, rules, at("2027-07-10", "23:59")), "CHECKED_IN");
   assert.equal(R.effectiveStatus(pm, rules, at("2027-07-11", "00:00")), "COMPLETED");
-  assert.equal(R.validateConfirm(am, "A", rules, at("2027-07-11")).ok, true);
+  assert.equal(R.validateCheckin(am, "A", rules, at("2027-07-11")).ok, false);   // ingen innsjekk i ettertid
+  assert.equal(R.validateConfirm, undefined);
 });
 
 test("innsjekk på egen booking: fra kl. 10, og sammenhengende perioder følger med", () => {

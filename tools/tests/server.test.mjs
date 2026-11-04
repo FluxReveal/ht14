@@ -62,7 +62,7 @@ test("Workeren bruker samme regelmotor og rules.json som appen", () => {
   assert.match(src, /from "\.\.\/public\/badehusappen\/js\/rules-engine\.js"/);
   assert.match(src, /from "\.\.\/public\/badehusappen\/rules\.json"/);
   assert.match(src, /R\.validateBookingMulti\(/); assert.match(src, /R\.validateCancel\(/);
-  assert.match(src, /R\.validateCheckin\(/); assert.match(src, /R\.validateSpontaneous\(/); assert.match(src, /R\.validateConfirm\(/);
+  assert.match(src, /R\.validateCheckin\(/); assert.match(src, /R\.validateSpontaneous\(/); assert.doesNotMatch(src, /validateConfirm|\/confirm/);   // ingen bekreftelse i ettertid
 });
 
 test("skjemaet stopper dobbeltbooking og har én aktiv innlogging per hus", () => {

@@ -115,7 +115,7 @@
   const ACTIVE = ["BOOKED", "CHECKED_IN", "COMPLETED", "NOT_CONFIRMED"];
   const isActive = st => ACTIVE.includes(st);
 
-  /** Visningsstatus beregnet fra klokka (automatisk utsjekk / ikke bekreftet). */
+  /** Visningsstatus beregnet fra klokka (automatisk utsjekk / ikke sjekket inn). */
   function effectiveStatus(b, rules, now) {
     if (!hasEnded(rules, b.date, b.period, now)) return b.status;
     if (b.status === "CHECKED_IN") return "COMPLETED";
@@ -245,7 +245,7 @@
     });
   }
 
-  /* ---------- Innsjekk og bekreftelse ---------- */
+  /* ---------- Innsjekk ---------- */
 
   function validateCheckin(b, household, rules, now) {
     if (!b) return fail("NOT_FOUND", "Fant ikke bookingen.");
@@ -300,13 +300,6 @@
     return ok({ quota: rules.spontaneousCheckinCountsTowardQuota, periods: plan });     // Å2
   }
 
-  function validateConfirm(b, household, rules, now) {
-    if (!b) return fail("NOT_FOUND", "Fant ikke bookingen.");
-    if (b.household !== household) return fail("FORBIDDEN", `Dette er Hus ${b.household} sin booking.`);
-    if (effectiveStatus(b, rules, now) !== "NOT_CONFIRMED") return fail("NOT_CONFIRMABLE", "Denne bookingen trenger ingen bekreftelse.");
-    return ok();
-  }
-
   /* ---------- Statistikk ---------- */
 
   /**
@@ -336,6 +329,6 @@
     osloNow, isDate, addDays, diffDays, addMonths, weekday, mondayOf, monthOf, yearOf,
     dateLabel, MONTHS, WD_NB, range, periodKeys, fullDayPeriods, overlaps, hasEnded, isOver, hasStarted, isActive, effectiveStatus,
     countsForQuota, validateBooking, validateBookingMulti, canBookFullDay, validateCancel, validateCheckin, checkinChain,
-    spontaneousOptions, spontaneousPlans, validateSpontaneous, validateConfirm, stats
+    spontaneousOptions, spontaneousPlans, validateSpontaneous, stats
   };
 });

@@ -292,17 +292,6 @@ async function spontaneous(request, env, user, now) {
   return json({ bookings: out.slice(0, res.periods.length).map(r => toClient(r.results[0], now)), until: RULES.periods[res.periods[res.periods.length - 1]].end }, 201);
 }
 
-async function confirm(env, user, id, now) {
-  requireUser(user);
-  const b = await getBookingRow(env, id, now);
-  need(R.validateConfirm(b, user.role === "admin" ? b.household : user.house_id, RULES, now));
-  await env.DB.batch([
-    env.DB.prepare("UPDATE bookings SET status = 'COMPLETED', confirmed_at = ?, updated_at = ? WHERE id = ?").bind(nowIso(), nowIso(), +id),
-    logEvent(env, user, b.household, "CONFIRM", id, { status: "NOT_CONFIRMED" }, { status: "COMPLETED" }, "Vi brukte badehuset")
-  ]);
-  return json(await getBookingRow(env, id, now));
-}
-
 async function bookingDetails(env, user, id, now) {
   requireUser(user);
   const booking = await getBookingRow(env, id, now);
@@ -464,8 +453,8 @@ async function api(request, env, ctx, url) {
   }
   if (path === "/api/bookings" && method === "POST") return createBooking(request, env, user, now);
   if ((m = path.match(/^\/api\/bookings\/([^/]+)$/)) && method === "GET") return bookingDetails(env, user, m[1], now);
-  if ((m = path.match(/^\/api\/bookings\/([^/]+)\/(cancel|checkin|confirm)$/)) && method === "POST")
-    return ({ cancel: cancelBooking, checkin: checkIn, confirm })[m[2]](env, user, m[1], now);
+  if ((m = path.match(/^\/api\/bookings\/([^/]+)\/(cancel|checkin)$/)) && method === "POST")
+    return ({ cancel: cancelBooking, checkin: checkIn })[m[2]](env, user, m[1], now);
   if (path === "/api/checkin" && method === "POST") return spontaneous(request, env, user, now);
   if (path === "/api/stats" && method === "GET") {
     requireUser(user);
