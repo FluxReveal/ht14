@@ -24,7 +24,7 @@
 <p>Målet er at alle fire husene skal ha mulighet til å bruke badehuset like mye. Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24, og vanlig booking er én kveld. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
-<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, bekrefte bruk, se statistikk, endre husets del av «Om oss» og bytte passord.</p>
+<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, se statistikk, endre husets del av «Om oss» og bytte passord.</p>
 <p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus og avbestille alle bookinger. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
 
 <h3 id="om-oss">Om oss</h3>
@@ -165,11 +165,10 @@ stateDiagram-v2
   BOOKED --> CANCELLED: avbestilt
   BOOKED --> NOT_CONFIRMED: perioden slutter uten innsjekk
   CHECKED_IN --> COMPLETED: automatisk utsjekk ved periodeslutt
-  NOT_CONFIRMED --> COMPLETED: Vi brukte badehuset
   COMPLETED --> [*]
   CANCELLED --> [*]
 </pre>
-<figcaption>«Pågår», «ikke bekreftet» og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
+<figcaption>«Pågår», «ikke sjekket inn» (NOT_CONFIRMED) og automatisk utsjekk regnes ut fra klokka. Administrator kan avbestille alle bookinger.</figcaption>
 </figure>
 <p>CANCELLED frigjør perioden og teller aldri – verken i sommerkvoten (måned), ukeregelen eller statistikken – uansett når den ble avbestilt, også rett før (<code>countsForQuota</code> og <code>stats</code> ser bare på aktive bookinger, og Workeren bruker samme motor). Innsjekk gjelder alle perioder. I statistikken teller CHECKED_IN og COMPLETED som bruk.</p>
 
@@ -182,7 +181,7 @@ stateDiagram-v2
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
-<tr><td><code>POST /api/bookings/{id}/cancel | checkin | confirm</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, «Vi brukte badehuset», spontan innsjekk</td></tr>
+<tr><td><code>POST /api/bookings/{id}/cancel | checkin</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, spontan innsjekk</td></tr>
 <tr><td><code>GET /api/contacts</code>, <code>PUT /api/contacts/{A–D}</code></td><td>Om oss (bare innlogget; endre eget hus, admin alle)</td></tr>
 <tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger, nytt passord, deaktiver, hendelseslogg</td></tr>
 </tbody></table></div>

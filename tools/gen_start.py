@@ -34,6 +34,7 @@ EV = [
 # Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.6», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-11-04", "Sjekk inn når dere tar badehuset i bruk", "Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der. Muligheten til å registrere bruk i ettertid er tatt bort.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-27", "Ledig torsdag, fredag eller lørdag fra 7 dager før", "Fra 7 dager før datoen er det førstemann til mølla: er en torsdag, fredag eller lørdag fortsatt ledig da, kan alle hus booke den – også om dere har brukt opp kvoten. Dette står i reglene og i Badehusappen.", "/dokumentasjon/regler.html#hvor-mye"),
  ("2026-10-27", "Avbestilling teller aldri i kvoten", "En avbestilt booking teller aldri i kvoten – uansett hvor kort tid det er igjen.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-27", "Ryddigere teknisk dokumentasjon", "Den tekniske dokumentasjonen er strammet inn: bakgrunnen om den gamle måten å booke på og et punkt om ting som kan komme senere er tatt bort.", "/dokumentasjon/teknisk.html#hva-er-det"),
