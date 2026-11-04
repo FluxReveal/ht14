@@ -75,7 +75,6 @@
     async cancelBooking(id) { return post(`bookings/${encodeURIComponent(id)}/cancel`); },
     async checkIn(id) { return post(`bookings/${encodeURIComponent(id)}/checkin`); },
     async spontaneousCheckIn({ periods, household }) { return post("checkin", { periods, household }); },
-    async confirmUsage(id) { return post(`bookings/${encodeURIComponent(id)}/confirm`); },
 
     /* Om oss */
     async contacts() { return get("contacts"); },

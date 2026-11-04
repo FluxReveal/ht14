@@ -23,7 +23,7 @@
   const periodsText = ps => FULLDAY.every(p => ps.includes(p)) ? "heldag"
     : (a => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " og " + a[a.length - 1])(ps.map(p => PLABEL[p].toLowerCase()));
   const periodsTime = ps => `${hh(rules.periods[ps[0]].start)}–${hh(rules.periods[ps[ps.length - 1]].end)}`;
-  const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke bekreftet", CANCELLED: "Avbestilt" };
+  const STATUS = { BOOKED: "Booket", CHECKED_IN: "Sjekket inn", COMPLETED: "Brukt", NOT_CONFIRMED: "Ikke sjekket inn", CANCELLED: "Avbestilt" };
   const WD_SHORT = ["man", "tir", "ons", "tor", "fre", "lør", "søn"], WD_KEYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
   const MON_SHORT = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 
@@ -156,7 +156,6 @@
     if (mine) {
       if (R.validateCheckin(b, b.household, rules, n).ok) acts += `<button type="button" class="primary" data-act="checkin" data-id="${b.id}">Sjekk inn</button>`;
       if (b.displayStatus === "BOOKED") acts += `<button type="button" class="secondary" data-act="cancel" data-id="${b.id}">Avbestill</button>`;
-      if (b.displayStatus === "NOT_CONFIRMED") acts += `<button type="button" class="primary" data-act="confirm" data-id="${b.id}">Vi brukte badehuset</button>`;
     }
     const extra = b.source === "CHECKIN" ? " · spontan" : "";
     return `<li class="pitem" id="item-${b.id}"><div class="row">${houseChip(b.household)} <span>${PLABEL[b.period]} ${PTIME[b.period]}</span><span class="stat">${STATUS[b.displayStatus]}${extra}</span></div>
@@ -258,13 +257,12 @@
     wireActions(body, () => openDay(date));
   }
 
-  /** Knapper på en booking: sjekk inn, avbestill (med forhåndsvisning), bekreft bruk. */
+  /** Knapper på en booking: sjekk inn og avbestill (med forhåndsvisning). */
   function wireActions(scope, after) {
     scope.querySelectorAll("[data-act]").forEach(btn => btn.addEventListener("click", async () => {
       const id = btn.dataset.id, act = btn.dataset.act;
       try {
         if (act === "checkin") { const r = await S.checkIn(id); toast(`Sjekket inn til kl. ${hh(r.until)} – kos dere! ♨️`); }
-        if (act === "confirm") { await S.confirmUsage(id); toast("Takk! Registrert som brukt."); }
         if (act === "cancel") {
           const { booking } = await S.getBooking(id);
           const pre = R.validateCancel(booking, isAdmin() ? booking.household : myHouse, rules, now());
@@ -320,15 +318,13 @@
     const box = $("#mine");
     const h = myHouse || mineHouse;
     const n = now(), all = (await allBookings()).filter(b => b.household === h);
-    const need = all.filter(b => b.displayStatus === "NOT_CONFIRMED");
     const coming = all.filter(b => b.displayStatus === "BOOKED" || b.displayStatus === "CHECKED_IN");
-    const past = all.filter(b => ["COMPLETED", "CANCELLED"].includes(b.displayStatus)).reverse().slice(0, 30);
+    const past = all.filter(b => ["COMPLETED", "NOT_CONFIRMED", "CANCELLED"].includes(b.displayStatus)).reverse().slice(0, 30);
     const li = b => `<li class="pitem"><div class="row"><b>${esc(R.dateLabel(b.date).replace(/^./, c => c.toUpperCase()))}</b><span class="stat">${STATUS[b.displayStatus]}</span></div>
       <div class="row muted">${PLABEL[b.period]} ${PTIME[b.period]}${b.source === "CHECKIN" ? " · spontan" : ""}${b.quota ? " · i sommerkvoten" : ""}</div>${bookingItemActs(b, n)}</li>`;
     let html = isAdmin() ? `<div class="seg" role="group" aria-label="Hus">${HOUSES.map(x => `<button type="button" data-mine="${x}" aria-pressed="${x === h}">Hus ${x}</button>`).join("")}</div>` : "";
-    html += `<p class="foot">${isAdmin() ? "Du ser" : "Her er"} bookingene til ${houseChip(h)}. Husk å sjekke inn når dere er i badehuset.</p>`;
+    html += `<p class="foot">${isAdmin() ? "Du ser" : "Her er"} bookingene til ${houseChip(h)}. Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der.</p>`;
     html += quotaSummary(all, n);
-    if (need.length) html += `<h2 class="ghead">Ble badehuset brukt?</h2><ul class="list">${need.map(li).join("")}</ul>`;
     html += `<h2 class="ghead">Kommende</h2>` + (coming.length ? `<ul class="list">${coming.map(li).join("")}</ul>` : `<p class="muted">Ingen kommende bookinger. Trykk på en dag i kalenderen for å booke.</p>`);
     if (past.length) html += `<h2 class="ghead">Tidligere</h2><ul class="list">${past.map(li).join("")}</ul>`;
     box.innerHTML = html;
@@ -362,7 +358,7 @@
     const card = (title, data) => {
       const max = Math.max(1, ...HOUSES.map(h => data[h].used + data[h].notConfirmed + data[h].upcoming));
       return `<div class="card"><b>${title}</b><div class="bars">${HOUSES.map(h => {
-        const d = data[h], extra = [d.notConfirmed ? `${d.notConfirmed} ikke bekreftet` : "", d.upcoming ? `${d.upcoming} booket` : ""].filter(Boolean).join(", ");
+        const d = data[h], extra = [d.notConfirmed ? `${d.notConfirmed} ikke sjekket inn` : "", d.upcoming ? `${d.upcoming} booket` : ""].filter(Boolean).join(", ");
         return `<div class="bar"><span>${houseChip(h)}</span><span class="track" aria-hidden="true"><span class="fill h${h}" style="display:block;width:${(d.used / max) * 100}%"></span><span class="fill nc h${h}" style="display:block;width:${(d.notConfirmed / max) * 100}%"></span></span><span><b>${d.used}</b> ${extra ? `<small>(${extra})</small>` : ""}</span></div>`;
       }).join("")}</div></div>`;
     };
@@ -511,7 +507,7 @@
     for (const h of HOUSES) document.documentElement.style.setProperty("--" + h, rules.households[h].color);
     PKEYS = R.periodKeys(rules); FULLDAY = R.fullDayPeriods(rules);
     for (const p of PKEYS) { PLABEL[p] = rules.periods[p].label; PTIME[p] = `${hh(rules.periods[p].start)}–${hh(rules.periods[p].end)}`; }
-    $("#legend").innerHTML = HOUSES.map(h => `<span><span class="dot h${h}"></span>Hus ${h}</span>`).join("") + `<span>Stripete = ikke bekreftet</span>`;
+    $("#legend").innerHTML = HOUSES.map(h => `<span><span class="dot h${h}"></span>Hus ${h}</span>`).join("") + `<span>Stripete = ikke sjekket inn</span>`;
     anchor = now().date;
     statYear = d2(anchor).y;
     $("#prevBtn").addEventListener("click", () => step(-1));
