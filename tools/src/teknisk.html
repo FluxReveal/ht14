@@ -6,7 +6,7 @@
   <div class="meta"></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.6</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.7</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -20,16 +20,16 @@
 <h2 id="kort-for-alle" class="part-title"><span class="part-num">1</span> Kort for alle</h2>
 
 <h3 id="hva-er-det">Hva er det?</h3>
-<p><b>ht14.no</b> er sameiets egen nettside med startsiden, denne dokumentasjonen og <b>Badehusappen</b> – en nettside som oppfører seg som en app. Der ser vi når badehuset er ledig, booker, avbestiller og sjekker inn. Den virker på mobil, nettbrett og PC, og kan legges på Hjem-skjermen.</p>
+<p><b>ht14.no</b> er sameiets egen nettside med startsiden, denne dokumentasjonen og <b>Badehusappen</b> – en nettside som oppfører seg som en app. Der ser vi når badehuset er ledig, booker, avbestiller og sjekker inn, og under fanen <b>Forslag</b> kan husene legge frem forslag og stemme. Den virker på mobil, nettbrett og PC, og kan legges på Hjem-skjermen.</p>
 <p>Målet er at alle fire husene skal ha mulighet til å bruke badehuset like mye. Dagen er delt i tre perioder: formiddag 10–14, ettermiddag 14–17 og kveld 17–24, og vanlig booking er én kveld. Reglene står i <a href="regler.html">Regler for bruk av badehuset</a>.</p>
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
-<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, se statistikk, endre husets del av «Om oss» og bytte passord.</p>
-<p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus og avbestille alle bookinger. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
+<p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, se statistikk, legge frem og stemme på forslag, endre husets del av «Om oss» og bytte passord.</p>
+<p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus, avbestille alle bookinger og lukke eller slette et forslag. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
 
 <h3 id="om-oss">Om oss</h3>
 <p>«Om oss» er en del av forsiden <a href="/#om-oss">ht14.no</a> (ikke i appen). Før innlogging viser den bare Hus A–D og et innloggingsskjema – samme innlogging og samme økt som i Badehusappen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
-<p>I appen er fanene <b>Kalender</b>, <b>Mine</b>, <b>Statistikk</b> og <b>Mer</b>. Kalenderen starter på i dag og viser de neste 30 dagene (eller én måned); pilene øverst blar frem og tilbake. Statistikk viser sesongen (juni–august) og hele året.</p>
+<p>I appen er fanene <b>Kalender</b>, <b>Mine</b>, <b>Forslag</b>, <b>Statistikk</b> og <b>Mer</b>. Kalenderen starter på i dag og viser de neste 30 dagene (eller én måned); pilene øverst blar frem og tilbake. Statistikk viser sesongen (juni–august) og hele året.</p>
 
 <h3 id="trygghet-og-personvern">Trygghet og personvern</h3>
 <ul>
@@ -46,8 +46,8 @@
 <thead><tr><th>Del</th><th>Hva den gjør</th></tr></thead>
 <tbody>
 <tr><td><b>ht14.no</b></td><td>Sameiets adresse. Kjøpt hos Domeneshop, DNS hos Cloudflare.</td></tr>
-<tr><td><b>Cloudflare Worker</b> «ht14» med statiske filer</td><td>Serverer startsiden (<code>/</code>), dokumentasjonen (<code>/dokumentasjon/</code>) og Badehusappen (<code>/badehusappen/</code>), og API-et på <code>/api/</code>: innlogging, booking, Om oss og administrasjon.</td></tr>
-<tr><td><b>Cloudflare D1</b> «ht14»</td><td>Databasen: hus, innlogginger, bookinger, Om oss, økter, feilede innlogginger og en hendelseslogg. Forhåndsvisninger av grener bruker en egen test-database, «ht14-test».</td></tr>
+<tr><td><b>Cloudflare Worker</b> «ht14» med statiske filer</td><td>Serverer startsiden (<code>/</code>), dokumentasjonen (<code>/dokumentasjon/</code>) og Badehusappen (<code>/badehusappen/</code>), og API-et på <code>/api/</code>: innlogging, booking, forslag, Om oss og administrasjon.</td></tr>
+<tr><td><b>Cloudflare D1</b> «ht14»</td><td>Databasen: hus, innlogginger, bookinger, Om oss, forslag, stemmer, økter, feilede innlogginger og en hendelseslogg. Forhåndsvisninger av grener bruker en egen test-database, «ht14-test».</td></tr>
 <tr><td><b>badehusappen.ht14.no</b></td><td>Kortadresse. En Redirect Rule sender den videre (301) til <code>ht14.no/badehusappen/</code>. Samme sted sender <code>www.ht14.no</code> til <code>ht14.no</code>.</td></tr>
 <tr><td><b>Nattlig kopi</b> (Cron Trigger)</td><td>Hver natt skriver Workeren bookinger og brukere som CSV og JSON til det private repoet <code>FluxReveal/ht14-data</code> – aldri passord-hasher. Git gir full historikk, og CSV-filene åpnes i Excel.</td></tr>
 <tr><td><b>GitHub</b></td><td><code>FluxReveal/ht14</code> (offentlig: sidene og koden, ingen hemmeligheter) og <code>FluxReveal/ht14-data</code> (privat: nattlig kopi).</td></tr>
@@ -107,7 +107,7 @@ flowchart LR
 │       ├── index.html, css/, manifest.webmanifest, sw.js
 │       ├── ikoner/           app-ikonet (SVG)
 │       ├── rules.json        reglene
-│       └── js/               rules-engine.js, store.js, app.js
+│       └── js/               rules-engine.js, forslag.js, store.js, app.js
 ├── src/index.js              Workeren: API-et (/api/…) og regler
 ├── src/auth.js               passord-hash og økter
 ├── src/export.js             nattlig kopi til ht14-data
@@ -117,7 +117,7 @@ flowchart LR
 └── tools/                    generator, lenkesjekk og tester
 
 ht14-data/                    ← privat, bare Workeren skriver
-└── data/                     bookings, users (uten passord), contacts, events – CSV og JSON</code></pre>
+└── data/                     bookings, users (uten passord), contacts, events, forslag, stemmer – CSV og JSON</code></pre>
 <p><code>store.js</code> henter og lagrer alt via <code>/api/…</code>. Prøvebookinger fra før versjon 0.5 (som bare lå i nettleseren) slettes automatisk og flyttes ikke over.</p>
 
 <h3 id="datamodell">Datamodell</h3>
@@ -132,6 +132,8 @@ ht14-data/                    ← privat, bare Workeren skriver
 <tr><td><code>sessions</code></td><td>Innloggede mobiler (bare hash av cookien lagres)</td></tr>
 <tr><td><code>login_attempts</code></td><td>Feil passord, for en kort pause etter flere forsøk</td></tr>
 <tr><td><code>events</code></td><td>Hendelseslogg: hvem, når, hva, fra, til, kommentar</td></tr>
+<tr><td><code>forslag</code></td><td>Forslag: tittel, begrunnelse, frist (kalenderdato i Oslo-tid), krav (<code>3av4</code>, <code>4av4</code> eller <code>flertall</code>), huset som la det frem</td></tr>
+<tr><td><code>stemmer</code></td><td>Én stemme (ja/nei) per hus per forslag (<code>UNIQUE (forslag_id, hus)</code>). Huset kan endre stemmen før fristen.</td></tr>
 </tbody></table></div>
 <p>Utdrag av <code>rules.json</code> – alle regler ligger her, så de kan endres uten kodeendring:</p>
 <pre><code>{ "timezone": "Europe/Oslo",
@@ -145,6 +147,7 @@ ht14-data/                    ← privat, bare Workeren skriver
               "maxLimitedDaysPerWeek": 1 },
   "liftSummerRulesWhenDaysBefore": 7 }</code></pre>
 
+<p>Status på et forslag (<b>Åpen</b>, <b>Vedtatt</b>, <b>Ikke vedtatt</b>) lagres ikke, men regnes ut i <code>forslag.js</code> – samme kode i appen og på serveren. Et forslag blir vedtatt så snart kravet ikke lenger kan feile (for eksempel når 3 hus har sagt ja til «minst 3 av 4»), og «ikke vedtatt» så snart kravet ikke lenger kan nås, eller etter fristen. Avstemningen er åpen hele fristdagen i Oslo-tid. Administrator kan lukke den tidligere.</p>
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
@@ -177,11 +180,14 @@ stateDiagram-v2
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.6"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.7"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
 <tr><td><code>POST /api/bookings/{id}/cancel | checkin</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, spontan innsjekk</td></tr>
+<tr><td><code>GET /api/forslag</code>, <code>GET /api/forslag/{id}</code>, <code>POST /api/forslag</code></td><td>Liste og ett forslag, legge frem nytt (tittel, begrunnelse, frist, krav). Bare innlogget.</td></tr>
+<tr><td><code>POST /api/forslag/{id}/stem</code> <code>{"stemme":"ja"|"nei"}</code></td><td>Stemme eller endre stemme (ett hus, én stemme) så lenge avstemningen er åpen ut fristdagen</td></tr>
+<tr><td><code>POST /api/forslag/{id}/lukk</code>, <code>DELETE /api/forslag/{id}</code></td><td>Bare admin: lukke avstemningen eller slette forslaget</td></tr>
 <tr><td><code>GET /api/contacts</code>, <code>PUT /api/contacts/{A–D}</code></td><td>Om oss (bare innlogget; endre eget hus, admin alle)</td></tr>
 <tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger, nytt passord, deaktiver, hendelseslogg</td></tr>
 </tbody></table></div>
@@ -202,7 +208,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.6"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.7"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
