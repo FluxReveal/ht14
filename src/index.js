@@ -1,5 +1,5 @@
 /**
- * HT14 versjon 0.7 – Cloudflare Worker for ht14.no
+ * HT14 versjon 0.8 – Cloudflare Worker for ht14.no
  *
  * Statiske filer (public/) serveres direkte. Bare /api/* går gjennom Workeren
  * (run_worker_first i wrangler.jsonc). Data ligger i D1 (binding DB).
@@ -22,7 +22,7 @@ import {
 } from "./auth.js";
 import { runExport } from "./export.js";
 
-const VERSION = "0.7";
+const VERSION = "0.8";
 const HOUSES = ["A", "B", "C", "D"];
 const LOCK_MIN = 15;            // pause i minutter
 const MAX_FAIL_EMAIL = 5;       // feil passord per e-post innen 15 min
@@ -48,7 +48,7 @@ class ApiError extends Error {
 }
 const fail = (status, error, message, extra) => { throw new ApiError(status, error, message, extra); };
 const need = (res, status = 400) => {
-  if (!res.ok) fail(res.error === "SLOT_TAKEN" || res.error === "CLOSED" ? 409 : res.error === "FORBIDDEN" || res.error === "NO_HOUSE" ? 403 : res.error === "NOT_FOUND" ? 404 : status, res.error, res.message);
+  if (!res.ok) fail(res.error === "SLOT_TAKEN" || res.error === "CLOSED" || res.error === "NOT_READY" || res.error === "OPEN_ROUND" ? 409 : res.error === "FORBIDDEN" || res.error === "NO_HOUSE" ? 403 : res.error === "NOT_FOUND" ? 404 : status, res.error, res.message);
   return res;
 };
 const nowIso = () => new Date().toISOString();
@@ -424,41 +424,43 @@ async function adminEvents(env, url) {
 }
 
 
+
 /* ---------------- Forslag ---------------- */
 
-const FCOLS = "id, tittel, begrunnelse, opprettet_av_hus, frist, krav, lukket_at, created_at";
+const FCOLS = "id, tittel, begrunnelse, opprettet_av_hus, frist, krav, lukket_at, kompleksitet, tiltak, koster, belop_kr, tidspunkt, tid_kommentar, vurdering_at, gjennomforing, created_at";
 
+async function runderFor(env, ids) {
+  if (!ids.length) return [];
+  const ph = ids.map(() => "?").join(",");
+  const { results } = await env.DB.prepare(
+    `SELECT forslag_id, runde, frist, krav, lukket_at FROM forslag_runder WHERE forslag_id IN (${ph}) ORDER BY runde`
+  ).bind(...ids).all();
+  return results;
+}
 async function stemmerFor(env, ids) {
   if (!ids.length) return [];
   const ph = ids.map(() => "?").join(",");
   const { results } = await env.DB.prepare(
-    `SELECT forslag_id, hus, stemme FROM stemmer WHERE forslag_id IN (${ph}) ORDER BY hus`
+    `SELECT forslag_id, runde, hus, stemme FROM stemmer WHERE forslag_id IN (${ph}) ORDER BY runde, hus`
   ).bind(...ids).all();
   return results;
 }
-
-function forslagToClient(row, alleStemmer, now, user) {
-  const list = alleStemmer.filter(s => s.forslag_id === row.id).map(s => ({ hus: s.hus, stemme: s.stemme }));
-  const res = F.resultat({ frist: row.frist, krav: row.krav, lukket_at: row.lukket_at }, list, now.date);
-  const hus = user.house_id;
-  const min = list.find(s => s.hus === hus);
-  return {
-    id: String(row.id), tittel: row.tittel, begrunnelse: row.begrunnelse,
-    hus: row.opprettet_av_hus, frist: row.frist, krav: row.krav, kravTekst: F.kravTekst(row.krav),
-    lukketAt: row.lukket_at, createdAt: row.created_at,
-    status: res.status, statusTekst: F.statusTekst(res.status),
-    ja: res.ja, nei: res.nei, avgitt: res.avgitt, gjenstaar: res.gjenstaar,
-    prosent: res.prosent, tidlig: res.tidlig, ended: res.ended,
-    minStemme: min ? min.stemme : null, stemmer: list,
-    kanStemme: !!(hus && F.HOUSES.includes(hus) && !row.lukket_at && now.date <= row.frist)
-  };
+async function lastForslag(env, ids) {
+  const [runder, stemmer] = await Promise.all([runderFor(env, ids), stemmerFor(env, ids)]);
+  return { runder, stemmer };
+}
+function toForslag(row, bundle, now, user) {
+  let runder = bundle.runder.filter(r => r.forslag_id === row.id);
+  if (!runder.length) runder = [{ forslag_id: row.id, runde: 1, frist: row.frist, krav: row.krav, lukket_at: row.lukket_at }];
+  const stemmer = bundle.stemmer.filter(s => s.forslag_id === row.id);
+  return F.samle(row, runder, stemmer, now.date, { hus: user.house_id, admin: user.role === "admin" });
 }
 
 async function listForslag(env, user, now) {
   requireUser(user);
   const { results } = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag ORDER BY id DESC`).all();
-  const stemmer = await stemmerFor(env, results.map(r => r.id));
-  const items = results.map(r => forslagToClient(r, stemmer, now, user));
+  const bundle = await lastForslag(env, results.map(r => r.id));
+  const items = results.map(r => toForslag(r, bundle, now, user));
   items.sort((a, b) => {
     const ao = a.status === "apen" ? 0 : 1, bo = b.status === "apen" ? 0 : 1;
     if (ao !== bo) return ao - bo;
@@ -472,8 +474,7 @@ async function getForslag(env, user, id, now) {
   if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
   const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
   if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const stemmer = await stemmerFor(env, [row.id]);
-  return json(forslagToClient(row, stemmer, now, user));
+  return json(toForslag(row, await lastForslag(env, [row.id]), now, user));
 }
 
 async function createForslag(request, env, user, now) {
@@ -484,8 +485,11 @@ async function createForslag(request, env, user, now) {
     `INSERT INTO forslag (tittel, begrunnelse, opprettet_av_hus, opprettet_av, frist, krav)
      VALUES (?, ?, ?, ?, ?, ?) RETURNING ${FCOLS}`
   ).bind(res.tittel, res.begrunnelse, user.house_id || null, user.id, res.frist, res.krav).first();
-  await logEvent(env, user, user.house_id, "FORSLAG_CREATE", "forslag:" + r.id, null, { tittel: res.tittel, frist: res.frist, krav: res.krav }).run();
-  return json(forslagToClient(r, [], now, user), 201);
+  await env.DB.batch([
+    env.DB.prepare("INSERT INTO forslag_runder (forslag_id, runde, frist, krav) VALUES (?, 1, ?, ?)").bind(r.id, res.frist, res.krav),
+    logEvent(env, user, user.house_id, "FORSLAG_CREATE", "forslag:" + r.id, null, { tittel: res.tittel, frist: res.frist, krav: res.krav })
+  ]);
+  return json(toForslag(r, { runder: [{ forslag_id: r.id, runde: 1, frist: res.frist, krav: res.krav, lukket_at: null }], stemmer: [] }, now, user), 201);
 }
 
 async function stemForslag(request, env, user, id, now) {
@@ -493,16 +497,18 @@ async function stemForslag(request, env, user, id, now) {
   if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
   const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
   if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const eksisterer = await stemmerFor(env, [row.id]);
-  const res = F.validateVote({ hus: user.house_id, stemme: (await readJson(request)).stemme }, row, eksisterer, now.date);
-  need(res, res.error === "CLOSED" ? 409 : 400);
+  const bundle = await lastForslag(env, [row.id]);
+  const vis = toForslag(row, bundle, now, user);
+  const aktiv = vis.runder.find(r => r.runde === vis.aktivRunde) || vis.runder[vis.runder.length - 1];
+  const res = F.validateVote({ hus: user.house_id, stemme: (await readJson(request)).stemme }, aktiv, aktiv.stemmer, now.date);
+  need(res);
   const ts = nowIso();
   await env.DB.batch([
     env.DB.prepare(
-      `INSERT INTO stemmer (forslag_id, hus, stemme) VALUES (?, ?, ?)
-       ON CONFLICT(forslag_id, hus) DO UPDATE SET stemme = excluded.stemme, updated_at = ?`
-    ).bind(row.id, res.hus, res.stemme, ts),
-    logEvent(env, user, res.hus, "FORSLAG_STEM", "forslag:" + row.id, null, { stemme: res.stemme })
+      `INSERT INTO stemmer (forslag_id, runde, hus, stemme) VALUES (?, ?, ?, ?)
+       ON CONFLICT(forslag_id, runde, hus) DO UPDATE SET stemme = excluded.stemme, updated_at = ?`
+    ).bind(row.id, res.runde, res.hus, res.stemme, ts),
+    logEvent(env, user, res.hus, "FORSLAG_STEM", "forslag:" + row.id, null, { stemme: res.stemme, runde: res.runde })
   ]);
   return getForslag(env, user, id, now);
 }
@@ -512,11 +518,15 @@ async function lukkForslag(env, user, id, now) {
   if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
   const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
   if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  if (row.lukket_at) fail(409, "CLOSED", "Avstemningen er allerede lukket.");
+  const bundle = await lastForslag(env, [row.id]);
+  const vis = toForslag(row, bundle, now, user);
+  const apen = vis.runder.find(r => !r.lukketAt && now.date <= r.frist);
+  if (!apen) fail(409, "CLOSED", "Avstemningen er allerede lukket.");
   const ts = nowIso();
   await env.DB.batch([
+    env.DB.prepare("UPDATE forslag_runder SET lukket_at = ? WHERE forslag_id = ? AND runde = ?").bind(ts, row.id, apen.runde),
     env.DB.prepare("UPDATE forslag SET lukket_at = ?, updated_at = ? WHERE id = ?").bind(ts, ts, row.id),
-    logEvent(env, user, user.house_id, "FORSLAG_LUKK", "forslag:" + row.id)
+    logEvent(env, user, user.house_id, "FORSLAG_LUKK", "forslag:" + row.id, null, { runde: apen.runde })
   ]);
   return getForslag(env, user, id, now);
 }
@@ -528,10 +538,70 @@ async function slettForslag(env, user, id) {
   if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
   await env.DB.batch([
     env.DB.prepare("DELETE FROM stemmer WHERE forslag_id = ?").bind(row.id),
+    env.DB.prepare("DELETE FROM forslag_runder WHERE forslag_id = ?").bind(row.id),
     env.DB.prepare("DELETE FROM forslag WHERE id = ?").bind(row.id),
     logEvent(env, user, user.house_id, "FORSLAG_SLETT", "forslag:" + row.id, { tittel: row.tittel })
   ]);
   return json({ ok: true, message: "Forslaget er slettet." });
+}
+
+async function vurderForslag(request, env, user, id, now) {
+  requireUser(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const bundle = await lastForslag(env, [row.id]);
+  const vis = toForslag(row, bundle, now, user);
+  const res = F.validateVurdering(await readJson(request), user.role === "admin", vis.runder);
+  need(res);
+  const ts = nowIso();
+  const gjen = row.gjennomforing || "ikke_startet";
+  await env.DB.batch([
+    env.DB.prepare(
+      `UPDATE forslag SET kompleksitet = ?, tiltak = ?, koster = ?, belop_kr = ?, tidspunkt = ?, tid_kommentar = ?,
+        vurdering_at = ?, gjennomforing = ?, updated_at = ? WHERE id = ?`
+    ).bind(res.kompleksitet, res.tiltak, res.koster, res.belopKr, res.tidspunkt, res.tidKommentar, ts, gjen, ts, row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_VURDERING", "forslag:" + row.id, null, { koster: res.koster })
+  ]);
+  return getForslag(env, user, id, now);
+}
+
+async function gjennomforForslag(request, env, user, id, now) {
+  requireUser(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const res = F.validateGjennomforing(await readJson(request), user.role === "admin", !!(row.vurdering_at || row.kompleksitet));
+  need(res);
+  const ts = nowIso();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE forslag SET gjennomforing = ?, updated_at = ? WHERE id = ?").bind(res.gjennomforing, ts, row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_GJENNOMFORING", "forslag:" + row.id, { gjennomforing: row.gjennomforing }, { gjennomforing: res.gjennomforing })
+  ]);
+  return getForslag(env, user, id, now);
+}
+
+async function nyRunde(request, env, user, id, now) {
+  requireUser(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const bundle = await lastForslag(env, [row.id]);
+  const vis = toForslag(row, bundle, now, user);
+  const res = F.validateNyRunde(await readJson(request), user.role === "admin", vis.vurdering, vis.runder, bundle.stemmer, now.date);
+  need(res);
+  const neste = Math.max(0, ...vis.runder.map(r => r.runde)) + 1;
+  const ts = nowIso();
+  const stmts = [
+    env.DB.prepare("INSERT INTO forslag_runder (forslag_id, runde, frist, krav) VALUES (?, ?, ?, ?)").bind(row.id, neste, res.frist, res.krav),
+    env.DB.prepare("UPDATE forslag SET frist = ?, krav = ?, lukket_at = NULL, updated_at = ? WHERE id = ?").bind(res.frist, res.krav, ts, row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_RUNDE", "forslag:" + row.id, null, { runde: neste, frist: res.frist, krav: res.krav })
+  ];
+  // Frys forrige runde hvis stemmer fortsatt kan endres.
+  const apen = vis.runder.find(r => !r.lukketAt && now.date <= r.frist);
+  if (apen) stmts.push(env.DB.prepare("UPDATE forslag_runder SET lukket_at = ? WHERE forslag_id = ? AND runde = ? AND lukket_at IS NULL").bind(ts, row.id, apen.runde));
+  await env.DB.batch(stmts);
+  return getForslag(env, user, id, now);
 }
 
 /* ---------------- Ruter ---------------- */
@@ -585,6 +655,9 @@ async function api(request, env, ctx, url) {
   if ((m = path.match(/^\/api\/forslag\/([^/]+)$/)) && method === "DELETE") return slettForslag(env, user, m[1]);
   if ((m = path.match(/^\/api\/forslag\/([^/]+)\/stem$/)) && method === "POST") return stemForslag(request, env, user, m[1], now);
   if ((m = path.match(/^\/api\/forslag\/([^/]+)\/lukk$/)) && method === "POST") return lukkForslag(env, user, m[1], now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)\/vurdering$/)) && method === "PUT") return vurderForslag(request, env, user, m[1], now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)\/gjennomforing$/)) && method === "POST") return gjennomforForslag(request, env, user, m[1], now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)\/runde$/)) && method === "POST") return nyRunde(request, env, user, m[1], now);
 
   if (path.startsWith("/api/admin/")) {
     requireAdmin(user);

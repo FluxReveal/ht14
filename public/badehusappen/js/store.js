@@ -1,5 +1,5 @@
 /*
- * Badehusappen – datalag (HT14 versjon 0.7)
+ * Badehusappen – datalag (HT14 versjon 0.8)
  * ---------------------------------------------------------------
  * All lesing og skriving går til Workeren på /api/… (felles for alle hus).
  * Reglene sjekkes her i appen for rask tilbakemelding, og Workeren sjekker
@@ -83,6 +83,9 @@
     async stemForslag(id, stemme) { return post(`forslag/${encodeURIComponent(id)}/stem`, { stemme }); },
     async lukkForslag(id) { return post(`forslag/${encodeURIComponent(id)}/lukk`); },
     async slettForslag(id) { return api("DELETE", `forslag/${encodeURIComponent(id)}`); },
+    async lagVurdering(id, data) { return api("PUT", `forslag/${encodeURIComponent(id)}/vurdering`, data); },
+    async settGjennomforing(id, gjennomforing) { return post(`forslag/${encodeURIComponent(id)}/gjennomforing`, { gjennomforing }); },
+    async nyRunde(id, data) { return post(`forslag/${encodeURIComponent(id)}/runde`, data); },
 
     /* Om oss */
     async contacts() { return get("contacts"); },

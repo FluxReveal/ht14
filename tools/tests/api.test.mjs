@@ -43,7 +43,7 @@ test("helse svarer uten innlogging", async () => {
 });
 
 test("kontakter, bookinger og admin er skjult uten innlogging (401)", async () => {
-  for (const p of ["/api/contacts", "/api/me", "/api/bookings?from=2027-06-01&to=2027-06-30", "/api/admin/users", "/api/forslag"])
+  for (const p of ["/api/contacts", "/api/me", "/api/bookings?from=2027-06-01&to=2027-06-30", "/api/admin/users", "/api/forslag", "/api/forslag/1"])
     assert.equal((await call("GET", p)).status, 401, p);
 });
 
@@ -243,6 +243,90 @@ test("forslag: opprette, stemme og endre, én stemme per hus, tidlig vedtatt, ad
   assert.equal((await call("DELETE", `/api/forslag/${id}`, { cookie: admin })).status, 200);
   assert.equal((await call("GET", `/api/forslag/${id}`, { cookie: houseA })).status, 404);
   assert.equal((await call("DELETE", `/api/forslag/${f2.data.id}`, { cookie: admin })).status, 200);
+});
+
+test("forslag: vurdering bare etter 4 ja og bare admin, ny runde når det koster, stemme per runde", async () => {
+  const body = { tittel: "Nytt tak på badehuset", begrunnelse: "Det lekker i hjørnet.", frist: "2027-05-15", krav: "4av4" };
+  const created = await call("POST", "/api/forslag", { cookie: houseA, body });
+  assert.equal(created.status, 201, JSON.stringify(created.data));
+  const id = created.data.id;
+  const vurdering = { kompleksitet: "middels", tiltak: "Bytte takpapp og beslag.", koster: "ja", belopKr: 15000, tidspunkt: "2027-03", tidKommentar: "Etter påske." };
+  assert.equal((await call("PUT", `/api/forslag/${id}/vurdering`, { cookie: admin, body: vurdering })).status, 409, "ikke 4 ja ennå");
+  assert.equal((await call("PUT", `/api/forslag/${id}/vurdering` , { body: vurdering })).status, 401);
+
+  assert.equal((await call("POST", `/api/forslag/${id}/stem`, { cookie: houseA, body: { stemme: "ja" } })).status, 200);
+  let houseC;
+  const emailD = "hus-d-" + RUN + "@example.no", pwD = "Hus-D-test-" + RUN;
+  const madeD = await call("POST", "/api/admin/users", { cookie: admin, body: { house: "D", email: emailD, password: pwD, name: "Hus D" } });
+  assert.ok(madeD.status === 201 || madeD.status === 409, JSON.stringify(madeD.data));
+  // Sørg for C: hvis den ble laget i forrige test, logg inn med Hus-C-test-RUN
+  const emailC = "hus-c-" + RUN + "@example.no", pwC = "Hus-C-test-" + RUN;
+  let loginC = await login(emailC, pwC);
+  if (loginC.status !== 200) {
+    const madeC = await call("POST", "/api/admin/users", { cookie: admin, body: { house: "C", email: emailC, password: pwC, name: "Hus C" } });
+    assert.ok([201, 409].includes(madeC.status), JSON.stringify(madeC.data));
+    if (madeC.status === 409) {
+      const u = (await call("GET", "/api/admin/users", { cookie: admin })).data.find(x => x.house === "C" && x.role === "house" && x.active);
+      if (u) assert.equal((await call("POST", `/api/admin/users/${u.id}/password`, { cookie: admin, body: { password: pwC } })).status, 200);
+    }
+    loginC = await login(emailC, pwC);
+  }
+  assert.equal(loginC.status, 200, JSON.stringify(loginC.data));
+  houseC = loginC.cookie;
+  const loginD = await login(emailD, pwD);
+  assert.equal(loginD.status, 200); const houseD = loginD.cookie;
+
+  assert.equal((await call("POST", `/api/forslag/${id}/stem`, { cookie: houseB, body: { stemme: "ja" } })).status, 200);
+  assert.equal((await call("PUT", `/api/forslag/${id}/vurdering`, { cookie: admin, body: vurdering })).status, 409);
+  assert.equal((await call("POST", `/api/forslag/${id}/stem`, { cookie: houseC, body: { stemme: "ja" } })).status, 200);
+  const siste = await call("POST", `/api/forslag/${id}/stem`, { cookie: houseD, body: { stemme: "ja" } });
+  assert.equal(siste.status, 200); assert.equal(siste.data.status, "vedtatt"); assert.equal(siste.data.ja, 4);
+
+  assert.equal((await call("PUT", `/api/forslag/${id}/vurdering`, { cookie: houseA, body: vurdering })).status, 403);
+  const lagret = await call("PUT", `/api/forslag/${id}/vurdering`, { cookie: admin, body: vurdering });
+  assert.equal(lagret.status, 200, JSON.stringify(lagret.data));
+  assert.equal(lagret.data.vurdering.koster, "ja");
+  assert.equal(lagret.data.vurdering.belopKr, 15000);
+  assert.equal(lagret.data.gjennomforing, "ikke_startet");
+  const sett = (await call("GET", `/api/forslag/${id}`, { cookie: houseB })).data;
+  assert.equal(sett.vurdering.tiltak, "Bytte takpapp og beslag.");
+  assert.equal(sett.kanVurdere, false);
+
+  assert.equal((await call("POST", `/api/forslag/${id}/gjennomforing`, { cookie: houseA, body: { gjennomforing: "planlagt" } })).status, 403);
+  const gjen = await call("POST", `/api/forslag/${id}/gjennomforing`, { cookie: admin, body: { gjennomforing: "planlagt" } });
+  assert.equal(gjen.status, 200); assert.equal(gjen.data.gjennomforing, "planlagt");
+
+  assert.equal((await call("POST", `/api/forslag/${id}/runde`, { cookie: houseA, body: { frist: "2027-06-01", krav: "4av4" } })).status, 403);
+  // Fortsatt åpen frist på runde 1 (2027-05-15, testklokke 15. april) – må lukkes eller feile med OPEN_ROUND
+  const forTidlig = await call("POST", `/api/forslag/${id}/runde`, { cookie: admin, body: { frist: "2027-06-01" } });
+  assert.equal(forTidlig.status, 409); assert.equal(forTidlig.data.error, "OPEN_ROUND");
+  assert.equal((await call("POST", `/api/forslag/${id}/lukk`, { cookie: admin })).status, 200);
+  const runde = await call("POST", `/api/forslag/${id}/runde`, { cookie: admin, body: { frist: "2027-06-01" } });
+  assert.equal(runde.status, 200, JSON.stringify(runde.data));
+  assert.equal(runde.data.aktivRunde, 2);
+  assert.equal(runde.data.krav, "4av4");
+  assert.equal(runde.data.runder[0].ja, 4);
+  assert.equal(runde.data.runder[0].status, "vedtatt");
+  assert.equal(runde.data.runder[1].avgitt, 0);
+  assert.equal(runde.data.status, "apen");
+
+  const jaA2 = await call("POST", `/api/forslag/${id}/stem`, { cookie: houseA, body: { stemme: "ja" } });
+  assert.equal(jaA2.status, 200); assert.equal(jaA2.data.runder[1].ja, 1); assert.equal(jaA2.data.runder[0].ja, 4);
+  const neiB2 = await call("POST", `/api/forslag/${id}/stem`, { cookie: houseB, body: { stemme: "nei" } });
+  assert.equal(neiB2.status, 200); assert.equal(neiB2.data.runder[1].nei, 1); assert.equal(neiB2.data.runder[0].nei, 0);
+
+  // uten kostnad: ingen ny runde
+  const billig = await call("POST", "/api/forslag", { cookie: houseA, body: { tittel: "Maling", begrunnelse: "Bare pensel.", frist: "2027-05-15", krav: "4av4" } });
+  for (const c of [houseA, houseB, houseC, houseD]) await call("POST", `/api/forslag/${billig.data.id}/stem`, { cookie: c, body: { stemme: "ja" } });
+  await call("POST", `/api/forslag/${billig.data.id}/lukk`, { cookie: admin });
+  const utenKost = await call("PUT", `/api/forslag/${billig.data.id}/vurdering`, { cookie: admin, body: { ...vurdering, koster: "nei", belopKr: null } });
+  assert.equal(utenKost.status, 200);
+  assert.equal((await call("POST", `/api/forslag/${billig.data.id}/runde`, { cookie: admin, body: { frist: "2027-06-01", krav: "4av4" } })).status, 409);
+
+  assert.equal((await call("POST", `/api/forslag/${id}/gjennomforing`, { body: { gjennomforing: "planlagt" } })).status, 401);
+  assert.equal((await call("POST", `/api/forslag/${id}/runde`, { body: { frist: "2027-06-01" } })).status, 401);
+  await call("DELETE", `/api/forslag/${id}`, { cookie: admin });
+  await call("DELETE", `/api/forslag/${billig.data.id}`, { cookie: admin });
 });
 
 test("bytte eget passord logger ut andre enheter", async () => {
