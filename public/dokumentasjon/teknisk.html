@@ -53,7 +53,7 @@
   <div class="meta"><span class="chip">⏱ Ca. 16 min lesetid</span></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.7</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.8</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -164,7 +164,7 @@ flowchart LR
 └── tools/                    generator, lenkesjekk og tester
 
 ht14-data/                    ← privat, bare Workeren skriver
-└── data/                     bookings, users (uten passord), contacts, events, forslag, stemmer – CSV og JSON</code></pre>
+└── data/                     bookings, users (uten passord), contacts, events, forslag, forslag_runder, stemmer – CSV og JSON</code></pre>
 <p><code>store.js</code> henter og lagrer alt via <code>/api/…</code>. Prøvebookinger fra før versjon 0.5 (som bare lå i nettleseren) slettes automatisk og flyttes ikke over.</p>
 
 <h3 id="datamodell">Datamodell</h3>
@@ -179,8 +179,9 @@ ht14-data/                    ← privat, bare Workeren skriver
 <tr><td><code>sessions</code></td><td>Innloggede mobiler (bare hash av cookien lagres)</td></tr>
 <tr><td><code>login_attempts</code></td><td>Feil passord, for en kort pause etter flere forsøk</td></tr>
 <tr><td><code>events</code></td><td>Hendelseslogg: hvem, når, hva, fra, til, kommentar</td></tr>
-<tr><td><code>forslag</code></td><td>Forslag: tittel, begrunnelse, frist (kalenderdato i Oslo-tid), krav (<code>3av4</code>, <code>4av4</code> eller <code>flertall</code>), huset som la det frem</td></tr>
-<tr><td><code>stemmer</code></td><td>Én stemme (ja/nei) per hus per forslag (<code>UNIQUE (forslag_id, hus)</code>). Huset kan endre stemmen før fristen.</td></tr>
+<tr><td><code>forslag</code></td><td>Forslag: tittel, begrunnelse, huset som la det frem, frist og krav for siste runde, pluss vurdering (kompleksitet, tiltak, kostnad, tid) og gjennomføring</td></tr>
+<tr><td><code>forslag_runder</code></td><td>Avstemningsrunder (frist og krav per runde). Runde 2 åpnes når vurderingen sier at det koster penger.</td></tr>
+<tr><td><code>stemmer</code></td><td>Én stemme (ja/nei) per hus per runde (<code>UNIQUE (forslag_id, runde, hus)</code>). Huset kan endre stemmen før fristen.</td></tr>
 </tbody></table></div>
 <p>Utdrag av <code>rules.json</code> – alle regler ligger her, så de kan endres uten kodeendring:</p>
 <pre><code>{ "timezone": "Europe/Oslo",
@@ -194,7 +195,7 @@ ht14-data/                    ← privat, bare Workeren skriver
               "maxLimitedDaysPerWeek": 1 },
   "liftSummerRulesWhenDaysBefore": 7 }</code></pre>
 
-<p>Status på et forslag (<b>Åpen</b>, <b>Vedtatt</b>, <b>Ikke vedtatt</b>) lagres ikke, men regnes ut i <code>forslag.js</code> – samme kode i appen og på serveren. Et forslag blir vedtatt så snart kravet ikke lenger kan feile (for eksempel når 3 hus har sagt ja til «minst 3 av 4»), og «ikke vedtatt» så snart kravet ikke lenger kan nås, eller etter fristen. Avstemningen er åpen hele fristdagen i Oslo-tid. Administrator kan lukke den tidligere.</p>
+<p>Status på et forslag (<b>Åpen</b>, <b>Vedtatt</b>, <b>Ikke vedtatt</b>) lagres ikke, men regnes ut i <code>forslag.js</code> – samme kode i appen og på serveren. Et forslag blir vedtatt så snart kravet ikke lenger kan feile (for eksempel når 3 hus har sagt ja til «minst 3 av 4»), og «ikke vedtatt» så snart kravet ikke lenger kan nås, eller etter fristen. Avstemningen er åpen hele fristdagen i Oslo-tid. Administrator kan lukke den tidligere. Når alle fire husene har sagt ja, kan administrator skrive en vurdering (kompleksitet, tiltak, om det koster penger, og når det kan gjennomføres). Sier vurderingen at det koster penger, kan administrator sende forslaget til en ny avstemningsrunde; runde 1 blir stående som historikk. Etter vurderingen kan administrator også sette en enkel gjennomføringsstatus: ikke startet, planlagt, pågår eller ferdig.</p>
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
@@ -227,14 +228,17 @@ stateDiagram-v2
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.7"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.8"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
 <tr><td><code>POST /api/bookings/{id}/cancel | checkin</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, spontan innsjekk</td></tr>
 <tr><td><code>GET /api/forslag</code>, <code>GET /api/forslag/{id}</code>, <code>POST /api/forslag</code></td><td>Liste og ett forslag, legge frem nytt (tittel, begrunnelse, frist, krav). Bare innlogget.</td></tr>
 <tr><td><code>POST /api/forslag/{id}/stem</code> <code>{"stemme":"ja"|"nei"}</code></td><td>Stemme eller endre stemme (ett hus, én stemme) så lenge avstemningen er åpen ut fristdagen</td></tr>
-<tr><td><code>POST /api/forslag/{id}/lukk</code>, <code>DELETE /api/forslag/{id}</code></td><td>Bare admin: lukke avstemningen eller slette forslaget</td></tr>
+<tr><td><code>POST /api/forslag/{id}/lukk</code>, <code>DELETE /api/forslag/{id}</code></td><td>Bare admin: lukke den åpne runden eller slette forslaget</td></tr>
+<tr><td><code>PUT /api/forslag/{id}/vurdering</code></td><td>Bare admin, og bare når alle 4 hus har sagt ja: kompleksitet, tiltak, kostnad og tidspunkt</td></tr>
+<tr><td><code>POST /api/forslag/{id}/runde</code></td><td>Bare admin, og bare når vurderingen sier at det koster penger: ny avstemningsrunde (standard krav: alle 4)</td></tr>
+<tr><td><code>POST /api/forslag/{id}/gjennomforing</code></td><td>Bare admin, etter vurdering: Ikke startet, Planlagt, Pågår eller Ferdig</td></tr>
 <tr><td><code>GET /api/contacts</code>, <code>PUT /api/contacts/{A–D}</code></td><td>Om oss (bare innlogget; endre eget hus, admin alle)</td></tr>
 <tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger, nytt passord, deaktiver, hendelseslogg</td></tr>
 </tbody></table></div>
@@ -255,7 +259,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.7"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.8"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
@@ -316,7 +320,7 @@ stateDiagram-v2
 </ol>
 
 <nav class="pagenav" aria-label="Forrige og neste side"><span></span><a class="next" href="regler.html"><small>Neste →</small>Regler for bruk av badehuset</a></nav>
-      <p class="footer">Sameiet HT14 · HT14 versjon 0.7. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.8. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
