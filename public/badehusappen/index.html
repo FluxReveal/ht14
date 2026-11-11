@@ -17,7 +17,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Badehusappen">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="stylesheet" href="css/app.css?v=15">
+<link rel="stylesheet" href="css/app.css?v=16">
 </head>
 <body class="booting">
 <a class="skip" href="#main">Hopp til innholdet</a>
@@ -70,6 +70,13 @@
     <div id="mine"></div>
   </section>
 
+  <section id="view-forslag" class="view" hidden aria-labelledby="forslagTitle">
+    <header class="large">
+      <div class="row-between"><h1 id="forslagTitle">Forslag</h1><button type="button" class="btn tinted small" id="nyttForslagBtn">Nytt forslag</button></div>
+    </header>
+    <div id="forslag"></div>
+  </section>
+
   <section id="view-statistikk" class="view" hidden aria-labelledby="statTitle">
     <header class="large"><h1 id="statTitle">Statistikk</h1></header>
     <div class="toolbar">
@@ -101,6 +108,7 @@
     <div class="group text">
       <p>Dagen er delt i tre: <b>formiddag 10–14</b>, <b>ettermiddag 14–17</b> og <b>kveld 17–24</b>. Vanlig booking er <b>én kveld</b>. Formiddag og ettermiddag booker dere bare når dere har gjester.</p>
       <p>Om sommeren kan hvert hus ha én torsdag, én fredag og én lørdag per måned. Fra 7 dager før datoen er det førstemann til mølla: er dagen fortsatt ledig da, kan alle hus booke den – også om dere har brukt opp kvoten.</p>
+      <p>Under <b>Forslag</b> kan hvert hus legge frem noe til de andre og stemme ja eller nei. Ett hus, én stemme, og dere kan endre stemmen frem til fristen.</p>
       <p>Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der. En avbestilt booking teller aldri – verken i sommerkvoten, ukeregelen eller statistikken – uansett hvor kort tid det er igjen.</p>
       <p>Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
     </div>
@@ -108,7 +116,7 @@
     <div class="group text">
       <p><b>iPhone:</b> Safari → Del-knappen → «Legg til på Hjem-skjerm».<br><b>Android:</b> Chrome → menyen ⋮ → «Legg til på startskjermen».</p>
     </div>
-    <p class="foot center">HT14 versjon 0.6</p>
+    <p class="foot center">HT14 versjon 0.7</p>
   </section>
 
   <section id="view-admin" class="view" hidden aria-labelledby="adminTitle">
@@ -123,6 +131,7 @@
 <nav class="tabs" aria-label="Hovedmeny" hidden>
   <button type="button" data-view="kalender"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>Kalender</button>
   <button type="button" data-view="mine"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>Mine</button>
+  <button type="button" data-view="forslag"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3.5h10A1.5 1.5 0 0 1 18.5 5v14A1.5 1.5 0 0 1 17 20.5H7A1.5 1.5 0 0 1 5.5 19V5A1.5 1.5 0 0 1 7 3.5z"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4"/></svg>Forslag</button>
   <button type="button" data-view="statistikk"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20V12M12 20V5M19 20v-9"/></svg>Statistikk</button>
   <button type="button" data-view="mer"><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>Mer</button>
 </nav>
@@ -135,8 +144,9 @@
 </dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
-<script src="js/rules-engine.js?v=15"></script>
-<script src="js/store.js?v=15"></script>
-<script src="js/app.js?v=15"></script>
+<script src="js/rules-engine.js?v=16"></script>
+<script src="js/forslag.js?v=16"></script>
+<script src="js/store.js?v=16"></script>
+<script src="js/app.js?v=16"></script>
 </body>
 </html>

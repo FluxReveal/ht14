@@ -1,8 +1,8 @@
 /*
- * Badehusappen – brukergrensesnitt (HT14 versjon 0.6)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.7)
  * ---------------------------------------------------------------
  * Innlogging, kalender (i dag + 30 dager, eller måned), booking, innsjekk,
- * Mine bookinger, statistikk (sesong og år), bytte passord og administrasjon.
+ * Mine bookinger, forslag og stemming, statistikk (sesong og år), bytte passord og administrasjon.
  * «Om oss» ligger på forsiden ht14.no (om-oss.js), ikke i appen.
  * All data hentes og lagres via Store (js/store.js) → /api/… på ht14.no.
  * Reglene sjekkes med RulesEngine for rask tilbakemelding; Workeren
@@ -10,7 +10,7 @@
  */
 (function () {
   "use strict";
-  const R = window.RulesEngine, S = window.Store;
+  const R = window.RulesEngine, S = window.Store, Fo = window.Forslag;
   const $ = s => document.querySelector(s);
   const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const HOUSES = ["A", "B", "C", "D"];
@@ -28,7 +28,7 @@
   const MON_SHORT = ["jan", "feb", "mar", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "des"];
 
   let rules, mode = localStorage.getItem(MODE_KEY) === "month" ? "month" : "list", anchor, view = "login", statYear;
-  let myHouse = null, mineHouse = "A";
+  let myHouse = null, mineHouse = "A", forslagId = null;
   const isAdmin = () => !!(S.user() && S.user().admin);
 
   /* ---------- Testklokke: ?tid=2027-07-05T10:00 – bare lokalt (localhost) ---------- */
@@ -365,6 +365,107 @@
     $("#stats").innerHTML = `<div class="statgrid">${card(`Sesongen ${y} (juni–august)`, s.season)}${card(`Hele ${y}`, s.year)}</div>`;
   }
 
+
+  /* ---------- Forslag ---------- */
+  const forslagLi = f => `<li><button type="button" class="cell nav" data-fid="${f.id}">
+      <span><b>${esc(f.tittel)}</b><br><span class="muted">${esc(f.statusTekst)} · frist ${esc(R.dateLabel(f.frist))}${f.avgitt ? ` · ${f.ja} ja, ${f.nei} nei` : " · ingen stemmer ennå"}</span></span>
+      <span class="pill ${f.status}">${esc(f.statusTekst)}</span></button></li>`;
+  function forslagTally(f) {
+    const jaW = f.avgitt ? (f.ja / 4) * 100 : 0, neiW = f.avgitt ? (f.nei / 4) * 100 : 0;
+    const pct = f.prosent == null ? "Ingen har stemt ennå" : `${f.prosent} % ja av de som har stemt`;
+    return `<div class="tally" aria-hidden="true"><span class="yes" style="width:${jaW}%"></span><span class="no" style="width:${neiW}%"></span></div>
+      <p class="foot">${f.ja} ja · ${f.nei} nei · ${f.avgitt} av 4 hus har stemt. ${pct}.</p>`;
+  }
+  async function renderForslag() {
+    const box = $("#forslag");
+    try {
+      if (forslagId) { await renderForslagEn(box, await S.forslagEn(forslagId)); return; }
+      const list = await S.forslag();
+      const apne = list.filter(f => f.status === "apen"), ferdige = list.filter(f => f.status !== "apen");
+      let html = `<p class="intro">Her kan hvert hus legge frem et forslag og stemme ja eller nei. Ett hus, én stemme – dere kan endre stemmen frem til fristen.</p>`;
+      html += `<h2 class="ghead">Åpne</h2>` + (apne.length ? `<ul class="group">${apne.map(forslagLi).join("")}</ul>` : `<p class="muted">Ingen åpne forslag akkurat nå. Har dere noe dere vil legge frem for de andre?</p>`);
+      if (ferdige.length) html += `<h2 class="ghead">Avgjort</h2><ul class="group">${ferdige.map(forslagLi).join("")}</ul>`;
+      box.innerHTML = html;
+      box.querySelectorAll("[data-fid]").forEach(b => b.addEventListener("click", () => { forslagId = b.dataset.fid; renderForslag().catch(e => toast(e.message)); }));
+    } catch (e) { box.innerHTML = `<p class="msg no">${esc(e.message)}</p>`; }
+  }
+  async function renderForslagEn(box, f) {
+    const hvem = Fo.HOUSES.map(h => {
+      const s = (f.stemmer || []).find(x => x.hus === h);
+      return `<li class="cell"><span>${houseChip(h)}</span><span class="muted">${s ? (s.stemme === "ja" ? "Ja" : "Nei") : "Ikke stemt"}</span></li>`;
+    }).join("");
+    let html = `<button type="button" class="back" id="forslagBack">‹ Alle forslag</button>`;
+    html += `<p><span class="pill ${f.status}">${esc(f.statusTekst)}${f.tidlig ? " allerede nå" : ""}</span></p>`;
+    html += `<h2 class="forslag-tittel">${esc(f.tittel)}</h2>`;
+    html += `<p class="muted">Fra ${f.hus ? "Hus " + esc(f.hus) : "administrator"} · frist ${esc(R.dateLabel(f.frist))}</p>`;
+    html += `<div class="group text"><p>${esc(f.begrunnelse).replace(/\n/g, "<br>")}</p></div>`;
+    html += `<p class="foot">${esc(f.kravTekst)}. Avstemningen er åpen ut ${esc(R.dateLabel(f.frist))}.</p>`;
+    html += forslagTally(f);
+    if (f.kanStemme) {
+      const mer = f.tidlig ? (f.status === "vedtatt"
+        ? " Forslaget er allerede vedtatt, men husene kan fortsatt stemme frem til fristen."
+        : " Kravet kan ikke lenger nås, men husene kan fortsatt stemme frem til fristen.") : "";
+      html += `<h2 class="ghead">Deres stemme</h2>
+        <div class="vote" role="group" aria-label="Stem">
+          <button type="button" class="ja${f.minStemme === "ja" ? " on" : ""}" data-stemme="ja">${f.minStemme === "ja" ? "Dere har stemt ja" : "Ja"}</button>
+          <button type="button" class="nei${f.minStemme === "nei" ? " on" : ""}" data-stemme="nei">${f.minStemme === "nei" ? "Dere har stemt nei" : "Nei"}</button>
+        </div>
+        <p class="foot">${f.minStemme ? "Dere kan endre stemmen frem til fristen." : "Ett hus, én stemme."}${mer}</p>`;
+    } else if (!myHouse) html += `<p class="foot">Stemming er per hus. Innloggingen din er ikke knyttet til et hus, så du kan ikke stemme.</p>`;
+    else html += `<p class="foot">Avstemningen er avsluttet.</p>`;
+    html += `<h2 class="ghead">Hvem har stemt</h2><ul class="group">${hvem}</ul>`;
+    if (isAdmin()) {
+      html += `<h2 class="ghead">Administrator</h2><div class="pad row">`;
+      if (!f.lukketAt && !(f.ended && !f.tidlig)) html += `<button type="button" class="btn tinted small" id="lukkForslag">Lukk avstemningen</button>`;
+      html += `<button type="button" class="btn plain small red" id="slettForslag">Slett forslaget</button></div>`;
+    }
+    box.innerHTML = html;
+    $("#forslagBack").addEventListener("click", () => { forslagId = null; renderForslag().catch(e => toast(e.message)); });
+    box.querySelectorAll("[data-stemme]").forEach(b => b.addEventListener("click", async () => {
+      try { const n = await S.stemForslag(f.id, b.dataset.stemme); toast(b.dataset.stemme === "ja" ? "Husets stemme er ja." : "Husets stemme er nei."); await renderForslagEn(box, n); }
+      catch (e) { toast(e.message); }
+    }));
+    const lukk = $("#lukkForslag");
+    if (lukk) lukk.addEventListener("click", async () => {
+      if (!confirm("Lukke avstemningen nå? Da kan ingen lenger stemme, og resultatet blir stående.")) return;
+      try { const n = await S.lukkForslag(f.id); toast("Avstemningen er lukket."); await renderForslagEn(box, n); }
+      catch (e) { toast(e.message); }
+    });
+    const slett = $("#slettForslag");
+    if (slett) slett.addEventListener("click", async () => {
+      if (!confirm("Slette forslaget og alle stemmene? Dette kan ikke angres.")) return;
+      try { const r = await S.slettForslag(f.id); forslagId = null; toast(r.message); await renderForslag(); }
+      catch (e) { toast(e.message); }
+    });
+  }
+  function openNyttForslag() {
+    const today = now().date;
+    const html = `<form id="nyttForslag">
+      <div class="group form">
+        ${field("Tittel", "tittel", "", 'maxlength="120" required placeholder="Kort og tydelig"')}
+        <label class="cell field area"><span>Begrunnelse</span>
+          <textarea name="begrunnelse" maxlength="4000" required placeholder="Hvorfor foreslår dere dette?"></textarea></label>
+        ${field("Frist", "frist", "", `type="date" required min="${today}"`)}
+        <label class="cell field"><span>Krav</span>
+          <select name="krav">
+            <option value="3av4" selected>Minst 3 av 4 hus sier ja</option>
+            <option value="4av4">Alle 4 hus sier ja</option>
+            <option value="flertall">Flertall av de som stemmer</option>
+          </select></label>
+      </div>
+      <p class="foot">Fristen er åpen ut den dagen (norsk tid). Hvert hus har én stemme og kan endre den frem til fristen.</p>
+      <p id="forslagMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet("Nytt forslag", html, `<button type="submit" form="nyttForslag" class="btn filled wide">Legg frem forslaget</button>`);
+    $("#nyttForslag").addEventListener("submit", async e => {
+      e.preventDefault();
+      const el = e.target.elements;
+      try {
+        const r = await S.lagForslag({ tittel: el.tittel.value, begrunnelse: el.begrunnelse.value, frist: el.frist.value, krav: el.krav.value });
+        closeSheet(); forslagId = r.id; show("forslag"); toast("Forslaget er lagt frem.");
+      } catch (err) { $("#forslagMsg").textContent = err.message; }
+    });
+  }
+
   /* ---------- Innlogging ---------- */
   function wireLogin() {
     $("#loginForm").addEventListener("submit", async e => {
@@ -449,7 +550,8 @@
     wireGoto(box);
   }
   const EVENT = { BOOK: "Booking", CANCEL: "Avbestilling", CHECKIN: "Innsjekk", CONFIRM: "Bekreftet bruk", LOGIN: "Innlogging", LOGOUT: "Utlogging",
-    PASSWORD_CHANGE: "Byttet passord", PASSWORD_RESET: "Nytt passord fra admin", USER_CREATE: "Ny innlogging", USER_DEACTIVATE: "Deaktivert innlogging", CONTACTS_UPDATE: "Endret Om oss" };
+    PASSWORD_CHANGE: "Byttet passord", PASSWORD_RESET: "Nytt passord fra admin", USER_CREATE: "Ny innlogging", USER_DEACTIVATE: "Deaktivert innlogging", CONTACTS_UPDATE: "Endret Om oss",
+    FORSLAG_CREATE: "Nytt forslag", FORSLAG_STEM: "Stemt på forslag", FORSLAG_LUKK: "Lukket avstemning", FORSLAG_SLETT: "Slettet forslag" };
 
   function passwordSheet(title, intro, withEmail, submit) {
     const pw = randomPassword();
@@ -481,6 +583,7 @@
       if (!S.user()) return;
       if (view === "kalender") await renderCalendar();
       if (view === "mine") await renderMine();
+      if (view === "forslag") await renderForslag();
       if (view === "statistikk") await renderStats();
       if (view === "admin") await renderAdmin();
     } catch (e) { if (e.status !== 401) toast(e.message); }
@@ -521,6 +624,7 @@
     sheet.addEventListener("click", e => { if (e.target === sheet) closeSheet(); });
     $("#statPrev").addEventListener("click", () => { statYear--; renderStats(); });
     $("#statNext").addEventListener("click", () => { statYear++; renderStats(); });
+    $("#nyttForslagBtn").addEventListener("click", openNyttForslag);
     document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => show(b.dataset.view)));
     wireGoto(document);
     $("#pwBtn").addEventListener("click", openPassword);

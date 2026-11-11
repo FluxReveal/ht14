@@ -1,4 +1,4 @@
-/* Badehusappen – stil (HT14 versjon 0.6), laget for å ligne en vanlig iPhone-app.
+/* Badehusappen – stil (HT14 versjon 0.7), laget for å ligne en vanlig iPhone-app.
  *
  *  - Systemfonten (SF Pro på Apple, Segoe/Roboto ellers), store titler, grupperte lister med innrykk,
  *    gjennomsiktig fanelinje, segmentkontroller og ark som glir opp nedenfra.
@@ -311,3 +311,23 @@ body:has(.tabs[hidden]) { padding-left: 0; }
 /* v0.6: app-ikonet i toppen */
 .applogo img { display: block; width: 72px; height: 72px; border-radius: 16px; margin: .6rem 0 .2rem; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
 .large h1 .hico { width: 34px; height: 34px; border-radius: 8px; vertical-align: -5px; margin-right: .45rem; }
+
+/* v0.7: Forslag – status, stemming og resultat */
+.field select { flex: 1; min-width: 0; border: 0; background: none; padding: .75rem 0; outline: none; appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path fill='none' stroke='%23888' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M1.5 1.5 6 6 10.5 1.5'/></svg>");
+  background-repeat: no-repeat; background-position: right .2rem center; padding-right: 1.4rem; }
+.pill { display: inline-flex; align-items: center; border-radius: 999px; padding: .12rem .55rem; font-size: .75rem; font-weight: 600; letter-spacing: -.01em; }
+.pill.apen { background: var(--tint-soft); color: var(--tint); }
+.pill.vedtatt { background: var(--ok-bg); color: var(--ok); }
+.pill.ikke_vedtatt { background: var(--fill); color: var(--ink2); }
+.cell.nav .pill { margin-left: auto; margin-right: .55rem; flex: 0 0 auto; }
+.vote { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin: .2rem 0 .2rem; }
+.vote button { min-height: 50px; border: 0; border-radius: 12px; font-weight: 600; }
+.vote .ja { background: var(--ok-bg); color: var(--ok); }
+.vote .nei { background: rgba(255, 59, 48, .12); color: var(--red); }
+.vote .ja.on, .vote .nei.on { box-shadow: inset 0 0 0 2px currentColor; }
+.tally { display: flex; height: 10px; background: var(--fill); border-radius: 999px; overflow: hidden; margin: .9rem 0 .15rem; }
+.tally .yes { background: var(--green); height: 100%; }
+.tally .no { background: var(--red); height: 100%; }
+.forslag-tittel { font-size: 1.45rem; line-height: 1.2; font-weight: 700; margin: .25rem 0 .25rem; letter-spacing: -.02em; }
+#view-forslag .back { margin-left: -.2rem; }
