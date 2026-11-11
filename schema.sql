@@ -1,5 +1,5 @@
 -- =====================================================================
--- HT14 versjon 0.7 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
+-- HT14 versjon 0.8 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
 -- Legges inn med:  npx wrangler d1 execute ht14 --remote --file=schema.sql
 -- Trygt å kjøre flere ganger (IF NOT EXISTS / INSERT OR IGNORE).
 -- Tider lagres som ISO 8601 i UTC (tekst). Datoer (YYYY-MM-DD) er norsk dato.
@@ -121,6 +121,8 @@ CREATE INDEX IF NOT EXISTS events_ts ON events (ts);
 -- Forslag i sameiet. Tittel og begrunnelse, frist (kalenderdato i Oslo-tid) og krav
 -- (3av4, 4av4 eller flertall av de som stemmer). Bare husbokstav, aldri personnavn.
 -- Status (Åpen / Vedtatt / Ikke vedtatt) regnes ut ved visning, ikke lagret.
+-- Vurdering og gjennomføring settes av administrator etter at alle 4 hus har sagt ja.
+-- frist, krav og lukket_at på forslag er en kopi av den siste runden (se forslag_runder).
 CREATE TABLE IF NOT EXISTS forslag (
   id                INTEGER PRIMARY KEY,
   tittel            TEXT NOT NULL CHECK (length(tittel) BETWEEN 1 AND 120),
@@ -130,22 +132,44 @@ CREATE TABLE IF NOT EXISTS forslag (
   frist             TEXT NOT NULL CHECK (frist GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
   krav              TEXT NOT NULL CHECK (krav IN ('3av4', '4av4', 'flertall')),
   lukket_at         TEXT,
+  kompleksitet      TEXT CHECK (kompleksitet IS NULL OR kompleksitet IN ('lav', 'middels', 'hoy')),
+  tiltak            TEXT CHECK (tiltak IS NULL OR (length(tiltak) BETWEEN 1 AND 4000)),
+  koster            TEXT CHECK (koster IS NULL OR koster IN ('nei', 'ja', 'usikkert')),
+  belop_kr          INTEGER CHECK (belop_kr IS NULL OR (belop_kr >= 0 AND belop_kr <= 999999999)),
+  tidspunkt         TEXT,
+  tid_kommentar     TEXT CHECK (tid_kommentar IS NULL OR length(tid_kommentar) <= 1000),
+  vurdering_at      TEXT,
+  gjennomforing     TEXT CHECK (gjennomforing IS NULL OR gjennomforing IN ('ikke_startet', 'planlagt', 'pagar', 'ferdig')),
   created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at        TEXT
 );
 CREATE INDEX IF NOT EXISTS forslag_frist ON forslag (frist);
 
--- Én stemme per hus per forslag. Huset kan endre stemmen før fristen (UPSERT).
+-- Avstemningsrunder. Runde 1 er den opprinnelige. Runde 2+ når vurderingen sier at det koster penger.
+CREATE TABLE IF NOT EXISTS forslag_runder (
+  id          INTEGER PRIMARY KEY,
+  forslag_id  INTEGER NOT NULL REFERENCES forslag(id) ON DELETE CASCADE,
+  runde       INTEGER NOT NULL CHECK (runde >= 1),
+  frist       TEXT NOT NULL CHECK (frist GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+  krav        TEXT NOT NULL CHECK (krav IN ('3av4', '4av4', 'flertall')),
+  lukket_at   TEXT,
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  UNIQUE (forslag_id, runde)
+);
+CREATE INDEX IF NOT EXISTS forslag_runder_forslag ON forslag_runder (forslag_id);
+
+-- Én stemme per hus per runde. Huset kan endre stemmen før fristen (UPSERT).
 CREATE TABLE IF NOT EXISTS stemmer (
   id          INTEGER PRIMARY KEY,
   forslag_id  INTEGER NOT NULL REFERENCES forslag(id) ON DELETE CASCADE,
+  runde       INTEGER NOT NULL DEFAULT 1 CHECK (runde >= 1),
   hus         TEXT NOT NULL REFERENCES houses(id),
   stemme      TEXT NOT NULL CHECK (stemme IN ('ja', 'nei')),
   created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   updated_at  TEXT,
-  UNIQUE (forslag_id, hus)
+  UNIQUE (forslag_id, runde, hus)
 );
-CREATE INDEX IF NOT EXISTS stemmer_forslag ON stemmer (forslag_id);
+CREATE INDEX IF NOT EXISTS stemmer_forslag ON stemmer (forslag_id, runde);
 
 -- Den nattlige kopien til FluxReveal/ht14-data (scheduled() i src/index.js) leser
--- bookings, users (uten pw_*), house_info, events, forslag og stemmer – aldri sessions eller login_attempts.
+-- bookings, users (uten pw_*), house_info, events, forslag, forslag_runder og stemmer – aldri sessions eller login_attempts.
