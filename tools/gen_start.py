@@ -31,9 +31,10 @@ EV = [
 ]
 # ---------------------------------------------------------------
 # «Hva er nytt» – legg nye linjer ØVERST. Dato (ÅÅÅÅ-MM-DD), overskrift, kort tekst, lenke (eller None).
-# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.7», bestemt av Thomas).
+# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.8», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-11-11", "Vurdering av vedtatte forslag", "Når alle fire husene har sagt ja til et forslag, kan Thomas skrive en vurdering av kompleksitet, hva som skal til, om det koster penger og når det kan gjennomføres. Hvis det koster penger, kan husene stemme på nytt – og runde 1 blir stående som historikk. Forslaget får også en enkel gjennomføringsstatus.", "/badehusappen/"),
  ("2026-11-11", "Forslag i Badehusappen", "Husene kan legge frem forslag og stemme ja eller nei – ett hus, én stemme, og stemmen kan endres frem til fristen. Resultatet vises som ja, nei og prosent, og forslaget blir vedtatt når kravet er innfridd (minst 3 av 4, alle 4, eller flertall av de som stemmer).", "/badehusappen/"),
  ("2026-11-04", "Sjekk inn når dere tar badehuset i bruk", "Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der. Muligheten til å registrere bruk i ettertid er tatt bort.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-27", "Ledig torsdag, fredag eller lørdag fra 7 dager før", "Fra 7 dager før datoen er det førstemann til mølla: er en torsdag, fredag eller lørdag fortsatt ledig da, kan alle hus booke den – også om dere har brukt opp kvoten. Dette står i reglene og i Badehusappen.", "/dokumentasjon/regler.html#hvor-mye"),
@@ -314,7 +315,7 @@ def write_start(LOGO, out_path):
   </section>
   <footer class="fot">
     <p>Laget av Thomas Gude Svensrud for oss i HT14. Rettelser eller ideer? Si fra til Thomas.</p>
-    <p class="ver">HT14 versjon 0.7</p>
+    <p class="ver">HT14 versjon 0.8</p>
   </footer>
 </div>
 <script src="/om-oss.js?v=06" defer></script>
