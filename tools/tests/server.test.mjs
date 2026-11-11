@@ -49,6 +49,7 @@ test("eksport: aldri passord-hash, salt, økter eller innloggingsforsøk", async
   const all = seen.join("\n");
   assert.ok(!/pw_hash|pw_salt|pw_iterations/.test(all), "ingen passordfelt");
   assert.ok(!/sessions|login_attempts/.test(all), "ingen økter");
+  assert.ok(/forslag/.test(all) && /stemmer/.test(all), "forslag og stemmer tas med");
   assert.ok(!/\*/.test(all), "ingen SELECT *");
 });
 
@@ -60,6 +61,7 @@ test("eksport: CSV med anførselstegn og vern mot formler i Excel", () => {
 test("Workeren bruker samme regelmotor og rules.json som appen", () => {
   const src = readFileSync(new URL("../../src/index.js", import.meta.url), "utf8");
   assert.match(src, /from "\.\.\/public\/badehusappen\/js\/rules-engine\.js"/);
+  assert.match(src, /from "\.\.\/public\/badehusappen\/js\/forslag\.js"/);
   assert.match(src, /from "\.\.\/public\/badehusappen\/rules\.json"/);
   assert.match(src, /R\.validateBookingMulti\(/); assert.match(src, /R\.validateCancel\(/);
   assert.match(src, /R\.validateCheckin\(/); assert.match(src, /R\.validateSpontaneous\(/); assert.doesNotMatch(src, /validateConfirm|\/confirm/);   // ingen bekreftelse i ettertid
@@ -69,6 +71,7 @@ test("skjemaet stopper dobbeltbooking og har én aktiv innlogging per hus", () =
   const sql = readFileSync(new URL("../../schema.sql", import.meta.url), "utf8");
   assert.match(sql, /CREATE UNIQUE INDEX IF NOT EXISTS bookings_one_active_per_slot\s+ON bookings \(date, period\) WHERE status <> 'CANCELLED'/);
   assert.match(sql, /CREATE UNIQUE INDEX IF NOT EXISTS users_one_login_per_house\s+ON users \(house_id\) WHERE role = 'house' AND active = 1/);
+  assert.match(sql, /UNIQUE \(forslag_id, hus\)/);
 });
 
 test("ikonene (src/ikoner.js) er gyldige PNG/ICO og matcher manifestet", async () => {

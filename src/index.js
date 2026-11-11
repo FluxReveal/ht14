@@ -1,5 +1,5 @@
 /**
- * HT14 versjon 0.6 – Cloudflare Worker for ht14.no
+ * HT14 versjon 0.7 – Cloudflare Worker for ht14.no
  *
  * Statiske filer (public/) serveres direkte. Bare /api/* går gjennom Workeren
  * (run_worker_first i wrangler.jsonc). Data ligger i D1 (binding DB).
@@ -13,6 +13,7 @@
  * gjentatte feil passord, generelle feilmeldinger og ingen passord-hasher ut.
  */
 import R from "../public/badehusappen/js/rules-engine.js";
+import F from "../public/badehusappen/js/forslag.js";
 import { ICONS } from "./ikoner.js";
 import RULES from "../public/badehusappen/rules.json";
 import {
@@ -21,7 +22,7 @@ import {
 } from "./auth.js";
 import { runExport } from "./export.js";
 
-const VERSION = "0.6";
+const VERSION = "0.7";
 const HOUSES = ["A", "B", "C", "D"];
 const LOCK_MIN = 15;            // pause i minutter
 const MAX_FAIL_EMAIL = 5;       // feil passord per e-post innen 15 min
@@ -47,7 +48,7 @@ class ApiError extends Error {
 }
 const fail = (status, error, message, extra) => { throw new ApiError(status, error, message, extra); };
 const need = (res, status = 400) => {
-  if (!res.ok) fail(res.error === "SLOT_TAKEN" ? 409 : res.error === "FORBIDDEN" ? 403 : res.error === "NOT_FOUND" ? 404 : status, res.error, res.message);
+  if (!res.ok) fail(res.error === "SLOT_TAKEN" || res.error === "CLOSED" ? 409 : res.error === "FORBIDDEN" || res.error === "NO_HOUSE" ? 403 : res.error === "NOT_FOUND" ? 404 : status, res.error, res.message);
   return res;
 };
 const nowIso = () => new Date().toISOString();
@@ -422,6 +423,117 @@ async function adminEvents(env, url) {
   return json(results);
 }
 
+
+/* ---------------- Forslag ---------------- */
+
+const FCOLS = "id, tittel, begrunnelse, opprettet_av_hus, frist, krav, lukket_at, created_at";
+
+async function stemmerFor(env, ids) {
+  if (!ids.length) return [];
+  const ph = ids.map(() => "?").join(",");
+  const { results } = await env.DB.prepare(
+    `SELECT forslag_id, hus, stemme FROM stemmer WHERE forslag_id IN (${ph}) ORDER BY hus`
+  ).bind(...ids).all();
+  return results;
+}
+
+function forslagToClient(row, alleStemmer, now, user) {
+  const list = alleStemmer.filter(s => s.forslag_id === row.id).map(s => ({ hus: s.hus, stemme: s.stemme }));
+  const res = F.resultat({ frist: row.frist, krav: row.krav, lukket_at: row.lukket_at }, list, now.date);
+  const hus = user.house_id;
+  const min = list.find(s => s.hus === hus);
+  return {
+    id: String(row.id), tittel: row.tittel, begrunnelse: row.begrunnelse,
+    hus: row.opprettet_av_hus, frist: row.frist, krav: row.krav, kravTekst: F.kravTekst(row.krav),
+    lukketAt: row.lukket_at, createdAt: row.created_at,
+    status: res.status, statusTekst: F.statusTekst(res.status),
+    ja: res.ja, nei: res.nei, avgitt: res.avgitt, gjenstaar: res.gjenstaar,
+    prosent: res.prosent, tidlig: res.tidlig, ended: res.ended,
+    minStemme: min ? min.stemme : null, stemmer: list,
+    kanStemme: !!(hus && F.HOUSES.includes(hus) && !row.lukket_at && now.date <= row.frist)
+  };
+}
+
+async function listForslag(env, user, now) {
+  requireUser(user);
+  const { results } = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag ORDER BY id DESC`).all();
+  const stemmer = await stemmerFor(env, results.map(r => r.id));
+  const items = results.map(r => forslagToClient(r, stemmer, now, user));
+  items.sort((a, b) => {
+    const ao = a.status === "apen" ? 0 : 1, bo = b.status === "apen" ? 0 : 1;
+    if (ao !== bo) return ao - bo;
+    return ao === 0 ? (a.frist < b.frist ? -1 : a.frist > b.frist ? 1 : +b.id - +a.id) : +b.id - +a.id;
+  });
+  return json(items);
+}
+
+async function getForslag(env, user, id, now) {
+  requireUser(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const stemmer = await stemmerFor(env, [row.id]);
+  return json(forslagToClient(row, stemmer, now, user));
+}
+
+async function createForslag(request, env, user, now) {
+  requireUser(user);
+  const res = F.validateCreate(await readJson(request), now.date);
+  need(res);
+  const r = await env.DB.prepare(
+    `INSERT INTO forslag (tittel, begrunnelse, opprettet_av_hus, opprettet_av, frist, krav)
+     VALUES (?, ?, ?, ?, ?, ?) RETURNING ${FCOLS}`
+  ).bind(res.tittel, res.begrunnelse, user.house_id || null, user.id, res.frist, res.krav).first();
+  await logEvent(env, user, user.house_id, "FORSLAG_CREATE", "forslag:" + r.id, null, { tittel: res.tittel, frist: res.frist, krav: res.krav }).run();
+  return json(forslagToClient(r, [], now, user), 201);
+}
+
+async function stemForslag(request, env, user, id, now) {
+  requireUser(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const eksisterer = await stemmerFor(env, [row.id]);
+  const res = F.validateVote({ hus: user.house_id, stemme: (await readJson(request)).stemme }, row, eksisterer, now.date);
+  need(res, res.error === "CLOSED" ? 409 : 400);
+  const ts = nowIso();
+  await env.DB.batch([
+    env.DB.prepare(
+      `INSERT INTO stemmer (forslag_id, hus, stemme) VALUES (?, ?, ?)
+       ON CONFLICT(forslag_id, hus) DO UPDATE SET stemme = excluded.stemme, updated_at = ?`
+    ).bind(row.id, res.hus, res.stemme, ts),
+    logEvent(env, user, res.hus, "FORSLAG_STEM", "forslag:" + row.id, null, { stemme: res.stemme })
+  ]);
+  return getForslag(env, user, id, now);
+}
+
+async function lukkForslag(env, user, id, now) {
+  requireAdmin(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  if (row.lukket_at) fail(409, "CLOSED", "Avstemningen er allerede lukket.");
+  const ts = nowIso();
+  await env.DB.batch([
+    env.DB.prepare("UPDATE forslag SET lukket_at = ?, updated_at = ? WHERE id = ?").bind(ts, ts, row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_LUKK", "forslag:" + row.id)
+  ]);
+  return getForslag(env, user, id, now);
+}
+
+async function slettForslag(env, user, id) {
+  requireAdmin(user);
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare("SELECT id, tittel FROM forslag WHERE id = ?").bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  await env.DB.batch([
+    env.DB.prepare("DELETE FROM stemmer WHERE forslag_id = ?").bind(row.id),
+    env.DB.prepare("DELETE FROM forslag WHERE id = ?").bind(row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_SLETT", "forslag:" + row.id, { tittel: row.tittel })
+  ]);
+  return json({ ok: true, message: "Forslaget er slettet." });
+}
+
 /* ---------------- Ruter ---------------- */
 
 async function api(request, env, ctx, url) {
@@ -465,6 +577,14 @@ async function api(request, env, ctx, url) {
 
   if (path === "/api/contacts" && method === "GET") return listContacts(env, user);
   if ((m = path.match(/^\/api\/contacts\/([A-D])$/)) && method === "PUT") return saveContacts(request, env, user, m[1]);
+
+
+  if (path === "/api/forslag" && method === "GET") return listForslag(env, user, now);
+  if (path === "/api/forslag" && method === "POST") return createForslag(request, env, user, now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)$/)) && method === "GET") return getForslag(env, user, m[1], now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)$/)) && method === "DELETE") return slettForslag(env, user, m[1]);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)\/stem$/)) && method === "POST") return stemForslag(request, env, user, m[1], now);
+  if ((m = path.match(/^\/api\/forslag\/([^/]+)\/lukk$/)) && method === "POST") return lukkForslag(env, user, m[1], now);
 
   if (path.startsWith("/api/admin/")) {
     requireAdmin(user);

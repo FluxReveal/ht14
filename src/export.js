@@ -3,7 +3,7 @@
  *
  * Skriver CSV + JSON til mappen data/ i repoet. Git-historikken gir en kopi per natt.
  * Tas med:  bookinger, innlogginger (uten passord-hash, salt og iterasjoner),
- *           Om oss-kontakter og hendelseslogg.
+ *           Om oss-kontakter, hendelseslogg, forslag og stemmer.
  * Tas ALDRI med: passord-hasher, salt, økter (sessions) eller innloggingsforsøk.
  *
  * Krever hemmeligheten GH_DATA_TOKEN (fine-grained token med bare «Contents: Read and write»
@@ -16,7 +16,9 @@ const QUERIES = {
   bookings: "SELECT id, group_id, date, period, house_id, created_by, source, status, quota, created_at, checked_in_at, confirmed_at, cancelled_at, cancelled_by, updated_at FROM bookings ORDER BY date, id",
   users: "SELECT id, house_id, email, display_name, role, active, created_at, updated_at, pw_changed_at, last_login_at FROM users ORDER BY id",
   contacts: "SELECT house_id, household, c1_name, c1_email, c1_phone, c2_name, c2_email, c2_phone, note, updated_at, updated_by FROM house_info ORDER BY house_id",
-  events: "SELECT id, ts, actor_user_id, house_id, action, target, from_json, to_json, comment FROM events ORDER BY id"
+  events: "SELECT id, ts, actor_user_id, house_id, action, target, from_json, to_json, comment FROM events ORDER BY id",
+  forslag: "SELECT id, tittel, begrunnelse, opprettet_av_hus, opprettet_av, frist, krav, lukket_at, created_at, updated_at FROM forslag ORDER BY id",
+  stemmer: "SELECT id, forslag_id, hus, stemme, created_at, updated_at FROM stemmer ORDER BY forslag_id, hus"
 };
 
 export function toCsv(rows) {
