@@ -1,4 +1,4 @@
-/* Badehusappen – stil (HT14 versjon 0.7), laget for å ligne en vanlig iPhone-app.
+/* Badehusappen – stil (HT14 versjon 0.8), laget for å ligne en vanlig iPhone-app.
  *
  *  - Systemfonten (SF Pro på Apple, Segoe/Roboto ellers), store titler, grupperte lister med innrykk,
  *    gjennomsiktig fanelinje, segmentkontroller og ark som glir opp nedenfra.
@@ -331,3 +331,10 @@ body:has(.tabs[hidden]) { padding-left: 0; }
 .tally .no { background: var(--red); height: 100%; }
 .forslag-tittel { font-size: 1.45rem; line-height: 1.2; font-weight: 700; margin: .25rem 0 .25rem; letter-spacing: -.02em; }
 #view-forslag .back { margin-left: -.2rem; }
+
+/* v0.8: vurdering og gjennomføring */
+.vurdering p { margin: .55rem 0; }
+.pill.gjen.ikke_startet { background: var(--fill); color: var(--ink2); }
+.pill.gjen.planlagt { background: var(--tint-soft); color: var(--tint); }
+.pill.gjen.pagar { background: var(--no-bg); color: var(--no); }
+.pill.gjen.ferdig { background: var(--ok-bg); color: var(--ok); }

@@ -1,5 +1,5 @@
 /*
- * Badehusappen – brukergrensesnitt (HT14 versjon 0.7)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.8)
  * ---------------------------------------------------------------
  * Innlogging, kalender (i dag + 30 dager, eller måned), booking, innsjekk,
  * Mine bookinger, forslag og stemming, statistikk (sesong og år), bytte passord og administrasjon.
@@ -366,15 +366,37 @@
   }
 
 
+
   /* ---------- Forslag ---------- */
-  const forslagLi = f => `<li><button type="button" class="cell nav" data-fid="${f.id}">
-      <span><b>${esc(f.tittel)}</b><br><span class="muted">${esc(f.statusTekst)} · frist ${esc(R.dateLabel(f.frist))}${f.avgitt ? ` · ${f.ja} ja, ${f.nei} nei` : " · ingen stemmer ennå"}</span></span>
+  const forslagLi = f => {
+    const mer = (f.runder && f.runder.length > 1) ? `${esc(f.runder.map(r => r.merkelapp).join(" · "))} · ` : "";
+    return `<li><button type="button" class="cell nav" data-fid="${f.id}">
+      <span><b>${esc(f.tittel)}</b><br><span class="muted">${mer}${esc(f.statusTekst)} · frist ${esc(R.dateLabel(f.frist))}${f.avgitt ? ` · ${f.ja} ja, ${f.nei} nei` : " · ingen stemmer ennå"}</span></span>
       <span class="pill ${f.status}">${esc(f.statusTekst)}</span></button></li>`;
+  };
   function forslagTally(f) {
     const jaW = f.avgitt ? (f.ja / 4) * 100 : 0, neiW = f.avgitt ? (f.nei / 4) * 100 : 0;
     const pct = f.prosent == null ? "Ingen har stemt ennå" : `${f.prosent} % ja av de som har stemt`;
     return `<div class="tally" aria-hidden="true"><span class="yes" style="width:${jaW}%"></span><span class="no" style="width:${neiW}%"></span></div>
       <p class="foot">${f.ja} ja · ${f.nei} nei · ${f.avgitt} av 4 hus har stemt. ${pct}.</p>`;
+  }
+  const hvemListe = runde => Fo.HOUSES.map(h => {
+    const s = (runde.stemmer || []).find(x => x.hus === h);
+    return `<li class="cell"><span>${houseChip(h)}</span><span class="muted">${s ? (s.stemme === "ja" ? "Ja" : "Nei") : "Ikke stemt"}</span></li>`;
+  }).join("");
+  function vurderingKort(f) {
+    const v = f.vurdering; if (!v) return "";
+    const naar = [v.tidspunktTekst, v.tidKommentar].filter(Boolean).join(" – ");
+    const kost = v.koster === "ja" ? (v.belopTekst ? `Ja, anslått ${esc(v.belopTekst)}` : "Ja (uten anslag)") : esc(v.kosterTekst);
+    const oppdatert = v.oppdatert ? new Date(v.oppdatert).toLocaleString("nb-NO", { day: "numeric", month: "short", year: "numeric" }) : "";
+    return `<h2 class="ghead">Vurdering</h2>
+      <div class="group text vurdering">
+        ${oppdatert ? `<p class="muted">Oppdatert ${esc(oppdatert)}</p>` : ""}
+        <p><b>Kompleksitet:</b> ${esc(v.kompleksitetTekst)}</p>
+        <p><b>Det som skal til:</b><br>${esc(v.tiltak).replace(/\n/g, "<br>")}</p>
+        <p><b>Koster penger:</b> ${kost}</p>
+        <p><b>Når:</b> ${esc(naar)}</p>
+      </div>`;
   }
   async function renderForslag() {
     const box = $("#forslag");
@@ -390,33 +412,46 @@
     } catch (e) { box.innerHTML = `<p class="msg no">${esc(e.message)}</p>`; }
   }
   async function renderForslagEn(box, f) {
-    const hvem = Fo.HOUSES.map(h => {
-      const s = (f.stemmer || []).find(x => x.hus === h);
-      return `<li class="cell"><span>${houseChip(h)}</span><span class="muted">${s ? (s.stemme === "ja" ? "Ja" : "Nei") : "Ikke stemt"}</span></li>`;
-    }).join("");
+    const runder = f.runder && f.runder.length ? f.runder : [f];
     let html = `<button type="button" class="back" id="forslagBack">‹ Alle forslag</button>`;
-    html += `<p><span class="pill ${f.status}">${esc(f.statusTekst)}${f.tidlig ? " allerede nå" : ""}</span></p>`;
+    html += `<p><span class="pill ${f.status}">${esc(f.statusTekst)}${f.tidlig ? " allerede nå" : ""}</span>${f.gjennomforingTekst ? ` <span class="pill gjen ${f.gjennomforing}">${esc(f.gjennomforingTekst)}</span>` : ""}</p>`;
     html += `<h2 class="forslag-tittel">${esc(f.tittel)}</h2>`;
-    html += `<p class="muted">Fra ${f.hus ? "Hus " + esc(f.hus) : "administrator"} · frist ${esc(R.dateLabel(f.frist))}</p>`;
+    html += `<p class="muted">Fra ${f.hus ? "Hus " + esc(f.hus) : "administrator"}</p>`;
     html += `<div class="group text"><p>${esc(f.begrunnelse).replace(/\n/g, "<br>")}</p></div>`;
-    html += `<p class="foot">${esc(f.kravTekst)}. Avstemningen er åpen ut ${esc(R.dateLabel(f.frist))}.</p>`;
-    html += forslagTally(f);
-    if (f.kanStemme) {
-      const mer = f.tidlig ? (f.status === "vedtatt"
-        ? " Forslaget er allerede vedtatt, men husene kan fortsatt stemme frem til fristen."
-        : " Kravet kan ikke lenger nås, men husene kan fortsatt stemme frem til fristen.") : "";
-      html += `<h2 class="ghead">Deres stemme</h2>
-        <div class="vote" role="group" aria-label="Stem">
-          <button type="button" class="ja${f.minStemme === "ja" ? " on" : ""}" data-stemme="ja">${f.minStemme === "ja" ? "Dere har stemt ja" : "Ja"}</button>
-          <button type="button" class="nei${f.minStemme === "nei" ? " on" : ""}" data-stemme="nei">${f.minStemme === "nei" ? "Dere har stemt nei" : "Nei"}</button>
-        </div>
-        <p class="foot">${f.minStemme ? "Dere kan endre stemmen frem til fristen." : "Ett hus, én stemme."}${mer}</p>`;
-    } else if (!myHouse) html += `<p class="foot">Stemming er per hus. Innloggingen din er ikke knyttet til et hus, så du kan ikke stemme.</p>`;
-    else html += `<p class="foot">Avstemningen er avsluttet.</p>`;
-    html += `<h2 class="ghead">Hvem har stemt</h2><ul class="group">${hvem}</ul>`;
+    if (runder.length > 1) html += `<p class="foot">${esc(runder.map(r => r.merkelapp).join(" · "))}.</p>`;
+    runder.forEach(r => {
+      const flere = runder.length > 1;
+      html += `<h2 class="ghead">${flere ? esc(r.merkelapp) : "Avstemning"}</h2>`;
+      html += `<p class="foot">${esc(r.kravTekst)}. ${r.lukketAt || r.ended && !r.tidlig ? "Avstemningen er avsluttet." : `Åpen ut ${esc(R.dateLabel(r.frist))}.`}</p>`;
+      html += forslagTally(r);
+      if (r.kanStemme) {
+        const mer = r.tidlig ? (r.status === "vedtatt"
+          ? " Denne runden er allerede vedtatt, men husene kan fortsatt stemme frem til fristen."
+          : " Kravet kan ikke lenger nås, men husene kan fortsatt stemme frem til fristen.") : "";
+        html += `<h3 class="ghead">Deres stemme</h3>
+          <div class="vote" role="group" aria-label="Stem">
+            <button type="button" class="ja${r.minStemme === "ja" ? " on" : ""}" data-stemme="ja">${r.minStemme === "ja" ? "Dere har stemt ja" : "Ja"}</button>
+            <button type="button" class="nei${r.minStemme === "nei" ? " on" : ""}" data-stemme="nei">${r.minStemme === "nei" ? "Dere har stemt nei" : "Nei"}</button>
+          </div>
+          <p class="foot">${r.minStemme ? "Dere kan endre stemmen frem til fristen." : "Ett hus, én stemme."}${mer}</p>`;
+      }
+      html += `<ul class="group">${hvemListe(r)}</ul>`;
+    });
+    if (!f.kanStemme && !myHouse) html += `<p class="foot">Stemming er per hus. Innloggingen din er ikke knyttet til et hus, så du kan ikke stemme.</p>`;
+    html += vurderingKort(f);
+    if (f.kanSetteGjennomforing || f.gjennomforingTekst) {
+      html += `<h2 class="ghead">Gjennomføring</h2>`;
+      if (f.kanSetteGjennomforing) {
+        html += `<div class="seg" role="group" aria-label="Gjennomføring">${Fo.GJENNOMFORING.map(k =>
+          `<button type="button" data-gjen="${k}" aria-pressed="${f.gjennomforing === k}">${esc(Fo.gjennomforingTekst(k))}</button>`).join("")}</div>`;
+      } else html += `<p class="foot">${esc(f.gjennomforingTekst)}</p>`;
+    }
     if (isAdmin()) {
       html += `<h2 class="ghead">Administrator</h2><div class="pad row">`;
-      if (!f.lukketAt && !(f.ended && !f.tidlig)) html += `<button type="button" class="btn tinted small" id="lukkForslag">Lukk avstemningen</button>`;
+      if (f.kanVurdere) html += `<button type="button" class="btn tinted small" id="vurderForslag">${f.vurdering ? "Endre vurderingen" : "Skriv vurdering"}</button>`;
+      if (f.kanNyRunde) html += `<button type="button" class="btn tinted small" id="nyRundeBtn">Send til ny avstemning</button>`;
+      const apen = (f.runder || []).find(r => r.kanStemme || (!r.lukketAt && !r.ended));
+      if (apen && !apen.ended || (f.runder || []).some(r => !r.lukketAt && !r.ended)) html += `<button type="button" class="btn tinted small" id="lukkForslag">Lukk avstemningen</button>`;
       html += `<button type="button" class="btn plain small red" id="slettForslag">Slett forslaget</button></div>`;
     }
     box.innerHTML = html;
@@ -425,9 +460,17 @@
       try { const n = await S.stemForslag(f.id, b.dataset.stemme); toast(b.dataset.stemme === "ja" ? "Husets stemme er ja." : "Husets stemme er nei."); await renderForslagEn(box, n); }
       catch (e) { toast(e.message); }
     }));
+    box.querySelectorAll("[data-gjen]").forEach(b => b.addEventListener("click", async () => {
+      try { const n = await S.settGjennomforing(f.id, b.dataset.gjen); toast("Gjennomføringen er oppdatert."); await renderForslagEn(box, n); }
+      catch (e) { toast(e.message); }
+    }));
+    const vur = $("#vurderForslag");
+    if (vur) vur.addEventListener("click", () => openVurdering(f));
+    const ny = $("#nyRundeBtn");
+    if (ny) ny.addEventListener("click", () => openNyRunde(f));
     const lukk = $("#lukkForslag");
     if (lukk) lukk.addEventListener("click", async () => {
-      if (!confirm("Lukke avstemningen nå? Da kan ingen lenger stemme, og resultatet blir stående.")) return;
+      if (!confirm("Lukke den åpne avstemningen nå? Da kan ingen lenger stemme i denne runden, og resultatet blir stående.")) return;
       try { const n = await S.lukkForslag(f.id); toast("Avstemningen er lukket."); await renderForslagEn(box, n); }
       catch (e) { toast(e.message); }
     });
@@ -436,6 +479,89 @@
       if (!confirm("Slette forslaget og alle stemmene? Dette kan ikke angres.")) return;
       try { const r = await S.slettForslag(f.id); forslagId = null; toast(r.message); await renderForslag(); }
       catch (e) { toast(e.message); }
+    });
+  }
+  function openVurdering(f) {
+    const v = f.vurdering || {};
+    const erDato = v.tidspunkt && /^\d{4}-\d{2}-\d{2}$/.test(v.tidspunkt);
+    const html = `<form id="vurderForm">
+      <p class="foot">Alle fire husene har sagt ja. Skriv en kort vurdering av hva det vil kreve å gjennomføre forslaget.</p>
+      <div class="group form">
+        <label class="cell field"><span>Kompleksitet</span>
+          <select name="kompleksitet" required>
+            <option value="lav"${v.kompleksitet === "lav" ? " selected" : ""}>Lav</option>
+            <option value="middels"${!v.kompleksitet || v.kompleksitet === "middels" ? " selected" : ""}>Middels</option>
+            <option value="hoy"${v.kompleksitet === "hoy" ? " selected" : ""}>Høy</option>
+          </select></label>
+        <label class="cell field area"><span>Tiltak</span>
+          <textarea name="tiltak" maxlength="4000" required placeholder="Hva skal til for å gjennomføre endringen?">${esc(v.tiltak || "")}</textarea></label>
+        <label class="cell field"><span>Koster penger</span>
+          <select name="koster" id="kosterVelg">
+            <option value="nei"${v.koster === "nei" ? " selected" : ""}>Nei</option>
+            <option value="ja"${v.koster === "ja" ? " selected" : ""}>Ja</option>
+            <option value="usikkert"${v.koster === "usikkert" ? " selected" : ""}>Usikkert</option>
+          </select></label>
+        <label class="cell field" id="belopRad"${v.koster === "ja" ? "" : " hidden"}><span>Anslag, kr</span>
+          <input name="belopKr" inputmode="numeric" placeholder="Valgfritt, hele kroner" value="${v.belopKr != null ? esc(String(v.belopKr)) : ""}"></label>
+        <label class="cell field"><span>Tidspunkt</span>
+          <select name="tidtype" id="tidtype">
+            <option value="month"${erDato ? "" : " selected"}>Måned</option>
+            <option value="date"${erDato ? " selected" : ""}>Dato</option>
+          </select></label>
+        <label class="cell field"><span id="tidLabel">${erDato ? "Dato" : "Måned"}</span>
+          <input name="tidspunkt" id="tidspunkt" type="${erDato ? "date" : "month"}" required value="${esc(v.tidspunkt || "")}"></label>
+        <label class="cell field area"><span>Kommentar</span>
+          <textarea name="tidKommentar" maxlength="1000" placeholder="Valgfritt, for eksempel «etter påske»">${esc(v.tidKommentar || "")}</textarea></label>
+      </div>
+      <p id="vurderMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet(v.oppdatert ? "Endre vurderingen" : "Skriv vurdering", html, `<button type="submit" form="vurderForm" class="btn filled wide">Lagre vurderingen</button>`);
+    const tog = () => { const ja = $("#kosterVelg").value === "ja"; $("#belopRad").hidden = !ja; };
+    $("#kosterVelg").addEventListener("change", tog); tog();
+    $("#tidtype").addEventListener("change", () => {
+      const date = $("#tidtype").value === "date";
+      const el = $("#tidspunkt");
+      el.type = date ? "date" : "month";
+      $("#tidLabel").textContent = date ? "Dato" : "Måned";
+      if (el.value && date && el.value.length === 7) el.value = "";
+      if (el.value && !date && el.value.length === 10) el.value = el.value.slice(0, 7);
+    });
+    $("#vurderForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const el = e.target.elements;
+      try {
+        const n = await S.lagVurdering(f.id, {
+          kompleksitet: el.kompleksitet.value, tiltak: el.tiltak.value, koster: el.koster.value,
+          belopKr: el.koster.value === "ja" && el.belopKr.value.trim() ? el.belopKr.value.trim() : null,
+          tidspunkt: el.tidspunkt.value, tidKommentar: el.tidKommentar.value
+        });
+        closeSheet(); toast("Vurderingen er lagret."); await renderForslagEn($("#forslag"), n);
+      } catch (err) { $("#vurderMsg").textContent = err.message; }
+    });
+  }
+  function openNyRunde(f) {
+    const today = now().date;
+    const anslag = f.vurdering && f.vurdering.belopTekst ? ` Anslaget er ${f.vurdering.belopTekst}.` : "";
+    const html = `<form id="nyRundeForm">
+      <p>Vurderingen sier at forslaget koster penger.${anslag} Husene stemmer på nytt, med kostnaden og vurderingen synlig. Runde 1 blir stående som historikk.</p>
+      <div class="group form">
+        ${field("Frist", "frist", "", `type="date" required min="${today}"`)}
+        <label class="cell field"><span>Krav</span>
+          <select name="krav">
+            <option value="4av4" selected>Alle 4 hus sier ja</option>
+            <option value="3av4">Minst 3 av 4 hus sier ja</option>
+            <option value="flertall">Flertall av de som stemmer</option>
+          </select></label>
+      </div>
+      <p class="foot">Standard er at alle fire husene må si ja når det koster penger, men du kan velge et annet krav.</p>
+      <p id="nyRundeMsg" class="formmsg" role="alert"></p></form>`;
+    openSheet("Send til ny avstemning", html, `<button type="submit" form="nyRundeForm" class="btn filled wide">Start ny runde</button>`);
+    $("#nyRundeForm").addEventListener("submit", async e => {
+      e.preventDefault();
+      const el = e.target.elements;
+      try {
+        const n = await S.nyRunde(f.id, { frist: el.frist.value, krav: el.krav.value });
+        closeSheet(); toast("Ny avstemning er åpnet."); await renderForslagEn($("#forslag"), n);
+      } catch (err) { $("#nyRundeMsg").textContent = err.message; }
     });
   }
   function openNyttForslag() {
@@ -551,7 +677,8 @@
   }
   const EVENT = { BOOK: "Booking", CANCEL: "Avbestilling", CHECKIN: "Innsjekk", CONFIRM: "Bekreftet bruk", LOGIN: "Innlogging", LOGOUT: "Utlogging",
     PASSWORD_CHANGE: "Byttet passord", PASSWORD_RESET: "Nytt passord fra admin", USER_CREATE: "Ny innlogging", USER_DEACTIVATE: "Deaktivert innlogging", CONTACTS_UPDATE: "Endret Om oss",
-    FORSLAG_CREATE: "Nytt forslag", FORSLAG_STEM: "Stemt på forslag", FORSLAG_LUKK: "Lukket avstemning", FORSLAG_SLETT: "Slettet forslag" };
+    FORSLAG_CREATE: "Nytt forslag", FORSLAG_STEM: "Stemt på forslag", FORSLAG_LUKK: "Lukket avstemning", FORSLAG_SLETT: "Slettet forslag",
+    FORSLAG_VURDERING: "Vurdering av forslag", FORSLAG_RUNDE: "Ny avstemningsrunde", FORSLAG_GJENNOMFORING: "Gjennomføring oppdatert" };
 
   function passwordSheet(title, intro, withEmail, submit) {
     const pw = randomPassword();
