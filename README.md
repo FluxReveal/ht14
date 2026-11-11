@@ -4,9 +4,9 @@ Nettsiden til **Sameiet Halden Terrasse 14** (fire hus, 14A–14D):
 
 - **Startside** – `/`, med «Om oss» (Hus A–D; navn og kontaktinfo bare etter innlogging)
 - **Dokumentasjon** – `/dokumentasjon/` (teknisk dokumentasjon, regler, forslag til vedtekter, årshjul, hva er nytt)
-- **Badehusappen** – `/badehusappen/`, kortadresse **badehusappen.ht14.no** (felles booking for alle fire husene, én innlogging per hus)
+- **Badehusappen** – `/badehusappen/`, kortadresse **badehusappen.ht14.no** (felles booking for alle fire husene, én innlogging per hus, og **Forslag** der husene kan legge frem og stemme over forslag)
 
-Dette er **HT14 versjon 0.6**.
+Dette er **HT14 versjon 0.7**.
 
 Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.
 
@@ -15,14 +15,14 @@ Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestem
 Alt ligger hos Cloudflare, på gratisplanene:
 
 - **Én Cloudflare Worker** (`ht14`) serverer de statiske filene i `public/` på **ht14.no**, og svarer på `/api/…`.
-  API-et (`src/index.js`): innlogging, booking, Om oss og administrasjon. Reglene sjekkes på serveren med den samme
-  regelmotoren som appen (`public/badehusappen/js/rules-engine.js`).
-- **D1-database** `ht14` for bookinger, innlogginger (én per hus + admin), Om oss, økter og hendelseslogg (`schema.sql`).
+  API-et (`src/index.js`): innlogging, booking, forslag, Om oss og administrasjon. Reglene sjekkes på serveren med den samme
+  regelmotoren som appen (`public/badehusappen/js/rules-engine.js`). Forslag og stemming bruker `public/badehusappen/js/forslag.js`.
+- **D1-database** `ht14` for bookinger, innlogginger (én per hus + admin), Om oss, forslag, stemmer, økter og hendelseslogg (`schema.sql`).
   Forhåndsvisninger av grener bruker `ht14-test`.
 - **Innlogging:** egen e-post + passord. PBKDF2-SHA256 (10 000 runder – målt 4–6 ms CPU per innlogging, eget salt, HMAC-pepper `SESSION_PEPPER`),
   cookie `__Host-ht14_okt` (HttpOnly, Secure, SameSite=Lax, ca. ett år), pause etter 5 feil passord, Origin-sjekk.
 - **Nattlig kopi** (`src/export.js`, Cron Trigger slås på når `GH_DATA_TOKEN` er lagt inn) skriver bookinger, brukere,
-  Om oss og hendelser som CSV + JSON til det private repoet
+  Om oss, hendelser, forslag og stemmer som CSV + JSON til det private repoet
   [`FluxReveal/ht14-data`](https://github.com/FluxReveal/ht14-data) – aldri passord-hasher eller økter.
 - **Workers Builds** publiserer automatisk når `main` endres. Andre grener får en forhåndsvisningslenke.
 

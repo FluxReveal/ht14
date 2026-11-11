@@ -62,7 +62,7 @@ const REDIR = [["dokumentasjon/", /dokumentasjon\/teknisk(\.html)?$/], ["dokumen
       await p.waitForSelector("#loginForm"); await ov("app"); await shoot("2-app-innlogging");
       if (await p.locator("#view-om, .tabs [data-view='om']").count()) prob.push("appen har fortsatt Om oss");
       const tabs = await p.locator(".tabs button").evaluateAll(bs => bs.map(b => b.dataset.view));
-      if (JSON.stringify(tabs) !== '["kalender","mine","statistikk","mer"]') prob.push("faner: " + JSON.stringify(tabs));
+      if (JSON.stringify(tabs) !== '["kalender","mine","forslag","statistikk","mer"]') prob.push("faner: " + JSON.stringify(tabs));
       if (!(await p.locator(".tabs").isHidden())) prob.push("faner vises før innlogging");
       const ac = await p.evaluate(() => [document.querySelector("#loginEmail").autocomplete, document.querySelector("#loginPassword").autocomplete]);
       if (ac.join() !== "username,current-password") prob.push("autocomplete: " + ac);
