@@ -1,5 +1,5 @@
 -- =====================================================================
--- HT14 versjon 0.6 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
+-- HT14 versjon 0.7 – D1-database «ht14» (og «ht14-test» for forhåndsvisninger)
 -- Legges inn med:  npx wrangler d1 execute ht14 --remote --file=schema.sql
 -- Trygt å kjøre flere ganger (IF NOT EXISTS / INSERT OR IGNORE).
 -- Tider lagres som ISO 8601 i UTC (tekst). Datoer (YYYY-MM-DD) er norsk dato.
@@ -118,5 +118,34 @@ CREATE TABLE IF NOT EXISTS events (
 );
 CREATE INDEX IF NOT EXISTS events_ts ON events (ts);
 
+-- Forslag i sameiet. Tittel og begrunnelse, frist (kalenderdato i Oslo-tid) og krav
+-- (3av4, 4av4 eller flertall av de som stemmer). Bare husbokstav, aldri personnavn.
+-- Status (Åpen / Vedtatt / Ikke vedtatt) regnes ut ved visning, ikke lagret.
+CREATE TABLE IF NOT EXISTS forslag (
+  id                INTEGER PRIMARY KEY,
+  tittel            TEXT NOT NULL CHECK (length(tittel) BETWEEN 1 AND 120),
+  begrunnelse       TEXT NOT NULL CHECK (length(begrunnelse) BETWEEN 1 AND 4000),
+  opprettet_av_hus  TEXT REFERENCES houses(id),
+  opprettet_av      INTEGER REFERENCES users(id),
+  frist             TEXT NOT NULL CHECK (frist GLOB '[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]'),
+  krav              TEXT NOT NULL CHECK (krav IN ('3av4', '4av4', 'flertall')),
+  lukket_at         TEXT,
+  created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at        TEXT
+);
+CREATE INDEX IF NOT EXISTS forslag_frist ON forslag (frist);
+
+-- Én stemme per hus per forslag. Huset kan endre stemmen før fristen (UPSERT).
+CREATE TABLE IF NOT EXISTS stemmer (
+  id          INTEGER PRIMARY KEY,
+  forslag_id  INTEGER NOT NULL REFERENCES forslag(id) ON DELETE CASCADE,
+  hus         TEXT NOT NULL REFERENCES houses(id),
+  stemme      TEXT NOT NULL CHECK (stemme IN ('ja', 'nei')),
+  created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  updated_at  TEXT,
+  UNIQUE (forslag_id, hus)
+);
+CREATE INDEX IF NOT EXISTS stemmer_forslag ON stemmer (forslag_id);
+
 -- Den nattlige kopien til FluxReveal/ht14-data (scheduled() i src/index.js) leser
--- bookings, users (uten pw_*), house_info og events – aldri sessions eller login_attempts.
+-- bookings, users (uten pw_*), house_info, events, forslag og stemmer – aldri sessions eller login_attempts.
