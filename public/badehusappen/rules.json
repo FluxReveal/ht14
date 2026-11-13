@@ -12,6 +12,7 @@
     "MID": { "label": "Ettermiddag", "start": "14:00", "end": "17:00", "units": 1 },
     "PM": { "label": "Kveld", "start": "17:00", "end": "24:00", "units": 1 }
   },
+  "checkinFrom": "08:00",
   "fullDay": { "label": "Heldag", "periods": ["AM", "MID", "PM"], "default": false, "onlyBeforeStart": true },
   "defaultPeriods": ["PM"],
   "daytimeHint": "Formiddag og ettermiddag: bare når dere har gjester.",

@@ -112,6 +112,20 @@
       return q !== period && x.start >= r.start && x.end <= r.end && hasEnded(rules, date, q, now);
     });
   }
+  /** Tidligste innsjekk (spontant og på booket formiddag), uavhengig av når formiddagen starter. */
+  function checkinFromMinutes(rules) { return hm(rules.checkinFrom || "08:00"); }
+  /** Når innsjekk åpner for en periode: formiddag fra checkinFrom, ellers når perioden starter. */
+  function checkinOpens(rules, period) {
+    const start = range(rules, period).start, from = checkinFromMinutes(rules);
+    return period === periodKeys(rules)[0] ? Math.min(start, from) : start;
+  }
+  const hhFromMin = min => { const h = Math.floor(min / 60), m = min % 60; return String(h).padStart(2, "0") + ":" + String(m).padStart(2, "0"); };
+  /** Kan man sjekke inn på denne perioden nå? I dag, ikke over, og klokka er inne. */
+  function canCheckin(rules, date, period, now) {
+    if (date !== now.date || isOver(rules, date, period, now)) return false;
+    return now.minutes >= checkinOpens(rules, period);
+  }
+
   const ACTIVE = ["BOOKED", "CHECKED_IN", "COMPLETED", "NOT_CONFIRMED"];
   const isActive = st => ACTIVE.includes(st);
 
@@ -253,8 +267,8 @@
     if (!b) return fail("NOT_FOUND", "Fant ikke bookingen.");
     if (b.household !== household) return fail("FORBIDDEN", `Dette er Hus ${b.household} sin booking.`);
     if (effectiveStatus(b, rules, now) !== "BOOKED") return fail("NOT_CHECKIN", "Denne bookingen kan ikke sjekkes inn.");
-    if (b.date !== now.date || !hasStarted(rules, b.date, b.period, now))
-      return fail("TOO_EARLY", `Du kan sjekke inn når perioden starter (kl. ${rules.periods[b.period].start}).`);
+    if (!canCheckin(rules, b.date, b.period, now))
+      return fail("TOO_EARLY", `Du kan sjekke inn fra kl. ${hhFromMin(checkinOpens(rules, b.period))}.`);
     return ok();
   }
 
@@ -274,10 +288,10 @@
   }
 
   const freeNow = (bookings, rules, date, p) => !bookings.some(b => b.date === date && isActive(b.status) && overlaps(rules, b.period, p));
-  /** Perioden man kan sjekke inn spontant på nå (pågår og er ledig) – 0 eller 1 periode. */
+  /** Perioden man kan sjekke inn spontant på nå (åpen for innsjekk og ledig) – 0 eller 1 periode. */
   function spontaneousOptions(bookings, rules, now) {
     return periodKeys(rules).filter(p =>
-      hasStarted(rules, now.date, p, now) && !isOver(rules, now.date, p, now) && freeNow(bookings, rules, now.date, p));
+      canCheckin(rules, now.date, p, now) && freeNow(bookings, rules, now.date, p));
   }
   /**
    * Valg for spontan innsjekk: nåværende periode, eventuelt sammen med de
@@ -331,6 +345,6 @@
     osloNow, isDate, addDays, diffDays, addMonths, weekday, mondayOf, monthOf, yearOf,
     dateLabel, MONTHS, WD_NB, range, periodKeys, fullDayPeriods, overlaps, hasEnded, isOver, hasStarted, isActive, effectiveStatus,
     countsForQuota, validateBooking, validateBookingMulti, canBookFullDay, validateCancel, validateCheckin, checkinChain,
-    spontaneousOptions, spontaneousPlans, validateSpontaneous, stats
+    checkinFromMinutes, checkinOpens, canCheckin, spontaneousOptions, spontaneousPlans, validateSpontaneous, stats
   };
 });

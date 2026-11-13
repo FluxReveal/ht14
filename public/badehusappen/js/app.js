@@ -1,5 +1,5 @@
 /*
- * Badehusappen – brukergrensesnitt (HT14 versjon 0.9)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.10)
  * ---------------------------------------------------------------
  * Innlogging, kalender (i dag + 30 dager, eller måned), booking, innsjekk,
  * Mine bookinger, forslag og stemming, statistikk (sesong og år), bytte passord og administrasjon.
@@ -287,7 +287,7 @@
     const n = now(), all = await allBookings();
     const mineToday = all.filter(b => b.date === n.date && (isAdmin() || b.household === myHouse) && R.validateCheckin(b, b.household, rules, n).ok);
     const plans = R.spontaneousPlans(all, rules, n);       // f.eks. kl. 15: til 17, eller til 24
-    const opens = rules.periods[PKEYS[0]].start;
+    const opens = (rules.checkinFrom || "08:00").replace(/:00$/, "").replace(/^0/, "");
     let html = "";
     if (mineToday.length) html += `<p>Dere har booket nå:</p><ul class="plist">${mineToday.sort(byPeriod).map(b => bookingItem(b, n)).join("")}</ul>`;
     if (plans.length) {
@@ -296,7 +296,7 @@
         <h3 class="label">Hvor lenge?</h3><div class="types" role="group" aria-label="Hvor lenge">${plans.map((ps, i) => `<button type="button" data-plan="${i}" aria-pressed="${i === 0}"><span>Til kl. ${hh(rules.periods[ps[ps.length - 1]].end)}</span><span class="t">${cap(periodsText(ps))}</span></button>`).join("")}</div>
         <p class="muted">Spontan innsjekk teller i statistikken, men ikke i sommerkvoten. Dere sjekkes ut automatisk når tiden er ute (kl. 14, 17 eller 24).</p>`;
     } else if (!mineToday.length) {
-      html += n.minutes < R.range(rules, PKEYS[0]).start ? `<p>Badehuset kan brukes fra kl. ${opens}. Kom tilbake da – eller book en dag i kalenderen.</p>`
+      html += n.minutes < R.checkinFromMinutes(rules) ? `<p>Badehuset kan brukes fra kl. ${opens}. Kom tilbake da – eller book en dag i kalenderen.</p>`
         : `<p>Akkurat nå er badehuset opptatt eller dagen er over. Se kalenderen for ledige tider.</p>`;
     }
     openSheet("Sjekk inn nå", html, plans.length ? `<button type="button" class="primary wide" id="spontBtn">Sjekk inn</button>` : "");

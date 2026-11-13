@@ -285,11 +285,13 @@ test("statusmaskin: automatisk utsjekk kl. 14, 17 og 24", () => {
   assert.equal(R.validateConfirm, undefined);
 });
 
-test("innsjekk på egen booking: fra kl. 10, og sammenhengende perioder følger med", () => {
+test("innsjekk på egen booking: fra kl. 8, og sammenhengende perioder følger med", () => {
   const [am, mid, pm] = day("2027-07-10", "A");
-  assert.equal(R.validateCheckin(am, "A", rules, at("2027-07-10", "09:59")).error, "TOO_EARLY");
-  assert.match(R.validateCheckin(am, "A", rules, at("2027-07-10", "09:59")).message, /10:00/);
+  assert.equal(R.validateCheckin(am, "A", rules, at("2027-07-10", "07:59")).error, "TOO_EARLY");
+  assert.match(R.validateCheckin(am, "A", rules, at("2027-07-10", "07:59")).message, /08:00/);
+  assert.equal(R.validateCheckin(am, "A", rules, at("2027-07-10", "08:00")).ok, true);
   assert.equal(R.validateCheckin(am, "A", rules, at("2027-07-10", "10:00")).ok, true);
+  assert.equal(R.validateCheckin(mid, "A", rules, at("2027-07-10", "08:00")).error, "TOO_EARLY"); // ettermiddag åpner kl. 14
   assert.equal(R.validateCheckin(am, "C", rules, at("2027-07-10", "10:05")).error, "FORBIDDEN");
   assert.deepEqual(R.checkinChain(am, [am, mid, pm], rules).map(b => b.period), FULL);
   assert.deepEqual(R.checkinChain(mid, [am, mid, pm], rules).map(b => b.period), ["MID", "PM"]);
@@ -300,7 +302,9 @@ test("innsjekk på egen booking: fra kl. 10, og sammenhengende perioder følger 
 });
 
 test("spontan innsjekk: pågående ledig periode, eventuelt til 17 eller 24", () => {
-  assert.deepEqual(R.spontaneousOptions([], rules, at("2027-07-10", "09:00")), []);   // åpner kl. 10
+  assert.deepEqual(R.spontaneousOptions([], rules, at("2027-07-10", "07:59")), []);   // åpner kl. 8
+  assert.deepEqual(R.spontaneousOptions([], rules, at("2027-07-10", "08:00")), ["AM"]);
+  assert.deepEqual(R.spontaneousOptions([], rules, at("2027-07-10", "09:00")), ["AM"]);
   assert.deepEqual(R.spontaneousOptions([], rules, at("2027-07-10", "10:00")), ["AM"]);
   assert.deepEqual(R.spontaneousPlans([], rules, at("2027-07-10", "11:00")), [["AM"], ["AM", "MID"], ["AM", "MID", "PM"]]);
   assert.deepEqual(R.spontaneousPlans([], rules, at("2027-07-10", "15:00")), [["MID"], ["MID", "PM"]]);
