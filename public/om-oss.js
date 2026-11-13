@@ -1,5 +1,5 @@
 /*
- * «Om oss» på startsiden ht14.no (HT14 versjon 0.8).
+ * «Om oss» på startsiden ht14.no (HT14 versjon 0.9).
  * Uten innlogging: bare Hus A–D og et innloggingsskjema.
  * Innlogget (samme innlogging som Badehusappen): navn på husstandene, kontaktpersoner
  * og fritekst – og huset ditt kan endre sitt eget. Navn og kontaktinfo ligger bare i
