@@ -167,16 +167,16 @@ test("avbestilt booking teller aldri: ukeregel, månedsregel og statistikk", asy
   for (const b of [s, f2]) await call("POST", `/api/bookings/${b.data.bookings[0].id}/cancel`, { cookie: houseA });
 });
 
-test("serveren bruker samme 7-dagersgrense: 8 dager før stoppes, 7 dager før går (utenfor kvoten)", async () => {
+test("serveren bruker samme 7-dagersgrense: 7 dager før stoppes, 6 dager før går (utenfor kvoten)", async () => {
   const at = d => ({ "X-Test-Now": `${d}T08:00:00Z` });
   const first = await call("POST", "/api/bookings", { cookie: houseB, body: { date: FRI[0], periods: ["PM"] } });
   assert.equal(first.status, 201, JSON.stringify(first.data)); assert.equal(first.data.quota, true);
   const target = FRI[3];
-  const eight = await call("POST", "/api/bookings", { cookie: houseB, headers: at(R.addDays(target, -8)), body: { date: target, periods: ["PM"] } });
-  assert.equal(eight.status, 400); assert.equal(eight.data.error, "QUOTA_WEEKDAY");
   const seven = await call("POST", "/api/bookings", { cookie: houseB, headers: at(R.addDays(target, -7)), body: { date: target, periods: ["PM"] } });
-  assert.equal(seven.status, 201, JSON.stringify(seven.data)); assert.equal(seven.data.quota, false); assert.equal(seven.data.lifted, true);
-  for (const b of [first, seven]) assert.equal((await call("POST", `/api/bookings/${b.data.bookings[0].id}/cancel`, { cookie: houseB })).status, 200);
+  assert.equal(seven.status, 400); assert.equal(seven.data.error, "QUOTA_WEEKDAY");
+  const six = await call("POST", "/api/bookings", { cookie: houseB, headers: at(R.addDays(target, -6)), body: { date: target, periods: ["PM"] } });
+  assert.equal(six.status, 201, JSON.stringify(six.data)); assert.equal(six.data.quota, false); assert.equal(six.data.lifted, true);
+  for (const b of [first, six]) assert.equal((await call("POST", `/api/bookings/${b.data.bookings[0].id}/cancel`, { cookie: houseB })).status, 200);
 });
 
 test("Om oss: eget hus kan endres, andre hus ikke; husstanden beholdes", async () => {
@@ -240,8 +240,13 @@ test("forslag: opprette, stemme og endre, én stemme per hus, tidlig vedtatt, ad
   assert.equal(seen.data.status, "vedtatt"); // 1 ja, 0 nei etter fristen
 
   assert.equal((await call("DELETE", `/api/forslag/${id}`, { cookie: houseA })).status, 403);
-  assert.equal((await call("DELETE", `/api/forslag/${id}`, { cookie: admin })).status, 200);
+  const slett = await call("DELETE", `/api/forslag/${id}`, { cookie: admin });
+  assert.equal(slett.status, 200); assert.match(slett.data.message, /arkivet|beholdt/i);
   assert.equal((await call("GET", `/api/forslag/${id}`, { cookie: houseA })).status, 404);
+  const listed = await call("GET", "/api/forslag", { cookie: houseA });
+  assert.equal(listed.status, 200); assert.ok(!listed.data.some(f => f.id === id), "skjult etter sletting");
+  assert.equal((await call("POST", `/api/forslag/${id}/stem`, { cookie: houseA, body: { stemme: "ja" } })).status, 404);
+  assert.equal((await call("DELETE", `/api/forslag/${id}`, { cookie: admin })).status, 404, "allerede skjult");
   assert.equal((await call("DELETE", `/api/forslag/${f2.data.id}`, { cookie: admin })).status, 200);
 });
 
@@ -327,6 +332,31 @@ test("forslag: vurdering bare etter 4 ja og bare admin, ny runde når det koster
   assert.equal((await call("POST", `/api/forslag/${id}/runde`, { body: { frist: "2027-06-01" } })).status, 401);
   await call("DELETE", `/api/forslag/${id}`, { cookie: admin });
   await call("DELETE", `/api/forslag/${billig.data.id}`, { cookie: admin });
+});
+
+test("admin kan gjøre en annen innlogging til administrator, og det kan være mer enn én", async () => {
+  assert.equal((await call("POST", "/api/admin/users/1/admin", { cookie: houseA })).status, 403);
+  assert.equal((await call("POST", "/api/admin/users/1/admin")).status, 401);
+  const emailAdm = "admin-2-" + RUN + "@example.no", pwAdm = "Admin-to-" + RUN;
+  const made = await call("POST", "/api/admin/users", { cookie: admin, body: { role: "admin", email: emailAdm, password: pwAdm, name: "Administrator 2" } });
+  assert.equal(made.status, 201, JSON.stringify(made.data));
+  const login2 = await login(emailAdm, pwAdm);
+  assert.equal(login2.status, 200); assert.equal(login2.data.user.admin, true);
+  assert.equal((await call("GET", "/api/admin/users", { cookie: login2.cookie })).status, 200);
+
+  const users = (await call("GET", "/api/admin/users", { cookie: admin })).data;
+  const c = users.find(u => u.email === "hus-c-" + RUN + "@example.no" && u.role === "house" && u.active);
+  assert.ok(c, "trenger Hus C for å teste forfremmelse");
+  const grant = await call("POST", `/api/admin/users/${c.id}/admin`, { cookie: admin });
+  assert.equal(grant.status, 200, JSON.stringify(grant.data));
+  const after = (await call("GET", "/api/admin/users", { cookie: admin })).data;
+  const c2 = after.find(u => u.id === c.id);
+  assert.equal(c2.role, "admin");
+  assert.equal((await call("POST", `/api/admin/users/${c.id}/admin`, { cookie: admin })).status, 409);
+  const loginC = await login("hus-c-" + RUN + "@example.no", "Hus-C-test-" + RUN);
+  assert.equal(loginC.status, 200);
+  assert.equal(loginC.data.user.admin, true);
+  assert.equal((await call("GET", "/api/admin/users", { cookie: loginC.cookie })).status, 200);
 });
 
 test("bytte eget passord logger ut andre enheter", async () => {

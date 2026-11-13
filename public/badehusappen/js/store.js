@@ -1,5 +1,5 @@
 /*
- * Badehusappen – datalag (HT14 versjon 0.8)
+ * Badehusappen – datalag (HT14 versjon 0.9)
  * ---------------------------------------------------------------
  * All lesing og skriving går til Workeren på /api/… (felles for alle hus).
  * Reglene sjekkes her i appen for rask tilbakemelding, og Workeren sjekker
@@ -96,6 +96,7 @@
     async createUser(data) { return post("admin/users", data); },
     async resetPassword(id, password) { return post(`admin/users/${id}/password`, { password }); },
     async deactivate(id) { return post(`admin/users/${id}/deactivate`); },
+    async grantAdmin(id) { return post(`admin/users/${id}/admin`); },
     async events() { return get("admin/events?limit=30"); }
   };
   root.Store = Store;
