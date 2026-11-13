@@ -31,9 +31,10 @@ EV = [
 ]
 # ---------------------------------------------------------------
 # «Hva er nytt» – legg nye linjer ØVERST. Dato (ÅÅÅÅ-MM-DD), overskrift, kort tekst, lenke (eller None).
-# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.8», bestemt av Thomas).
+# Ingen versjonsnumre i sidene – bare dato og hva som er nytt (unntak: «HT14 versjon 0.9», bestemt av Thomas).
 # ---------------------------------------------------------------
 NYTT = [
+ ("2026-11-13", "Oppdaterte regler og vedtekter", "Reglene og vedtektsforslaget er oppdatert. Dere kan booke inntil tre måneder frem. Er det mindre enn 7 dager til datoen, er det førstemann til mølla, og bookingen teller ikke i kvoten. Er badehuset ledig, kan dere ta det i bruk uten å booke – sjekk inn når dere kommer, utenom korte «badebesøk». Har dere gjester og vil ha badehuset for dere selv, må dere booke.", "/dokumentasjon/regler.html"),
  ("2026-11-11", "Vurdering av vedtatte forslag", "Når alle fire husene har sagt ja til et forslag, kan Thomas skrive en vurdering av kompleksitet, hva som skal til, om det koster penger og når det kan gjennomføres. Hvis det koster penger, kan husene stemme på nytt – og runde 1 blir stående som historikk. Forslaget får også en enkel gjennomføringsstatus.", "/badehusappen/"),
  ("2026-11-11", "Forslag i Badehusappen", "Husene kan legge frem forslag og stemme ja eller nei – ett hus, én stemme, og stemmen kan endres frem til fristen. Resultatet vises som ja, nei og prosent, og forslaget blir vedtatt når kravet er innfridd (minst 3 av 4, alle 4, eller flertall av de som stemmer).", "/badehusappen/"),
  ("2026-11-04", "Sjekk inn når dere tar badehuset i bruk", "Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der. Muligheten til å registrere bruk i ettertid er tatt bort.", "/dokumentasjon/regler.html#avbestille"),
@@ -44,7 +45,7 @@ NYTT = [
  ("2026-10-26", "HT14 versjon 0.5: felles booking med innlogging", "Badehusappen er nå felles for alle fire husene: hvert hus logger inn med sin egen innlogging, og alle ser den samme kalenderen. Nytt er også «Om oss» med kontaktinfo (bare for innloggede), kortadressen badehusappen.ht14.no og et enklere utseende som ligner en iPhone-app. Prøvebookinger som bare lå på telefonen, er fjernet.", "/dokumentasjon/regler.html#badehusappen"),
  ("2026-10-26", "Avbestilling frigjør kvoten, og innsjekk gjelder alle perioder", "Avbestiller dere, teller ikke bookingen i kvoten, så dere kan booke en annen dag. Sjekk inn hver gang dere er i badehuset – også formiddag og ettermiddag.", "/dokumentasjon/regler.html#avbestille"),
  ("2026-10-26", "Nye sommerregler og enklere regler", "Sommerregelen gjelder nå torsdag, fredag og lørdag – maks én av hver per måned, og ikke to i samme uke. Vanlig booking er én kveld; formiddag og ettermiddag bare når dere har gjester. Reglene og vedtektsforslaget er kortere og enklere.", "/dokumentasjon/regler.html#hvor-mye"),
- ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/vedtekter.html#punkt-2"),
+ ("2026-10-26", "Vedtektsforslaget sier nå én innlogging per hus", "Hvert hus (A–D) har én felles innlogging i Badehusappen, og husstanden bestemmer selv hvem som booker for huset. Word-fila er oppdatert.", "/dokumentasjon/regler.html#punkt-2"),
  ("2026-10-26", "HT14 får egen adresse: ht14.no", "Startsiden, dokumentasjonen og Badehusappen flytter til Cloudflare på ht14.no. Bookingene skal lagres i en database med en kopi hver natt, og hvert hus får én felles innlogging.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Kortere og ryddigere dokumentasjon", "Dokumentasjonen er omtrent halvert og samlet i fem sider: Teknisk dokumentasjon, Regler for bruk av badehuset, Forslag til tillegg i vedtektene, Årshjul og Hva er nytt. Gamle lenker virker fortsatt.", "/dokumentasjon/teknisk.html"),
  ("2026-10-25", "Felles meny for hele HT14", "Hjem, Badehusappen og Dokumentasjon henger sammen, med «Sameiet HT14» øverst – så det er lett å finne fram og tilbake.", None),
@@ -315,7 +316,7 @@ def write_start(LOGO, out_path):
   </section>
   <footer class="fot">
     <p>Laget av Thomas Gude Svensrud for oss i HT14. Rettelser eller ideer? Si fra til Thomas.</p>
-    <p class="ver">HT14 versjon 0.8</p>
+    <p class="ver">HT14 versjon 0.9</p>
   </footer>
 </div>
 <script src="/om-oss.js?v=06" defer></script>
