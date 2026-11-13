@@ -51,7 +51,7 @@ const REDIR = [["dokumentasjon/", /dokumentasjon\/teknisk(\.html)?$/], ["dokumen
           await shoot("7-teknisk-topp");
           await p.locator("#oppsett").scrollIntoViewIfNeeded(); await p.evaluate(() => document.getElementById("oppsett").scrollIntoView()); await p.waitForTimeout(300); await shoot("8-teknisk-oppsett");
         }
-        if (f === "hva-er-nytt.html") { if (!(await p.locator("#d-2026-10-27").count())) prob.push("hva er nytt: mangler 27. oktober"); await shoot("9-hva-er-nytt"); }
+        if (f === "hva-er-nytt.html") { const empty = await p.getByText("Ingen endringer ennå.").count(); if (!empty) prob.push("hva er nytt: skal være tom («Ingen endringer ennå.»)"); await shoot("9-hva-er-nytt"); }
       }
       for (const [u, re] of REDIR) { await p.goto(B + u); try { await p.waitForURL(re, { timeout: 5000 }); } catch (e) { prob.push(`omdirigering ${u} → ${p.url()}`); } }
       // API
