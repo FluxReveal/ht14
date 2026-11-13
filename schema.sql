@@ -123,6 +123,7 @@ CREATE INDEX IF NOT EXISTS events_ts ON events (ts);
 -- Status (Åpen / Vedtatt / Ikke vedtatt) regnes ut ved visning, ikke lagret.
 -- Vurdering og gjennomføring settes av administrator etter at alle 4 hus har sagt ja.
 -- frist, krav og lukket_at på forslag er en kopi av den siste runden (se forslag_runder).
+-- Forslag skjules ved sletting (slettet_at), men raden, rundene og stemmene beholdes.
 CREATE TABLE IF NOT EXISTS forslag (
   id                INTEGER PRIMARY KEY,
   tittel            TEXT NOT NULL CHECK (length(tittel) BETWEEN 1 AND 120),
@@ -141,8 +142,10 @@ CREATE TABLE IF NOT EXISTS forslag (
   vurdering_at      TEXT,
   gjennomforing     TEXT CHECK (gjennomforing IS NULL OR gjennomforing IN ('ikke_startet', 'planlagt', 'pagar', 'ferdig')),
   created_at        TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
-  updated_at        TEXT
+  updated_at        TEXT,
+  slettet_at        TEXT
 );
+CREATE INDEX IF NOT EXISTS forslag_synlige ON forslag (id) WHERE slettet_at IS NULL;
 CREATE INDEX IF NOT EXISTS forslag_frist ON forslag (frist);
 
 -- Avstemningsrunder. Runde 1 er den opprinnelige. Runde 2+ når vurderingen sier at det koster penger.

@@ -73,7 +73,18 @@ test("skjemaet stopper dobbeltbooking og har én aktiv innlogging per hus", () =
   assert.match(sql, /CREATE UNIQUE INDEX IF NOT EXISTS users_one_login_per_house\s+ON users \(house_id\) WHERE role = 'house' AND active = 1/);
   assert.match(sql, /UNIQUE \(forslag_id, runde, hus\)/);
   assert.match(sql, /CREATE TABLE IF NOT EXISTS forslag_runder/);
+  assert.match(sql, /slettet_at/);
 });
+
+test("forslag slettes mykt: rad og stemmer beholdes, skjules med slettet_at", () => {
+  const src = readFileSync(new URL("../../src/index.js", import.meta.url), "utf8");
+  assert.match(src, /slettet_at = \?/);
+  assert.match(src, /slettet_at IS NULL/);
+  assert.doesNotMatch(src, /DELETE FROM forslag\b/);
+  assert.doesNotMatch(src, /DELETE FROM stemmer\b/);
+  assert.doesNotMatch(src, /DELETE FROM forslag_runder\b/);
+});
+
 
 test("ikonene (src/ikoner.js) er gyldige PNG/ICO og matcher manifestet", async () => {
   const { ICONS } = await import("../../src/ikoner.js");

@@ -17,7 +17,7 @@ const QUERIES = {
   users: "SELECT id, house_id, email, display_name, role, active, created_at, updated_at, pw_changed_at, last_login_at FROM users ORDER BY id",
   contacts: "SELECT house_id, household, c1_name, c1_email, c1_phone, c2_name, c2_email, c2_phone, note, updated_at, updated_by FROM house_info ORDER BY house_id",
   events: "SELECT id, ts, actor_user_id, house_id, action, target, from_json, to_json, comment FROM events ORDER BY id",
-  forslag: "SELECT id, tittel, begrunnelse, opprettet_av_hus, opprettet_av, frist, krav, lukket_at, kompleksitet, tiltak, koster, belop_kr, tidspunkt, tid_kommentar, vurdering_at, gjennomforing, created_at, updated_at FROM forslag ORDER BY id",
+  forslag: "SELECT id, tittel, begrunnelse, opprettet_av_hus, opprettet_av, frist, krav, lukket_at, kompleksitet, tiltak, koster, belop_kr, tidspunkt, tid_kommentar, vurdering_at, gjennomforing, created_at, updated_at, slettet_at FROM forslag ORDER BY id",
   forslag_runder: "SELECT id, forslag_id, runde, frist, krav, lukket_at, created_at FROM forslag_runder ORDER BY forslag_id, runde",
   stemmer: "SELECT id, forslag_id, runde, hus, stemme, created_at, updated_at FROM stemmer ORDER BY forslag_id, runde, hus"
 };

@@ -1,5 +1,5 @@
 /**
- * HT14 versjon 0.8 – Cloudflare Worker for ht14.no
+ * HT14 versjon 0.9 – Cloudflare Worker for ht14.no
  *
  * Statiske filer (public/) serveres direkte. Bare /api/* går gjennom Workeren
  * (run_worker_first i wrangler.jsonc). Data ligger i D1 (binding DB).
@@ -22,7 +22,7 @@ import {
 } from "./auth.js";
 import { runExport } from "./export.js";
 
-const VERSION = "0.8";
+const VERSION = "0.9";
 const HOUSES = ["A", "B", "C", "D"];
 const LOCK_MIN = 15;            // pause i minutter
 const MAX_FAIL_EMAIL = 5;       // feil passord per e-post innen 15 min
@@ -356,12 +356,13 @@ async function adminUsers(env) {
 
 async function adminCreateUser(request, env, admin) {
   const body = await readJson(request);
-  const house = str(body.house, 1).toUpperCase();
   const email = str(body.email, 200).toLowerCase();
-  if (!HOUSES.includes(house)) fail(400, "INVALID_INPUT", "Velg hus A, B, C eller D.");
   if (!EMAIL_RE.test(email)) fail(400, "INVALID_INPUT", "Skriv en gyldig e-postadresse.");
   const problem = passwordProblem(body.password);
   if (problem) fail(400, "WEAK_PASSWORD", problem);
+  if (String(body.role || "house").toLowerCase() === "admin") return adminCreateAdmin(env, admin, body, email);
+  const house = str(body.house, 1).toUpperCase();
+  if (!HOUSES.includes(house)) fail(400, "INVALID_INPUT", "Velg hus A, B, C eller D.");
   const name = str(body.name, 80) || `Hus ${house}`;
   const taken = await env.DB.prepare("SELECT id FROM users WHERE role = 'house' AND house_id = ? AND active = 1").bind(house).first();
   if (taken) fail(409, "HOUSE_HAS_LOGIN", `Hus ${house} har allerede en innlogging. Deaktiver den først, eller gi den nytt passord.`);
@@ -380,6 +381,36 @@ async function adminCreateUser(request, env, admin) {
   }
   await logEvent(env, admin, house, "USER_CREATE", "user:" + id, null, { house, email }).run();
   return json({ ok: true, id, message: `Innlogging for Hus ${house} er laget.` }, 201);
+}
+
+async function adminCreateAdmin(env, admin, body, email) {
+  const name = str(body.name, 80) || "Administrator";
+  const old = await env.DB.prepare("SELECT id, role, active FROM users WHERE email = ?").bind(email).first();
+  if (old && old.active) fail(409, "EMAIL_TAKEN", "Den e-postadressen er allerede i bruk.");
+  const h = await hashPassword(body.password, env.SESSION_PEPPER);
+  let id;
+  if (old) {
+    await env.DB.prepare("UPDATE users SET house_id = NULL, display_name = ?, role = 'admin', active = 1, pw_hash = ?, pw_salt = ?, pw_iterations = ?, pw_changed_at = ?, updated_at = ? WHERE id = ?")
+      .bind(name, h.pw_hash, h.pw_salt, h.pw_iterations, nowIso(), nowIso(), old.id).run();
+    id = old.id;
+  } else {
+    const r = await env.DB.prepare("INSERT INTO users (house_id, email, display_name, role, pw_hash, pw_salt, pw_iterations, pw_changed_at) VALUES (NULL, ?, ?, 'admin', ?, ?, ?, ?) RETURNING id")
+      .bind(email, name, h.pw_hash, h.pw_salt, h.pw_iterations, nowIso()).first();
+    id = r.id;
+  }
+  await logEvent(env, admin, null, "USER_CREATE", "user:" + id, null, { role: "admin", email }).run();
+  return json({ ok: true, id, message: "Administrator-innloggingen er laget." }, 201);
+}
+
+async function adminGrantAdmin(env, admin, id) {
+  const u = await adminUserById(env, id);
+  if (!u.active) fail(409, "INACTIVE", "Innloggingen er deaktivert.");
+  if (u.role === "admin") fail(409, "ALREADY_ADMIN", "Den innloggingen er allerede administrator.");
+  await env.DB.batch([
+    env.DB.prepare("UPDATE users SET role = 'admin', updated_at = ? WHERE id = ?").bind(nowIso(), u.id),
+    logEvent(env, admin, u.house_id, "USER_ADMIN", "user:" + u.id, { role: u.role }, { role: "admin" })
+  ]);
+  return json({ ok: true, message: "Innloggingen er nå administrator." });
 }
 
 async function adminUserById(env, id) {
@@ -429,6 +460,13 @@ async function adminEvents(env, url) {
 
 const FCOLS = "id, tittel, begrunnelse, opprettet_av_hus, frist, krav, lukket_at, kompleksitet, tiltak, koster, belop_kr, tidspunkt, tid_kommentar, vurdering_at, gjennomforing, created_at";
 
+async function liveForslag(env, id) {
+  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ? AND slettet_at IS NULL`).bind(+id).first();
+  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  return row;
+}
+
 async function runderFor(env, ids) {
   if (!ids.length) return [];
   const ph = ids.map(() => "?").join(",");
@@ -458,7 +496,7 @@ function toForslag(row, bundle, now, user) {
 
 async function listForslag(env, user, now) {
   requireUser(user);
-  const { results } = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag ORDER BY id DESC`).all();
+  const { results } = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE slettet_at IS NULL ORDER BY id DESC`).all();
   const bundle = await lastForslag(env, results.map(r => r.id));
   const items = results.map(r => toForslag(r, bundle, now, user));
   items.sort((a, b) => {
@@ -471,9 +509,7 @@ async function listForslag(env, user, now) {
 
 async function getForslag(env, user, id, now) {
   requireUser(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   return json(toForslag(row, await lastForslag(env, [row.id]), now, user));
 }
 
@@ -494,9 +530,7 @@ async function createForslag(request, env, user, now) {
 
 async function stemForslag(request, env, user, id, now) {
   requireUser(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   const bundle = await lastForslag(env, [row.id]);
   const vis = toForslag(row, bundle, now, user);
   const aktiv = vis.runder.find(r => r.runde === vis.aktivRunde) || vis.runder[vis.runder.length - 1];
@@ -515,9 +549,7 @@ async function stemForslag(request, env, user, id, now) {
 
 async function lukkForslag(env, user, id, now) {
   requireAdmin(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   const bundle = await lastForslag(env, [row.id]);
   const vis = toForslag(row, bundle, now, user);
   const apen = vis.runder.find(r => !r.lukketAt && now.date <= r.frist);
@@ -533,23 +565,18 @@ async function lukkForslag(env, user, id, now) {
 
 async function slettForslag(env, user, id) {
   requireAdmin(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare("SELECT id, tittel FROM forslag WHERE id = ?").bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
+  const ts = nowIso();
   await env.DB.batch([
-    env.DB.prepare("DELETE FROM stemmer WHERE forslag_id = ?").bind(row.id),
-    env.DB.prepare("DELETE FROM forslag_runder WHERE forslag_id = ?").bind(row.id),
-    env.DB.prepare("DELETE FROM forslag WHERE id = ?").bind(row.id),
-    logEvent(env, user, user.house_id, "FORSLAG_SLETT", "forslag:" + row.id, { tittel: row.tittel })
+    env.DB.prepare("UPDATE forslag SET slettet_at = ?, updated_at = ? WHERE id = ? AND slettet_at IS NULL").bind(ts, ts, row.id),
+    logEvent(env, user, user.house_id, "FORSLAG_SLETT", "forslag:" + row.id, { tittel: row.tittel }, { slettet_at: ts })
   ]);
-  return json({ ok: true, message: "Forslaget er slettet." });
+  return json({ ok: true, message: "Forslaget er tatt bort fra listen. Det er beholdt i arkivet." });
 }
 
 async function vurderForslag(request, env, user, id, now) {
   requireUser(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   const bundle = await lastForslag(env, [row.id]);
   const vis = toForslag(row, bundle, now, user);
   const res = F.validateVurdering(await readJson(request), user.role === "admin", vis.runder);
@@ -568,9 +595,7 @@ async function vurderForslag(request, env, user, id, now) {
 
 async function gjennomforForslag(request, env, user, id, now) {
   requireUser(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   const res = F.validateGjennomforing(await readJson(request), user.role === "admin", !!(row.vurdering_at || row.kompleksitet));
   need(res);
   const ts = nowIso();
@@ -583,9 +608,7 @@ async function gjennomforForslag(request, env, user, id, now) {
 
 async function nyRunde(request, env, user, id, now) {
   requireUser(user);
-  if (!/^\d{1,12}$/.test(id)) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
-  const row = await env.DB.prepare(`SELECT ${FCOLS} FROM forslag WHERE id = ?`).bind(+id).first();
-  if (!row) fail(404, "NOT_FOUND", "Fant ikke forslaget.");
+  const row = await liveForslag(env, id);
   const bundle = await lastForslag(env, [row.id]);
   const vis = toForslag(row, bundle, now, user);
   const res = F.validateNyRunde(await readJson(request), user.role === "admin", vis.vurdering, vis.runder, bundle.stemmer, now.date);
@@ -665,6 +688,7 @@ async function api(request, env, ctx, url) {
     if (path === "/api/admin/users" && method === "POST") return adminCreateUser(request, env, user);
     if ((m = path.match(/^\/api\/admin\/users\/([^/]+)\/password$/)) && method === "POST") return adminResetPassword(request, env, user, m[1]);
     if ((m = path.match(/^\/api\/admin\/users\/([^/]+)\/deactivate$/)) && method === "POST") return adminDeactivate(env, user, m[1]);
+    if ((m = path.match(/^\/api\/admin\/users\/([^/]+)\/admin$/)) && method === "POST") return adminGrantAdmin(env, user, m[1]);
     if (path === "/api/admin/events" && method === "GET") return adminEvents(env, url);
   }
   fail(404, "NOT_FOUND", "Fant ikke denne adressen.");
