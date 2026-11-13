@@ -1,5 +1,5 @@
 /*
- * Badehusappen – brukergrensesnitt (HT14 versjon 0.8)
+ * Badehusappen – brukergrensesnitt (HT14 versjon 0.9)
  * ---------------------------------------------------------------
  * Innlogging, kalender (i dag + 30 dager, eller måned), booking, innsjekk,
  * Mine bookinger, forslag og stemming, statistikk (sesong og år), bytte passord og administrasjon.
@@ -220,12 +220,12 @@
       btn.textContent = `Book ${periodsText(ps)} for Hus ${house}`;
       if (!res.ok) { box.innerHTML = `<div class="msg no">${esc(res.message)}</div>`; return; }
       const wd = R.weekday(date), summer = rules.summer.months.includes(R.monthOf(date)) && rules.summer.limitedDays.includes(wd);
-      // Ville huset vært stoppet av sommerkvoten om det var mer enn 7 dager til datoen? Da sier vi det rett ut.
+      // Ville huset vært stoppet av sommerkvoten om det var 7 dager eller mer til datoen? Da sier vi det rett ut.
       const strict = res.lifted && summer ? R.validateBookingMulti({ date, periods: ps, household: house }, all, rules, { date: R.addDays(date, -30), minutes: 0 }) : null;
       const overQuota = strict && !strict.ok && ["QUOTA_WEEKDAY", "WEEK_LIMIT"].includes(strict.error);
       const info = res.lifted ? (summer ? (overQuota
-          ? `Hus ${house} har brukt opp kvoten for denne dagen, men fra 7 dager før er det førstemann til mølla – så dere kan booke den likevel.`
-          : "Fra 7 dager før er det førstemann til mølla. Er dagen ledig, kan alle hus booke den – også om kvoten er brukt opp.") : "Dette går fint.")
+          ? `Hus ${house} har brukt opp kvoten for denne dagen, men er det mindre enn 7 dager til datoen, er det førstemann til mølla, og bookingen teller ikke i kvoten – så dere kan booke den likevel.`
+          : "Er det mindre enn 7 dager til datoen, er det førstemann til mølla, og bookingen teller ikke i kvoten.") : "Dette går fint.")
         : res.quota ? `Dette går fint. Dagen blir Hus ${house} sin ${R.WD_NB[wd]} i ${R.MONTHS[R.monthOf(date) - 1]} – uansett hvor mange perioder dere tar.`
         : "Dette går fint.";
       box.innerHTML = `<div class="msg ok">${esc(info)}</div>`;
@@ -291,7 +291,7 @@
     let html = "";
     if (mineToday.length) html += `<p>Dere har booket nå:</p><ul class="plist">${mineToday.sort(byPeriod).map(b => bookingItem(b, n)).join("")}</ul>`;
     if (plans.length) {
-      html += `<p>${mineToday.length ? "Eller sjekk inn" : "Er badehuset ledig og dere vil bruke det nå? Sjekk inn"} uten booking:</p>
+      html += `<p>${mineToday.length ? "Eller sjekk inn uten booking:" : "Er badehuset ledig, kan dere ta det i bruk uten å booke. Bruk gjerne «Sjekk inn» når dere kommer dit, så ser de andre at det er noen der. Har dere gjester og vil ha badehuset for dere selv, må dere booke på vanlig måte."}</p>
         ${housePicker("Hvilket hus?")}
         <h3 class="label">Hvor lenge?</h3><div class="types" role="group" aria-label="Hvor lenge">${plans.map((ps, i) => `<button type="button" data-plan="${i}" aria-pressed="${i === 0}"><span>Til kl. ${hh(rules.periods[ps[ps.length - 1]].end)}</span><span class="t">${cap(periodsText(ps))}</span></button>`).join("")}</div>
         <p class="muted">Spontan innsjekk teller i statistikken, men ikke i sommerkvoten. Dere sjekkes ut automatisk når tiden er ute (kl. 14, 17 eller 24).</p>`;
@@ -323,7 +323,7 @@
     const li = b => `<li class="pitem"><div class="row"><b>${esc(R.dateLabel(b.date).replace(/^./, c => c.toUpperCase()))}</b><span class="stat">${STATUS[b.displayStatus]}</span></div>
       <div class="row muted">${PLABEL[b.period]} ${PTIME[b.period]}${b.source === "CHECKIN" ? " · spontan" : ""}${b.quota ? " · i sommerkvoten" : ""}</div>${bookingItemActs(b, n)}</li>`;
     let html = isAdmin() ? `<div class="seg" role="group" aria-label="Hus">${HOUSES.map(x => `<button type="button" data-mine="${x}" aria-pressed="${x === h}">Hus ${x}</button>`).join("")}</div>` : "";
-    html += `<p class="foot">${isAdmin() ? "Du ser" : "Her er"} bookingene til ${houseChip(h)}. Sjekk inn når dere tar badehuset i bruk, så ser de andre at det er noen der.</p>`;
+    html += `<p class="foot">${isAdmin() ? "Du ser" : "Her er"} bookingene til ${houseChip(h)}. Sjekk inn hver gang dere er i badehuset, utenom korte «badebesøk», så ser de andre at det er noen der.</p>`;
     html += quotaSummary(all, n);
     html += `<h2 class="ghead">Kommende</h2>` + (coming.length ? `<ul class="list">${coming.map(li).join("")}</ul>` : `<p class="muted">Ingen kommende bookinger. Trykk på en dag i kalenderen for å booke.</p>`);
     if (past.length) html += `<h2 class="ghead">Tidligere</h2><ul class="list">${past.map(li).join("")}</ul>`;
@@ -452,7 +452,7 @@
       if (f.kanNyRunde) html += `<button type="button" class="btn tinted small" id="nyRundeBtn">Send til ny avstemning</button>`;
       const apen = (f.runder || []).find(r => r.kanStemme || (!r.lukketAt && !r.ended));
       if (apen && !apen.ended || (f.runder || []).some(r => !r.lukketAt && !r.ended)) html += `<button type="button" class="btn tinted small" id="lukkForslag">Lukk avstemningen</button>`;
-      html += `<button type="button" class="btn plain small red" id="slettForslag">Slett forslaget</button></div>`;
+      html += `<button type="button" class="btn plain small red" id="slettForslag">Ta bort forslaget</button></div>`;
     }
     box.innerHTML = html;
     $("#forslagBack").addEventListener("click", () => { forslagId = null; renderForslag().catch(e => toast(e.message)); });
@@ -476,7 +476,7 @@
     });
     const slett = $("#slettForslag");
     if (slett) slett.addEventListener("click", async () => {
-      if (!confirm("Slette forslaget og alle stemmene? Dette kan ikke angres.")) return;
+      if (!confirm("Ta forslaget bort fra listen? Det blir liggende i arkivet og slettes ikke.")) return;
       try { const r = await S.slettForslag(f.id); forslagId = null; toast(r.message); await renderForslag(); }
       catch (e) { toast(e.message); }
     });
@@ -662,8 +662,13 @@
         : `<li><button type="button" class="cell nav tint" data-new="${h}"><span><span class="dot h${h}" aria-hidden="true"></span>Lag innlogging for Hus ${h}</span></button></li>`;
     }
     html += `</ul>`;
-    const admins = users.filter(u => u.role === "admin");
-    html += `<h2 class="ghead">Administrator</h2><ul class="group">${admins.map(u => `<li class="cell"><span>${esc(u.name)}<br><span class="muted">${esc(u.email)}</span></span></li>`).join("")}</ul>`;
+    const admins = users.filter(u => u.role === "admin" && u.active);
+    html += `<h2 class="ghead">Administratorer</h2><p class="foot">Sameiet velger to administratorer. Du kan lage en ny administrasjonsinnlogging eller gjøre en eksisterende innlogging til administrator.</p><ul class="group">${admins.map(u => `<li class="cell"><span>${esc(u.name)}<br><span class="muted">${esc(u.email)}${u.house ? " · Hus " + esc(u.house) : ""}</span></span></li>`).join("")}</ul>`;
+    html += `<ul class="group"><li><button type="button" class="cell nav tint" id="newAdmin">Lag ny administrator-innlogging</button></li></ul>`;
+    const canGrant = users.filter(u => u.role !== "admin" && u.active);
+    if (canGrant.length) {
+      html += `<h3 class="ghead">Gjør til administrator</h3><ul class="group">${canGrant.map(u => `<li class="cell user"><span>${esc(u.name || (u.house ? "Hus " + u.house : "Innlogging"))}<br><span class="muted">${esc(u.email)}${u.house && u.role === "house" ? " · felles innlogging for Hus " + esc(u.house) : ""}</span></span><div class="acts"><button type="button" class="btn tinted small" data-grant="${u.id}" data-email="${esc(u.email)}" data-house="${u.house || ""}">Gjør til administrator</button></div></li>`).join("")}</ul>`;
+    }
     html += `<h2 class="ghead">Om oss</h2><ul class="group"><li><a class="cell nav" href="/#om-oss">Endre kontakter for et hus (på ht14.no)</a></li></ul>`;
     html += `<h2 class="ghead">Siste hendelser</h2><ul class="group small">${events.map(e => `<li class="cell"><span>${esc(EVENT[e.action] || e.action)}${e.house ? " · Hus " + esc(e.house) : ""}<br><span class="muted">${fmt(e.ts)}${e.who ? " · " + esc(e.who) : ""}</span></span></li>`).join("") || `<li class="cell muted">Ingen ennå.</li>`}</ul>`;
     box.innerHTML = html;
@@ -673,11 +678,21 @@
       if (!confirm(`Deaktivere innloggingen for Hus ${b.dataset.h}? Huset blir logget ut. Bookingene blir liggende.`)) return;
       try { const r = await S.deactivate(b.dataset.off); toast(r.message); renderAdmin(); } catch (e) { toast(e.message); }
     }));
+    const na = $("#newAdmin");
+    if (na) na.addEventListener("click", () => newAdminLogin());
+    box.querySelectorAll("[data-grant]").forEach(b => b.addEventListener("click", async () => {
+      const hus = b.dataset.house;
+      const advarsel = hus
+        ? `Gjøre ${b.dataset.email} til administrator? Det er husets felles innlogging for Hus ${hus} – huset bør da få en ny felles innlogging etterpå.`
+        : `Gjøre ${b.dataset.email} til administrator?`;
+      if (!confirm(advarsel)) return;
+      try { const r = await S.grantAdmin(b.dataset.grant); toast(r.message); renderAdmin(); } catch (e) { toast(e.message); }
+    }));
     wireGoto(box);
   }
   const EVENT = { BOOK: "Booking", CANCEL: "Avbestilling", CHECKIN: "Innsjekk", CONFIRM: "Bekreftet bruk", LOGIN: "Innlogging", LOGOUT: "Utlogging",
     PASSWORD_CHANGE: "Byttet passord", PASSWORD_RESET: "Nytt passord fra admin", USER_CREATE: "Ny innlogging", USER_DEACTIVATE: "Deaktivert innlogging", CONTACTS_UPDATE: "Endret Om oss",
-    FORSLAG_CREATE: "Nytt forslag", FORSLAG_STEM: "Stemt på forslag", FORSLAG_LUKK: "Lukket avstemning", FORSLAG_SLETT: "Slettet forslag",
+    FORSLAG_CREATE: "Nytt forslag", FORSLAG_STEM: "Stemt på forslag", FORSLAG_LUKK: "Lukket avstemning", FORSLAG_SLETT: "Tok bort forslag", USER_ADMIN: "Gjort til administrator",
     FORSLAG_VURDERING: "Vurdering av forslag", FORSLAG_RUNDE: "Ny avstemningsrunde", FORSLAG_GJENNOMFORING: "Gjennomføring oppdatert" };
 
   function passwordSheet(title, intro, withEmail, submit) {
@@ -700,6 +715,8 @@
   }
   const newLogin = h => passwordSheet(`Ny innlogging · Hus ${h}`, `Alle i Hus ${h} bruker denne innloggingen.`, true,
     el => S.createUser({ house: h, email: el.email.value.trim(), password: el.password.value }));
+  const newAdminLogin = () => passwordSheet("Ny administrator", "En egen innlogging for administrator, i tillegg til husenes felles innlogginger.", true,
+    el => S.createUser({ role: "admin", email: el.email.value.trim(), password: el.password.value, name: "Administrator" }));
   const resetLogin = (id, h) => passwordSheet(`Nytt passord · Hus ${h}`, `Huset blir logget ut på alle telefoner og må logge inn med det nye passordet.`, false,
     el => S.resetPassword(id, el.password.value));
 

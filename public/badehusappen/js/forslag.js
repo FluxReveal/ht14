@@ -1,5 +1,5 @@
 /*
- * HT14 – forslag og stemming (versjon 0.8)
+ * HT14 – forslag og stemming (versjon 0.9)
  * ---------------------------------------------------------------
  * Rene funksjoner uten sideeffekter. Samme fil brukes i nettleseren
  * og i Cloudflare Workeren, så status og validering alltid er enige.
