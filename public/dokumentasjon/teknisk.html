@@ -50,10 +50,10 @@
   <div class="eyebrow">Teknisk</div>
   <h1>Teknisk dokumentasjon</h1>
   <p>Hvordan ht14.no og Badehusappen er bygget – først kort for alle, så stadig mer detaljert. Les så langt du har lyst.</p>
-  <div class="meta"><span class="chip">⏱ Ca. 16 min lesetid</span></div>
+  <div class="meta"><span class="chip">⏱ Ca. 17 min lesetid</span></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.8</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.9</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -72,7 +72,7 @@
 
 <h3 id="hvem-kan-gjore-hva">Hvem kan gjøre hva</h3>
 <p>Hvert hus (A, B, C og D) får <b>én felles innlogging</b>. Med den kan dere se kalenderen, booke, avbestille egne bookinger, sjekke inn, se statistikk, legge frem og stemme på forslag, endre husets del av «Om oss» og bytte passord.</p>
-<p><b>Administrator</b> (Thomas) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, endre «Om oss» for alle hus, avbestille alle bookinger og lukke eller slette et forslag. Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
+<p><b>Administratorene</b> (sameiet velger to) kan i tillegg lage og deaktivere innloggingen til hvert hus, gi et hus nytt passord, gjøre en annen innlogging til administrator, endre «Om oss» for alle hus, avbestille alle bookinger og lukke eller ta bort et forslag (forslaget skjules, men beholdes i arkivet). Alt som gjøres, logges i hendelsesloggen. Unntak fra reglene og retting av historikk kommer eventuelt senere.</p>
 
 <h3 id="om-oss">Om oss</h3>
 <p>«Om oss» er en del av forsiden <a href="/#om-oss">ht14.no</a> (ikke i appen). Før innlogging viser den bare Hus A–D og et innloggingsskjema – samme innlogging og samme økt som i Badehusappen. Etter innlogging ser dere hvem som bor i hvert hus, inntil to kontaktpersoner per hus (navn, e-post og mobil) og et fritt tekstfelt. Hvert hus fyller ut sitt eget. Opplysningene ligger bare i databasen – aldri i koden eller på de åpne sidene – og API-et gir dem bare til innloggede.</p>
@@ -195,12 +195,12 @@ ht14-data/                    ← privat, bare Workeren skriver
               "maxLimitedDaysPerWeek": 1 },
   "liftSummerRulesWhenDaysBefore": 7 }</code></pre>
 
-<p>Status på et forslag (<b>Åpen</b>, <b>Vedtatt</b>, <b>Ikke vedtatt</b>) lagres ikke, men regnes ut i <code>forslag.js</code> – samme kode i appen og på serveren. Et forslag blir vedtatt så snart kravet ikke lenger kan feile (for eksempel når 3 hus har sagt ja til «minst 3 av 4»), og «ikke vedtatt» så snart kravet ikke lenger kan nås, eller etter fristen. Avstemningen er åpen hele fristdagen i Oslo-tid. Administrator kan lukke den tidligere. Når alle fire husene har sagt ja, kan administrator skrive en vurdering (kompleksitet, tiltak, om det koster penger, og når det kan gjennomføres). Sier vurderingen at det koster penger, kan administrator sende forslaget til en ny avstemningsrunde; runde 1 blir stående som historikk. Etter vurderingen kan administrator også sette en enkel gjennomføringsstatus: ikke startet, planlagt, pågår eller ferdig.</p>
+<p>Status på et forslag (<b>Åpen</b>, <b>Vedtatt</b>, <b>Ikke vedtatt</b>) lagres ikke, men regnes ut i <code>forslag.js</code> – samme kode i appen og på serveren. Et forslag blir vedtatt så snart kravet ikke lenger kan feile (for eksempel når 3 hus har sagt ja til «minst 3 av 4»), og «ikke vedtatt» så snart kravet ikke lenger kan nås, eller etter fristen. Avstemningen er åpen hele fristdagen i Oslo-tid. Administrator kan lukke den tidligere. Når alle fire husene har sagt ja, kan administrator skrive en vurdering (kompleksitet, tiltak, om det koster penger, og når det kan gjennomføres). Sier vurderingen at det koster penger, kan administrator sende forslaget til en ny avstemningsrunde; runde 1 blir stående som historikk. Etter vurderingen kan administrator også sette en enkel gjennomføringsstatus: ikke startet, planlagt, pågår eller ferdig. Et forslag som administrator tar bort, blir skjult i appen men beholdt i databasen (sammen med stemmer og runder). Det kan være mer enn én administrator; en administrator kan gjøre en annen innlogging til administrator eller lage en ny administrasjonsinnlogging. Alt administratorene gjør, blir registrert i hendelsesloggen.</p>
 <h3 id="regelmotor">Regelmotor</h3>
 <p><code>rules-engine.js</code> er rene funksjoner, så samme kode kjører i nettleseren (rask tilbakemelding) og i Workeren (som bestemmer).</p>
 <ul>
-  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → 7 dager før eller senere? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
-  <li>Fra 7 dager før datoen (<code>liftSummerRulesWhenDaysBefore</code> = 7: kalenderdager i Oslo-tid fra i dag til datoen er 7 eller færre) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger lagres utenfor kvoten (<code>shortNoticeCountsTowardQuota</code> = false).</li>
+  <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → mindre enn 7 dager til datoen? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
+  <li>Er det mindre enn 7 dager til datoen (<code>daysBefore &lt; liftSummerRulesWhenDaysBefore</code>, der verdien er 7: kalenderdager i Oslo-tid fra i dag til datoen er 6 eller færre, i dag = 0) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger teller ikke i kvoten (<code>shortNoticeCountsTowardQuota</code> = false). Dagen åpner 6 dager før.</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
   <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
@@ -228,19 +228,19 @@ stateDiagram-v2
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.8"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.9"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
 <tr><td><code>POST /api/bookings/{id}/cancel | checkin</code>, <code>POST /api/checkin</code></td><td>Avbestill, sjekk inn, spontan innsjekk</td></tr>
 <tr><td><code>GET /api/forslag</code>, <code>GET /api/forslag/{id}</code>, <code>POST /api/forslag</code></td><td>Liste og ett forslag, legge frem nytt (tittel, begrunnelse, frist, krav). Bare innlogget.</td></tr>
 <tr><td><code>POST /api/forslag/{id}/stem</code> <code>{"stemme":"ja"|"nei"}</code></td><td>Stemme eller endre stemme (ett hus, én stemme) så lenge avstemningen er åpen ut fristdagen</td></tr>
-<tr><td><code>POST /api/forslag/{id}/lukk</code>, <code>DELETE /api/forslag/{id}</code></td><td>Bare admin: lukke den åpne runden eller slette forslaget</td></tr>
+<tr><td><code>POST /api/forslag/{id}/lukk</code>, <code>DELETE /api/forslag/{id}</code></td><td>Bare admin: lukke den åpne runden, eller ta bort forslaget (skjules, beholdes i databasen)</td></tr>
 <tr><td><code>PUT /api/forslag/{id}/vurdering</code></td><td>Bare admin, og bare når alle 4 hus har sagt ja: kompleksitet, tiltak, kostnad og tidspunkt</td></tr>
 <tr><td><code>POST /api/forslag/{id}/runde</code></td><td>Bare admin, og bare når vurderingen sier at det koster penger: ny avstemningsrunde (standard krav: alle 4)</td></tr>
 <tr><td><code>POST /api/forslag/{id}/gjennomforing</code></td><td>Bare admin, etter vurdering: Ikke startet, Planlagt, Pågår eller Ferdig</td></tr>
 <tr><td><code>GET /api/contacts</code>, <code>PUT /api/contacts/{A–D}</code></td><td>Om oss (bare innlogget; endre eget hus, admin alle)</td></tr>
-<tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger, nytt passord, deaktiver, hendelseslogg</td></tr>
+<tr><td><code>GET|POST /api/admin/users</code>, <code>POST /api/admin/users/{id}/password | deactivate | admin</code>, <code>GET /api/admin/events</code></td><td>Bare admin: innlogginger (også ny administrator), nytt passord, deaktiver, gjør til administrator, hendelseslogg</td></tr>
 </tbody></table></div>
 
 <h3 id="feilhandtering">Feilkoder</h3>
@@ -259,7 +259,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.8"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.9"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
@@ -320,7 +320,7 @@ stateDiagram-v2
 </ol>
 
 <nav class="pagenav" aria-label="Forrige og neste side"><span></span><a class="next" href="regler.html"><small>Neste →</small>Regler for bruk av badehuset</a></nav>
-      <p class="footer">Sameiet HT14 · HT14 versjon 0.8. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.9. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
