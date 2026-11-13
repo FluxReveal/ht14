@@ -1,5 +1,5 @@
 /**
- * HT14 versjon 0.9 – Cloudflare Worker for ht14.no
+ * HT14 versjon 0.10 – Cloudflare Worker for ht14.no
  *
  * Statiske filer (public/) serveres direkte. Bare /api/* går gjennom Workeren
  * (run_worker_first i wrangler.jsonc). Data ligger i D1 (binding DB).
@@ -22,7 +22,7 @@ import {
 } from "./auth.js";
 import { runExport } from "./export.js";
 
-const VERSION = "0.9";
+const VERSION = "0.10";
 const HOUSES = ["A", "B", "C", "D"];
 const LOCK_MIN = 15;            // pause i minutter
 const MAX_FAIL_EMAIL = 5;       // feil passord per e-post innen 15 min
