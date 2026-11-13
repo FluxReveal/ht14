@@ -53,7 +53,7 @@
   <div class="meta"><span class="chip">⏱ Ca. 17 min lesetid</span></div>
 </section>
 
-<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.9</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
+<p><b>Badehusappen</b> ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> (kortadresse <b>badehusappen.ht14.no</b>). Hvert hus logger inn, og bookingene er felles for alle fire husene. Dette er <b>HT14 versjon 0.10</b>. Thomas har laget dette som et forslag til resten av sameiet. Ingenting er bestemt ennå, så si gjerne fra hva dere synes.</p>
 
 <nav class="part-toc" aria-labelledby="innhold-pa-siden"><h2 id="innhold-pa-siden" class="toc-title">Innhold</h2>
 <div class="grid c2">
@@ -189,6 +189,7 @@ ht14-data/                    ← privat, bare Workeren skriver
                "MID": { "label": "Ettermiddag", "start": "14:00", "end": "17:00" },
                "PM":  { "label": "Kveld",       "start": "17:00", "end": "24:00" } },
   "bookingWindow": { "months": 3 },
+  "checkinFrom": "08:00",
   "defaultPeriods": ["PM"],
   "summer": { "months": [6, 7, 8], "limitedDays": ["thu", "fri", "sat"],
               "maxPerWeekdayPerMonth": { "thu": 1, "fri": 1, "sat": 1 },
@@ -202,6 +203,7 @@ ht14-data/                    ← privat, bare Workeren skriver
   <li><code>validateBooking</code> sjekker én periode: gyldig input → ikke passert → ikke startet → innenfor 3 måneder → ledig → mindre enn 7 dager til datoen? da OK → sommer og torsdag/fredag/lørdag? → kvote per ukedag → én av dagene per uke (mandag–søndag).</li>
   <li>Er det mindre enn 7 dager til datoen (<code>daysBefore &lt; liftSummerRulesWhenDaysBefore</code>, der verdien er 7: kalenderdager i Oslo-tid fra i dag til datoen er 6 eller færre, i dag = 0) gjelder ikke sommergrensene: en ledig torsdag, fredag eller lørdag kan bookes av alle hus, også om huset har brukt opp kvoten. Slike bookinger teller ikke i kvoten (<code>shortNoticeCountsTowardQuota</code> = false). Dagen åpner 6 dager før.</li>
   <li><code>validateBookingMulti</code> tar flere perioder: heldag avvises etter kl. 10, og alt eller ingenting lagres.</li>
+  <li>Innsjekk (på booket formiddag og spontan innsjekk uten booking) kan gjøres fra kl. 08:00 (<code>checkinFrom</code>). Formiddagsperioden for booking er fortsatt kl. 10–14.</li>
   <li>Kvoten teller <b>dager</b>, ikke perioder. Kveld er forhåndsvalgt i appen; dagtid har ingen teknisk sperre og merkes ikke spesielt. Testene ligger i <code>tools/tests/</code> og kjøres med <code>npm test</code>.</li>
 </ul>
 
@@ -228,7 +230,7 @@ stateDiagram-v2
 <div class="table-wrap"><table>
 <thead><tr><th>Endepunkt</th><th>Hva</th></tr></thead>
 <tbody>
-<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.9"}</code></td></tr>
+<tr><td><code>GET /api/helse</code></td><td><code>{"ok":true,"version":"0.10"}</code></td></tr>
 <tr><td><code>POST /api/login</code>, <code>/logout</code>, <code>/password</code>, <code>GET /api/me</code></td><td>Innlogging, utlogging, bytte eget passord, hvem er jeg</td></tr>
 <tr><td><code>GET /api/bookings?from&amp;to</code>, <code>GET /api/bookings/{id}</code>, <code>GET /api/stats</code></td><td>Kalender og historikk, én booking med hendelser, statistikk</td></tr>
 <tr><td><code>POST /api/bookings</code> <code>{date, periods}</code></td><td>Book én eller flere perioder (alt eller ingenting). Et hus booker alltid for seg selv; admin sender med <code>household</code>.</td></tr>
@@ -259,7 +261,7 @@ stateDiagram-v2
   <li><b>Hemmeligheter</b><code>SESSION_PEPPER</code> er lagt inn (tilfeldig, ingen kjenner den). <b>Bytt den aldri</b> – da slutter alle passord å virke. Gjenstår: GitHub → Settings → Developer settings → <b>Fine-grained tokens</b> → nytt token med tilgang bare til <code>FluxReveal/ht14-data</code>, <b>Contents: Read and write</b>, utløp om ca. ett år. Legg det inn i Cloudflare: Workeren → <b>Settings</b> → <b>Variables and Secrets</b> → <b>Add</b>, type <b>Secret</b>, navn <code>GH_DATA_TOKEN</code> → <b>Deploy</b>.</li>
   <li><b>Nattlig kopi</b>Koden er klar (<code>src/export.js</code>). I <code>wrangler.jsonc</code>: fjern <code>//</code> foran <code>"triggers"</code>-linjen og legg til komma etter <code>observability</code>-linjen. Flett inn i <code>main</code>. Sjekk under <b>Settings</b> → <b>Triggers</b> at «15 2 * * *» står der, og neste morgen at <code>ht14-data/data/</code> har nye filer.</li>
   <li><b>Kortadressen</b><code>badehusappen.ht14.no</code> har en DNS-post (AAAA <code>100::</code>, proxied) og en regel under <b>Rules</b> → <b>Redirect Rules</b> som sender videre med 301 til <code>https://ht14.no/badehusappen/</code> (sti og spørring beholdes). Regelen for <code>www.ht14.no</code> ligger i samme liste – slett den ikke.</li>
-  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.9"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
+  <li><b>Test på iPhone</b>Åpne ht14.no og Badehusappen, og <code>ht14.no/api/helse</code> (skal vise <code>{"ok":true,"version":"0.10"}</code>). Logg inn, lagre passordet og legg appen på Hjem-skjermen.</li>
 </ol>
 
 <h3 id="brukere">Innlogginger</h3>
@@ -320,7 +322,7 @@ stateDiagram-v2
 </ol>
 
 <nav class="pagenav" aria-label="Forrige og neste side"><span></span><a class="next" href="regler.html"><small>Neste →</small>Regler for bruk av badehuset</a></nav>
-      <p class="footer">Sameiet HT14 · HT14 versjon 0.9. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
+      <p class="footer">Sameiet HT14 · HT14 versjon 0.10. Badehusappen ligger på <a href="/badehusappen/">ht14.no/badehusappen/</a> – logg inn med husets innlogging. Navn i eksemplene er oppdiktet. Spørsmål eller ideer? Si fra til Thomas.</p>
     </article>
     <aside class="toc" aria-label="Innhold på denne siden"><h4>På denne siden</h4><ol></ol></aside>
   </div>
